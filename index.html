@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <title>Hẹn Giờ Chuông Báo - Điều khiển Internet</title>
+  <meta name="viewport" content="width=device-width,user-scalable=0" charset="utf-8">
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js" type="text/javascript"></script>
+  
+  <style type="text/css">
+    body{ background: #1e1e1e; font-family: Verdana, sans-serif; color: #f0f0f0; }
+    #main{ margin: 10px auto; width: 360px; }
+    #content{ background-color: #2a2a2a; border: 1px solid #444; width: 360px; float: left; border-radius: 8px; padding-bottom: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+    h2 { font-size: 1.4em; margin-top: 20px; margin-bottom: 10px; text-align: center; color: #ffa500; text-shadow: 0 0 5px rgba(255, 165, 0, 0.5); }
+    h3{ margin-top: 25px; margin-bottom: 20px; text-align: center; font-size: 1.2em; font-weight: bold; }
+    #header-sang { color: #66ff99; }
+    #header-chieu { color: #66ccff; }
+    h4 { text-align: center; color: yellow; border-top: 1px solid #444; padding-top: 15px; margin-top: 15px; }
+    hr { border: 1px solid #444; margin: 25px 15px; }
+    .div1{ padding: 0 15px; float: left; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+    .tab1{ width: 150px; float: left; line-height: 25px; }
+    .tab2{ width: 120px; float: left; display: flex; align-items: center; }
+    input[type="number"], input[type="time"]{ width: 80px; float: left; margin-right: 10px; background-color: #333; border: 1px solid #555; color: white; border-radius: 4px; padding: 5px; }
+    input[type="checkbox"].enable-checkbox { width: 18px; height: 18px; transform: scale(1.1); margin-top: 1px; }
+    .row{ margin-bottom: 8px; float: left; width: 100%; min-height: 35px; display: flex; align-items: center; }
+    .activation-row .tab1 b { font-size: 0.95em; font-weight: normal; }
+    .status-bar { padding: 8px 15px; margin-bottom: 10px; text-align: center; font-weight: bold; border-radius: 4px; transition: background-color 0.5s; }
+    .status-connected { background-color: #28a745; color: white; }
+    .status-disconnected { background-color: #dc3545; color: white; }
+    .button-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; padding: 0 15px; }
+    input[type="button"] { padding: 12px; font-size: 1em; font-weight: bold; border-radius: 6px; border: 1px solid rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .preview-button { background-image: linear-gradient(to top, #4CAF50, #5cdb61); color: white; margin-top: 10px; width: calc(100% - 30px); margin-left: 15px; margin-right: 15px;}
+    .save-button { background-image: linear-gradient(to top, #008CBA, #00a8e0); color: white; }
+    .test-button { background-image: linear-gradient(to top, #f44336, #f65a4c); color: white; }
+    .tab { display: flex; justify-content: space-around; border-bottom: 1px solid #444; margin: 0 15px 15px 15px;}
+    .tab button { flex-grow: 1; border: 1px solid #444; border-bottom: none; outline: none; cursor: pointer; padding: 10px 5px; transition: all 0.3s; font-size: 0.85em; color: #ccc; font-weight: bold; background-color: #333; margin: 0 2px -1px 2px; border-radius: 6px 6px 0 0; }
+    #tab_sang button.active { background-color: #66ff99; color: #111; border-color: #66ff99; }
+    #tab_chieu button.active { background-color: #66ccff; color: #111; border-color: #66ccff; }
+    .tabcontent { display: none; padding: 0 15px;}
+    .details-container table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .details-container th, .details-container td { border: 1px solid #444; padding: 8px; text-align: center; font-size:13px; }
+    .details-container th { background-color: #3a3a3a; }
+  </style>
+</head>
+<body>
+  <div id="main">
+    <div id="content">
+      <div style="text-align: center;">
+        <h2>CHUÔNG BÁO TỰ ĐỘNG (INTERNET)</h2>
+      </div>
+      
+      <div id="status" class="status-bar status-disconnected">Đang kết nối...</div>
+      
+      <h3 id="header-sang">LỊCH BUỔI SÁNG</h3>
+      <div class="tab" id="tab_sang">
+        <button class="tablinks-sang" onclick="openDay(event, 't2_sang', 'sang')">Thứ 2</button>
+        <button class="tablinks-sang" onclick="openDay(event, 't3_sang', 'sang')">Thứ 3</button>
+        <button class="tablinks-sang" onclick="openDay(event, 't4_sang', 'sang')">Thứ 4</button>
+        <button class="tablinks-sang" onclick="openDay(event, 't5_sang', 'sang')">Thứ 5</button>
+        <button class="tablinks-sang" onclick="openDay(event, 't6_sang', 'sang')">Thứ 6</button>
+        <button class="tablinks-sang" onclick="openDay(event, 't7_sang', 'sang')">Thứ 7</button>
+        <button class="tablinks-sang" onclick="openDay(event, 'cn_sang', 'sang')">CN</button>
+      </div>
+      <div id="tab-container-sang"></div>
+      
+      <hr>
+
+      <h3 id="header-chieu">LỊCH BUỔI CHIỀU</h3>
+      <div class="tab" id="tab_chieu">
+        <button class="tablinks-chieu" onclick="openDay(event, 't2_chieu', 'chieu')">Thứ 2</button>
+        <button class="tablinks-chieu" onclick="openDay(event, 't3_chieu', 'chieu')">Thứ 3</button>
+        <button class="tablinks-chieu" onclick="openDay(event, 't4_chieu', 'chieu')">Thứ 4</button>
+        <button class="tablinks-chieu" onclick="openDay(event, 't5_chieu', 'chieu')">Thứ 5</button>
+        <button class="tablinks-chieu" onclick="openDay(event, 't6_chieu', 'chieu')">Thứ 6</button>
+        <button class="tablinks-chieu" onclick="openDay(event, 't7_chieu', 'chieu')">Thứ 7</button>
+        <button class="tablinks-chieu" onclick="openDay(event, 'cn_chieu', 'chieu')">CN</button>
+      </div>
+      <div id="tab-container-chieu"></div>
+      
+      <div class="settings-section div1">
+        <h3>Cài đặt số hồi chuông (Chung)</h3>
+        <div class="row"><div class="tab1">Bắt đầu buổi học:</div><div class="tab2"><input id="sohoi_batdau" type="number" value="6"><span>hồi</span></div></div>
+        <div class="row"><div class="tab1">Vào tiết:</div><div class="tab2"><input id="sohoi_vaotiet" type="number" value="5"><span>hồi</span></div></div>
+        <div class="row"><div class="tab1">Ra chơi:</div><div class="tab2"><input id="sohoi_rachoi" type="number" value="3"><span>hồi</span></div></div>
+        <div class="row"><div class="tab1">Dự vào lớp:</div><div class="tab2"><input id="sohoi_duvao" type="number" value="2"><span>hồi</span></div></div>
+      </div>
+
+      <div class="button-container">
+        <input type="button" class="save-button" onclick="updateAllData()" value="Lưu tất cả vào thiết bị">
+        <input type="button" class="test-button" onclick="sendControl()" value="Thử Chuông">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let client; // Khai báo biến client ở phạm vi toàn cục
+
+    // Cấu hình kết nối
+    const brokerUrl = 'wss://8bdef73996bb4030affe9483eecde31b.s1.eu.hivemq.cloud:8884/mqtt';
+    const options = {
+      username: 'ngoctuyka',
+      password: 'Tu12345678@',
+      clientId: 'WebAppClient_' + new Date().getTime(), // SỬA LỖI: Dùng timestamp để ClientID luôn duy nhất
+      reconnectPeriod: 1000, // Tự động kết nối lại sau mỗi giây nếu mất kết nối
+    };
+
+    function connectToMqtt() {
+      console.log('Đang kết nối đến MQTT broker với thư viện MQTT.js...');
+      document.getElementById('status').textContent = 'Đang kết nối...';
+      document.getElementById('status').className = 'status-bar status-disconnected';
+
+      // Khởi tạo kết nối
+      client = mqtt.connect(brokerUrl, options);
+
+      // Xử lý sự kiện khi kết nối thành công
+      client.on('connect', () => {
+        console.log('Đã kết nối thành công đến MQTT broker!');
+        document.getElementById('status').textContent = 'Đã kết nối';
+        document.getElementById('status').className = 'status-bar status-connected';
+        
+        // Đăng ký nhận dữ liệu từ thiết bị
+        client.subscribe('esp8266/bell/data/status', (err) => {
+          if (err) {
+            console.error('Lỗi khi đăng ký topic:', err);
+          } else {
+            console.log('Đăng ký nhận topic esp8266/bell/data/status thành công!');
+            
+            // Chủ động yêu cầu thiết bị gửi lại dữ liệu hiện tại
+            client.publish('esp8266/bell/data/get', 'GET_DATA');
+            console.log('Đã gửi yêu cầu lấy dữ liệu đến thiết bị.');
+          }
+        });
+      });
+
+      // Xử lý khi nhận được tin nhắn từ các topic đã đăng ký
+      client.on('message', (topic, payload) => {
+        const payloadString = payload.toString();
+        console.log(`Nhận được tin nhắn từ topic: ${topic}`);
+        if (topic === 'esp8266/bell/data/status') {
+          const allData = JSON.parse(payloadString);
+          populateForm(allData);
+        }
+      });
+
+      // Xử lý khi có lỗi kết nối
+      client.on('error', (err) => {
+        console.error('Lỗi kết nối MQTT:', err);
+      });
+
+      // Xử lý khi mất kết nối
+      client.on('close', () => {
+        console.log('Mất kết nối MQTT. Thư viện sẽ tự động kết nối lại.');
+        document.getElementById('status').textContent = 'Mất kết nối. Đang thử lại...';
+        document.getElementById('status').className = 'status-bar status-disconnected';
+      });
+    }
+
+    function updateAllData() {
+      if (!client || !client.connected) {
+        alert('Chưa kết nối đến thiết bị. Vui lòng kiểm tra lại.');
+        return;
+      }
+      const allData = gatherDataFromForm();
+      const message = JSON.stringify(allData);
+      client.publish('esp8266/bell/data/set', message, { retain: true });
+      alert('Đã gửi lệnh cập nhật thành công!');
+    }
+    
+    function sendControl() {
+      if (!client || !client.connected) {
+        alert('Chưa kết nối đến thiết bị. Vui lòng kiểm tra lại.');
+        return;
+      }
+      client.publish('esp8266/bell/control', 'TEST_BELL');
+    }
+    
+    // =========================================================================
+    // CÁC HÀM GIAO DIỆN (GIỮ NGUYÊN, KHÔNG THAY ĐỔI)
+    // =========================================================================
+    
+    const createDayContent = (dayId, dayName, session, hasChaoCo, hasChuNhiem) => {
+        let specialPeriod = '';
+        if (hasChaoCo) {
+            specialPeriod = `<div class="row"><div class="tab1">TG Chào cờ:</div><div class="tab2"><input id="chaoco_${dayId}" type="number" value="40"><span>phút</span></div></div>`;
+        } else if (hasChuNhiem) {
+            specialPeriod = `<div class="row"><div class="tab1">TG Chủ nhiệm:</div><div class="tab2"><input id="chunhiem_${dayId}" type="number" value="15"><span>phút</span></div></div>`;
+        }
+
+        return `
+        <div id="${dayId}" class="tabcontent">
+          <h3>Cài đặt Lịch ${dayName} (Buổi ${session === 'sang' ? 'Sáng' : 'Chiều'})</h3>
+          <div class="row activation-row"><div class="tab1"><b>Kích hoạt lịch:</b></div><div class="tab2"><input type="checkbox" id="enable_${dayId}" class="enable-checkbox" checked></div></div>
+          <div class="row"><div class="tab1">Giờ bắt đầu:</div><div class="tab2"><input id="gio_${dayId}" type="time"></div></div>
+          ${specialPeriod}
+          <div class="row"><div class="tab1">TG Tiết học:</div><div class="tab2"><input id="tiethoc_${dayId}" type="number" value="45"><span>phút</span></div></div>
+          <div class="row"><div class="tab1">TG Ra chơi:</div><div class="tab2"><input id="rachoi_${dayId}" type="number" value="5"><span>phút</span></div></div>
+          <div class="row"><div class="tab1">TG Dự vào:</div><div class="tab2"><input id="duvaotiet_${dayId}" type="number" value="3"><span>phút</span></div></div>
+          <div class="row"><div class="tab1">Số tiết học:</div><div class="tab2"><input id="sotiet_${dayId}" type="number" value="5"><span>tiết</span></div></div>
+          <input type="button" class="preview-button" onclick="updatePreviewTable('${dayId}')" value="Cập nhật bảng chi tiết">
+          <h4>Chi tiết lịch chuông</h4>
+          <div class="details-container" id="details-${dayId}"></div>
+        </div>`;
+    };
+
+    const containerSang = document.getElementById('tab-container-sang');
+    const containerChieu = document.getElementById('tab-container-chieu');
+    const days = [
+        { id: 't2', name: 'Thứ 2', chaoCo: true, chuNhiem: false },
+        { id: 't3', name: 'Thứ 3', chaoCo: false, chuNhiem: true },
+        { id: 't4', name: 'Thứ 4', chaoCo: false, chuNhiem: true },
+        { id: 't5', name: 'Thứ 5', chaoCo: false, chuNhiem: true },
+        { id: 't6', name: 'Thứ 6', chaoCo: false, chuNhiem: true },
+        { id: 't7', name: 'Thứ 7', chaoCo: false, chuNhiem: true },
+        { id: 'cn', name: 'Chủ Nhật', chaoCo: false, chuNhiem: false }
+    ];
+
+    days.forEach(day => {
+        containerSang.innerHTML += createDayContent(`${day.id}_sang`, day.name, 'sang', day.chaoCo, day.chuNhiem);
+        containerChieu.innerHTML += createDayContent(`${day.id}_chieu`, day.name, 'chieu', false, false);
+    });
+    
+    function populateForm(allData) {
+        ['batdau', 'vaotiet', 'rachoi', 'duvao'].forEach(key => {
+            if(document.getElementById(`sohoi_${key}`)) {
+            document.getElementById(`sohoi_${key}`).value = allData.sohoi[key] || '';
+            }
+        });
+
+        ['sang', 'chieu'].forEach(session => {
+            days.forEach(day => {
+                const dayId = `${day.id}_${session}`;
+                if(document.getElementById(dayId)) {
+                    const dayData = allData.lich[session] ? allData.lich[session][day.id] : null;
+                    if (dayData) {
+                        document.getElementById(`enable_${dayId}`).checked = dayData.enabled;
+                        document.getElementById(`gio_${dayId}`).value = dayData.gio || '';
+                        document.getElementById(`tiethoc_${dayId}`).value = dayData.tiethoc || '';
+                        document.getElementById(`rachoi_${dayId}`).value = dayData.rachoi || '';
+                        document.getElementById(`duvaotiet_${dayId}`).value = dayData.duvaotiet || '';
+                        document.getElementById(`sotiet_${dayId}`).value = dayData.sotiet || '';
+                        if (document.getElementById(`chaoco_${dayId}`)) {
+                            document.getElementById(`chaoco_${dayId}`).value = dayData.chaoco || '';
+                        }
+                        if (document.getElementById(`chunhiem_${dayId}`)) {
+                            document.getElementById(`chunhiem_${dayId}`).value = dayData.chunhiem || '';
+                        }
+                        updatePreviewTable(dayId);
+                    }
+                }
+            });
+        });
+    }
+
+    function gatherDataFromForm() {
+        const allData = { sohoi: {}, lich: { sang: {}, chieu: {} } };
+        ['batdau', 'vaotiet', 'rachoi', 'duvao'].forEach(key => {
+            allData.sohoi[key] = parseInt(document.getElementById(`sohoi_${key}`).value);
+        });
+        
+        ['sang', 'chieu'].forEach(session => {
+            days.forEach(day => {
+                const dayId = `${day.id}_${session}`;
+                if(document.getElementById(dayId)) {
+                    const dayData = {};
+                    dayData.enabled = document.getElementById(`enable_${dayId}`).checked;
+                    dayData.gio = document.getElementById(`gio_${dayId}`).value;
+                    dayData.tiethoc = parseInt(document.getElementById(`tiethoc_${dayId}`).value);
+                    dayData.rachoi = parseInt(document.getElementById(`rachoi_${dayId}`).value);
+                    dayData.duvaotiet = parseInt(document.getElementById(`duvaotiet_${dayId}`).value);
+                    dayData.sotiet = parseInt(document.getElementById(`sotiet_${dayId}`).value);
+                    if (document.getElementById(`chaoco_${dayId}`)) {
+                        dayData.chaoco = parseInt(document.getElementById(`chaoco_${dayId}`).value);
+                    }
+                    if (document.getElementById(`chunhiem_${dayId}`)) {
+                        dayData.chunhiem = parseInt(document.getElementById(`chunhiem_${dayId}`).value);
+                    }
+                    allData.lich[session][day.id] = dayData;
+                }
+            });
+        });
+        return allData;
+    }
+    
+    function openDay(evt, dayId, session) {
+      let i;
+      const tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
+      const tablinksSang = document.getElementsByClassName("tablinks-sang");
+      for (i = 0; i < tablinksSang.length; i++) { tablinksSang[i].className = tablinksSang[i].className.replace(" active", ""); }
+      const tablinksChieu = document.getElementsByClassName("tablinks-chieu");
+      for (i = 0; i < tablinksChieu.length; i++) { tablinksChieu[i].className = tablinksChieu[i].className.replace(" active", ""); }
+      document.getElementById(dayId).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+
+    function timeToMinute(timeString) {
+      if (!timeString) return 0;
+      const [hours, minutes] = timeString.split(':').map(Number);
+      return (hours * 60) + minutes;
+    }
+
+    function minuteToTime(totalMinutes) {
+      const hours = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
+      const minutes = (totalMinutes % 60).toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    function calculateSchedule(dayId) {
+        const getVal = (id) => parseInt(document.getElementById(id).value) || 0;
+        const getStartTime = (id) => timeToMinute(document.getElementById(id).value);
+
+        const a = getStartTime(`gio_${dayId}`);
+        const b = getVal(`tiethoc_${dayId}`);
+        const c = getVal(`rachoi_${dayId}`);
+        const d = getVal(`duvaotiet_${dayId}`);
+        const numLessons = getVal(`sotiet_${dayId}`);
+        
+        let scheduleArray = [];
+        const hasChaoCo = document.getElementById(`chaoco_${dayId}`) !== null;
+        const hasChuNhiem = document.getElementById(`chunhiem_${dayId}`) !== null;
+
+        if (hasChaoCo) {
+            const cc = getVal(`chaoco_${dayId}`);
+            if (d > 0) scheduleArray.push({ time: minuteToTime(a), description: "Báo chuẩn bị tập trung"});
+            if (cc > 0) scheduleArray.push({ time: minuteToTime(a + d), description: "Báo Chào cờ"});
+            scheduleArray.push({ time: minuteToTime(a + d + cc), description: "Vào tiết 1"});
+            
+            for (let i = 1; i < numLessons; i++) {
+                if (c > 0) scheduleArray.push({ time: minuteToTime(a + i*d + cc + i*b + (i-1)*c), description: `Ra chơi tiết ${i}`});
+                if (d > 0) scheduleArray.push({ time: minuteToTime(a + i*d + cc + i*b + i*c), description: `Dự vào tiết ${i+1}`});
+                scheduleArray.push({ time: minuteToTime(a + (i+1)*d + cc + i*b + i*c), description: `Vào tiết ${i+1}`});
+            }
+            if (c > 0) scheduleArray.push({ time: minuteToTime(a + numLessons*d + cc + numLessons*b + (numLessons-1)*c), description: "Ra về"});
+        
+        } else if (hasChuNhiem) {
+            const e = getVal(`chunhiem_${dayId}`);
+            scheduleArray.push({ time: minuteToTime(a), description: "Vào tiết Chủ nhiệm"});
+            if (d > 0 && e > 0) scheduleArray.push({ time: minuteToTime(a + e), description: "Hết tiết CN, chuẩn bị vào tiết 1"});
+            scheduleArray.push({ time: minuteToTime(a + d + e), description: "Vào tiết 1"});
+
+            for (let i = 1; i < numLessons; i++) {
+                if (c > 0) scheduleArray.push({ time: minuteToTime(a + i*d + e + i*b + (i-1)*c), description: `Ra chơi tiết ${i}`});
+                if (d > 0) scheduleArray.push({ time: minuteToTime(a + i*d + e + i*b + i*c), description: `Dự vào tiết ${i+1}`});
+                scheduleArray.push({ time: minuteToTime(a + (i+1)*d + e + i*b + i*c), description: `Vào tiết ${i+1}`});
+            }
+            if (c > 0) scheduleArray.push({ time: minuteToTime(a + numLessons*d + e + numLessons*b + (numLessons-1)*c), description: "Ra về"});
+
+        } else {
+            scheduleArray.push({ time: minuteToTime(a), description: "Vào tiết 1"});
+            for (let i = 1; i <= numLessons; i++) {
+                if(i > 1) scheduleArray.push({ time: minuteToTime(a + (i-1)*d + (i-1)*b + (i-1)*c), description: `Vào tiết ${i}`});
+                if (c > 0) scheduleArray.push({ time: minuteToTime(a + (i-1)*d + i*b + (i-1)*c), description: `Ra chơi tiết ${i}`});
+                if (d > 0 && i < numLessons) scheduleArray.push({ time: minuteToTime(a + (i-1)*d + i*b + i*c), description: `Dự vào tiết ${i+1}`});
+            }
+        }
+        
+        const uniqueSchedule = Array.from(new Map(scheduleArray.map(item => [item.time, item])).values());
+        return uniqueSchedule.sort((x, y) => timeToMinute(x.time) - timeToMinute(y.time));
+    }
+
+    function updatePreviewTable(dayId) {
+      const isEnabled = document.getElementById(`enable_${dayId}`).checked;
+      const container = document.getElementById('details-' + dayId);
+      if (!container) return;
+
+      if (!isEnabled) {
+          container.innerHTML = "<p>Lịch này đang tắt.</p>";
+          return;
+      }
+      
+      const scheduleArray = calculateSchedule(dayId);
+      
+      let table = "<table><thead><tr><th>STT</th><th>Thời gian</th><th>Nội dung</th></tr></thead><tbody>";
+      scheduleArray.forEach((event, index) => {
+        table += `<tr><td>${index + 1}</td><td>${event.time}</td><td>${event.description}</td></tr>`;
+      });
+      table += "</tbody></table>";
+      container.innerHTML = table;
+    }
+
+    // Hàm này sẽ được gọi khi trang được tải xong
+    window.onload = function() { 
+        connectToMqtt(); // Gọi hàm kết nối MQTT mới
+        document.querySelector('.tablinks-sang').click();
+    };
+  </script>
+</body>
+</html>
