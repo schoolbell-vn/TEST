@@ -1627,6 +1627,7 @@
     const GET_DATA_TOPIC = "esp32/bell/data/get";
     const CONTROL_TOPIC = "esp32/bell/control";
     const COMMAND_ACK_TOPIC = "esp32/bell/command/ack"; 
+    const TIME_DATA_TOPIC = "esp32/bell/data/time"; // <-- Thêm dòng định nghĩa này
 
     function connectToMqtt(){
         console.log("Đang kết nối đến MQTT broker...");
@@ -1638,10 +1639,13 @@
         client.on("connect",()=>{
             console.log("Đã kết nối thành công đến MQTT broker!");
             // [ĐÃ TINH GIẢN] Chỉ subscribe các topic cần thiết
+            
+
             const topicsToSubscribe = [
                 DATA_STATUS_TOPIC, 
                 ONLINE_STATUS_TOPIC,
-                COMMAND_ACK_TOPIC
+                COMMAND_ACK_TOPIC,
+                TIME_DATA_TOPIC // <-- Thêm topic mới vào danh sách
             ];
             client.subscribe(topicsToSubscribe, {qos:1}, (err)=>{
                 if(err) {
@@ -1665,7 +1669,27 @@
         console.error("Loi parse ACK JSON:", e);
     }
 }
-            if (topic === ONLINE_STATUS_TOPIC) {
+ else if (topic === "esp32/bell/data/time") {
+                try {
+                    const data = JSON.parse(payloadString);
+                    if (data.time) {
+                        const parts = data.time.split(" "); // Tách chuỗi thành ["HH:MM:SS", "DD-MM-YYYY"]
+                        
+                        // Kích hoạt đồng hồ (quan trọng nhất)
+                        document.getElementById("clock-wrapper").style.display = "block"; 
+                        
+                        // Cập nhật nội dung
+                        document.getElementById("clock").innerText = parts[0]; // Đặt Giờ
+                        document.getElementById("date").innerText = parts[1]; // Đặt Ngày
+                        
+                        // Hủy bỏ biến serverTime cũ để nó không ghi đè
+                        serverTime = null; 
+                    }
+                } catch (e) {
+                    console.error("Loi parse JSON thoi gian:", e);
+                }
+            }      
+                if (topic === ONLINE_STATUS_TOPIC) {
                 const schoolNameStatus = document.getElementById("school-name-status");
                 if (payloadString === 'online') {
                     schoolNameStatus.className = "status-color-connected";
