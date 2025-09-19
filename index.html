@@ -18,7 +18,8 @@
     .div1{ padding: 0 15px; float: left; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
     .tab1{ width: 150px; float: left; line-height: 25px; }
     .tab2{ width: 120px; float: left; display: flex; align-items: center; }
-    input[type="number"], input[type="time"]{ width: 80px; float: left; margin-right: 10px; background-color: #333; border: 1px solid #555; color: white; border-radius: 4px; padding: 5px; }
+    /* [SỬA ĐỔI] Thêm input[type="text"] để định dạng ô Ra chơi */
+    input[type="number"], input[type="time"], input[type="text"] { width: 80px; float: left; margin-right: 10px; background-color: #333; border: 1px solid #555; color: white; border-radius: 4px; padding: 5px; }
     input[type="checkbox"].enable-checkbox { width: 18px; height: 18px; transform: scale(1.1); margin-top: 1px; }
     .row{ margin-bottom: 8px; float: left; width: 100%; min-height: 35px; display: flex; align-items: center; }
     .activation-row .tab1 b { font-size: 0.95em; font-weight: normal; }
@@ -135,8 +136,15 @@
         const payloadString = payload.toString();
         console.log(`Nhận được tin nhắn từ topic: ${topic}`);
         if (topic === 'esp8266/bell/data/status') {
-          const allData = JSON.parse(payloadString);
-          populateForm(allData);
+          // [SỬA LỖI] Phân tích gói dữ liệu JSON mới (có thể có 'schedule' lồng bên trong)
+          try {
+            const data = JSON.parse(payloadString);
+            // Kiểm tra xem dữ liệu có nằm trong key 'schedule' hay là object gốc
+            const allData = data.schedule ? data.schedule : data;
+            populateForm(allData);
+          } catch(e) {
+             console.error("Lỗi parse JSON:", e, payloadString);
+          }
         }
       });
 
@@ -159,7 +167,8 @@
         return;
       }
       const allData = gatherDataFromForm();
-      const message = JSON.stringify(allData);
+      // [SỬA] Gửi đi theo cấu trúc mới { "schedule": { ... } }
+      const message = JSON.stringify({ schedule: allData });
       client.publish('esp8266/bell/data/set', message, { retain: true });
       alert('Đã gửi lệnh cập nhật thành công!');
     }
@@ -169,20 +178,36 @@
         alert('Chưa kết nối đến thiết bị. Vui lòng kiểm tra lại.');
         return;
       }
-      client.publish('esp8266/bell/control', 'TEST_BELL');
+       // [SỬA] Gửi đi theo cấu trúc JSON
+      client.publish('esp8266/bell/control', JSON.stringify({ command: "TEST_BELL" }));
     }
     
     // =========================================================================
-    // CÁC HÀM GIAO DIỆN (GIỮ NGUYÊN, KHÔNG THAY ĐỔI)
+    // CÁC HÀM GIAO DIỆN (ĐÃ CẬP NHẬT)
     // =========================================================================
     
+    // [HÀM ĐÃ CẬP NHẬT]
     const createDayContent = (dayId, dayName, session, hasChaoCo, hasChuNhiem) => {
         let specialPeriod = '';
+        // [THÊM] Trường "TG nghỉ sau SH/CC" (prepare_after_special)
+        const prepareAfterSpecialInput = `<div class="row"><div class="tab1" style="font-size: 0.9em;">TG nghỉ sau SH/CC:</div><div class="tab2"><input id="prepare_after_special_${dayId}" type="number" value="2"><span>phút</span></div></div>`;
+
         if (hasChaoCo) {
-            specialPeriod = `<div class="row"><div class="tab1">TG Chào cờ:</div><div class="tab2"><input id="chaoco_${dayId}" type="number" value="40"><span>phút</span></div></div>`;
+            specialPeriod = `<div class="row"><div class="tab1">TG Chào cờ:</div><div class="tab2"><input id="chaoco_${dayId}" type="number" value="40"><span>phút</span></div></div>` + prepareAfterSpecialInput;
         } else if (hasChuNhiem) {
-            specialPeriod = `<div class="row"><div class="tab1">TG Chủ nhiệm:</div><div class="tab2"><input id="chunhiem_${dayId}" type="number" value="15"><span>phút</span></div></div>`;
+            specialPeriod = `<div class="row"><div class="tab1">TG Chủ nhiệm:</div><div class="tab2"><input id="chunhiem_${dayId}" type="number" value="15"><span>phút</span></div></div>` + prepareAfterSpecialInput;
         }
+        
+        // [THAY ĐỔI] Trường "TG Ra chơi" từ number thành text và thêm helper text
+        const breakTimeInput = `
+            <div class="row">
+                <div class="tab1">TG Ra chơi:</div>
+                <div class="tab2"><input id="rachoi_${dayId}" type="text" value="5" style="width: 100px;"><span>phút</span></div>
+            </div>
+            <div class="row" style="margin-top: -8px; margin-bottom: 0; min-height: 15px;">
+                <div class="tab1"></div>
+                <div class="tab2" style="font-size: 0.75em; color: #ccc; width: 100%;"><i>(VD: 5,15,5)</i></div>
+            </div>`;
 
         return `
         <div id="${dayId}" class="tabcontent">
@@ -191,7 +216,7 @@
           <div class="row"><div class="tab1">Giờ bắt đầu:</div><div class="tab2"><input id="gio_${dayId}" type="time"></div></div>
           ${specialPeriod}
           <div class="row"><div class="tab1">TG Tiết học:</div><div class="tab2"><input id="tiethoc_${dayId}" type="number" value="45"><span>phút</span></div></div>
-          <div class="row"><div class="tab1">TG Ra chơi:</div><div class="tab2"><input id="rachoi_${dayId}" type="number" value="5"><span>phút</span></div></div>
+          ${breakTimeInput}
           <div class="row"><div class="tab1">TG Dự vào:</div><div class="tab2"><input id="duvaotiet_${dayId}" type="number" value="3"><span>phút</span></div></div>
           <div class="row"><div class="tab1">Số tiết học:</div><div class="tab2"><input id="sotiet_${dayId}" type="number" value="5"><span>tiết</span></div></div>
           <input type="button" class="preview-button" onclick="updatePreviewTable('${dayId}')" value="Cập nhật bảng chi tiết">
@@ -217,10 +242,18 @@
         containerChieu.innerHTML += createDayContent(`${day.id}_chieu`, day.name, 'chieu', false, false);
     });
     
+    // [HÀM ĐÃ CẬP NHẬT]
     function populateForm(allData) {
+        if (!allData || !allData.sohoi || !allData.lich) {
+            console.warn("Dữ liệu nhận được không đầy đủ, sử dụng giá trị mặc định.");
+            return;
+        }
+
         ['batdau', 'vaotiet', 'rachoi', 'duvao'].forEach(key => {
             if(document.getElementById(`sohoi_${key}`)) {
-            document.getElementById(`sohoi_${key}`).value = allData.sohoi[key] || '';
+                // [SỬA] Đọc từ allData.sohoi[key].num nếu là cấu trúc mới, hoặc allData.sohoi[key] nếu là cấu trúc cũ
+                const value = (typeof allData.sohoi[key] === 'object') ? allData.sohoi[key].num : allData.sohoi[key];
+                document.getElementById(`sohoi_${key}`).value = value || '';
             }
         });
 
@@ -233,7 +266,8 @@
                         document.getElementById(`enable_${dayId}`).checked = dayData.enabled;
                         document.getElementById(`gio_${dayId}`).value = dayData.gio || '';
                         document.getElementById(`tiethoc_${dayId}`).value = dayData.tiethoc || '';
-                        document.getElementById(`rachoi_${dayId}`).value = dayData.rachoi || '';
+                        // [SỬA] rachoi giờ là string, mặc định là '5'
+                        document.getElementById(`rachoi_${dayId}`).value = dayData.rachoi || '5'; 
                         document.getElementById(`duvaotiet_${dayId}`).value = dayData.duvaotiet || '';
                         document.getElementById(`sotiet_${dayId}`).value = dayData.sotiet || '';
                         if (document.getElementById(`chaoco_${dayId}`)) {
@@ -242,6 +276,11 @@
                         if (document.getElementById(`chunhiem_${dayId}`)) {
                             document.getElementById(`chunhiem_${dayId}`).value = dayData.chunhiem || '';
                         }
+                        // [THÊM] Đọc giá trị 'prepare_after_special'
+                        if (document.getElementById(`prepare_after_special_${dayId}`)) {
+                            // Xử lý cả trường hợp giá trị là 0 hoặc không tồn tại (undefined)
+                            document.getElementById(`prepare_after_special_${dayId}`).value = dayData.prepare_after_special ?? 2;
+                        }
                         updatePreviewTable(dayId);
                     }
                 }
@@ -249,10 +288,14 @@
         });
     }
 
+    // [HÀM ĐÃ CẬP NHẬT]
     function gatherDataFromForm() {
         const allData = { sohoi: {}, lich: { sang: {}, chieu: {} } };
         ['batdau', 'vaotiet', 'rachoi', 'duvao'].forEach(key => {
-            allData.sohoi[key] = parseInt(document.getElementById(`sohoi_${key}`).value);
+            // [SỬA] Ghi dữ liệu theo cấu trúc mới { num: ... } để đồng bộ
+            allData.sohoi[key] = {
+                num: parseInt(document.getElementById(`sohoi_${key}`).value) || 0
+            };
         });
         
         ['sang', 'chieu'].forEach(session => {
@@ -262,16 +305,27 @@
                     const dayData = {};
                     dayData.enabled = document.getElementById(`enable_${dayId}`).checked;
                     dayData.gio = document.getElementById(`gio_${dayId}`).value;
-                    dayData.tiethoc = parseInt(document.getElementById(`tiethoc_${dayId}`).value);
-                    dayData.rachoi = parseInt(document.getElementById(`rachoi_${dayId}`).value);
-                    dayData.duvaotiet = parseInt(document.getElementById(`duvaotiet_${dayId}`).value);
-                    dayData.sotiet = parseInt(document.getElementById(`sotiet_${dayId}`).value);
+                    dayData.tiethoc = parseInt(document.getElementById(`tiethoc_${dayId}`).value) || 0;
+                    // [SỬA] Giữ nguyên là chuỗi
+                    dayData.rachoi = document.getElementById(`rachoi_${dayId}`).value || '5'; 
+                    dayData.duvaotiet = parseInt(document.getElementById(`duvaotiet_${dayId}`).value) || 0;
+                    dayData.sotiet = parseInt(document.getElementById(`sotiet_${dayId}`).value) || 0;
+                    
                     if (document.getElementById(`chaoco_${dayId}`)) {
-                        dayData.chaoco = parseInt(document.getElementById(`chaoco_${dayId}`).value);
+                        dayData.chaoco = parseInt(document.getElementById(`chaoco_${dayId}`).value) || 0;
                     }
                     if (document.getElementById(`chunhiem_${dayId}`)) {
-                        dayData.chunhiem = parseInt(document.getElementById(`chunhiem_${dayId}`).value);
+                        dayData.chunhiem = parseInt(document.getElementById(`chunhiem_${dayId}`).value) || 0;
                     }
+                    // [THÊM] Lấy giá trị 'prepare_after_special'
+                    if (document.getElementById(`prepare_after_special_${dayId}`)) {
+                        dayData.prepare_after_special = parseInt(document.getElementById(`prepare_after_special_${dayId}`).value) || 0;
+                    }
+                    
+                    // [THÊM] Suy luận các giá trị boolean để đồng bộ
+                    dayData.has_special_event = (dayData.chaoco > 0) || (dayData.chunhiem > 0);
+                    dayData.has_duvao_bell = (dayData.duvaotiet > 0);
+
                     allData.lich[session][day.id] = dayData;
                 }
             });
@@ -303,57 +357,98 @@
       return `${hours}:${minutes}`;
     }
 
+    // [HÀM ĐÃ THAY THẾ HOÀN TOÀN]
     function calculateSchedule(dayId) {
-        const getVal = (id) => parseInt(document.getElementById(id).value) || 0;
+        // Hàm tiện ích getVal, xử lý cả giá trị 0
+        const getVal = (id, defaultValue = 0) => {
+            const el = document.getElementById(id);
+            if (!el) return defaultValue;
+            const parsedValue = parseInt(el.value);
+            return isNaN(parsedValue) ? defaultValue : parsedValue;
+        };
+        
+        // Hàm tiện ích getStartTime
         const getStartTime = (id) => timeToMinute(document.getElementById(id).value);
 
-        const a = getStartTime(`gio_${dayId}`);
-        const b = getVal(`tiethoc_${dayId}`);
-        const c = getVal(`rachoi_${dayId}`);
-        const d = getVal(`duvaotiet_${dayId}`);
-        const numLessons = getVal(`sotiet_${dayId}`);
-        
-        let scheduleArray = [];
+        // 1. Thu thập dữ liệu
+        const isEnabled = document.getElementById(`enable_${dayId}`)?.checked;
+        if (!isEnabled) return []; // Trả về mảng rỗng nếu lịch bị tắt
+
+        // Kiểm tra xem có sự kiện đặc biệt không (Chào cờ hoặc Chủ nhiệm)
         const hasChaoCo = document.getElementById(`chaoco_${dayId}`) !== null;
         const hasChuNhiem = document.getElementById(`chunhiem_${dayId}`) !== null;
-
-        if (hasChaoCo) {
-            const cc = getVal(`chaoco_${dayId}`);
-            if (d > 0) scheduleArray.push({ time: minuteToTime(a), description: "Báo chuẩn bị tập trung"});
-            if (cc > 0) scheduleArray.push({ time: minuteToTime(a + d), description: "Báo Chào cờ"});
-            scheduleArray.push({ time: minuteToTime(a + d + cc), description: "Vào tiết 1"});
-            
-            for (let i = 1; i < numLessons; i++) {
-                if (c > 0) scheduleArray.push({ time: minuteToTime(a + i*d + cc + i*b + (i-1)*c), description: `Ra chơi tiết ${i}`});
-                if (d > 0) scheduleArray.push({ time: minuteToTime(a + i*d + cc + i*b + i*c), description: `Dự vào tiết ${i+1}`});
-                scheduleArray.push({ time: minuteToTime(a + (i+1)*d + cc + i*b + i*c), description: `Vào tiết ${i+1}`});
-            }
-            if (c > 0) scheduleArray.push({ time: minuteToTime(a + numLessons*d + cc + numLessons*b + (numLessons-1)*c), description: "Ra về"});
+        const hasSpecial = hasChaoCo || hasChuNhiem;
         
-        } else if (hasChuNhiem) {
-            const e = getVal(`chunhiem_${dayId}`);
-            scheduleArray.push({ time: minuteToTime(a), description: "Vào tiết Chủ nhiệm"});
-            if (d > 0 && e > 0) scheduleArray.push({ time: minuteToTime(a + e), description: "Hết tiết CN, chuẩn bị vào tiết 1"});
-            scheduleArray.push({ time: minuteToTime(a + d + e), description: "Vào tiết 1"});
+        const startTime = getStartTime(`gio_${dayId}`);
+        const lessonTime = getVal(`tiethoc_${dayId}`, 45);
+        const lessonCount = getVal(`sotiet_${dayId}`, 5);
+        
+        const prepareTimeValue = getVal(`duvaotiet_${dayId}`, 3);
+        const hasDuVao = prepareTimeValue > 0;
+        const prepareTime = hasDuVao ? prepareTimeValue : 0;
+        
+        // [THAY ĐỔI LỚN] Đọc chuỗi thời gian ra chơi
+        const breakTimeStr = document.getElementById(`rachoi_${dayId}`).value || '5';
+        const breakTimes = breakTimeStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+        if (breakTimes.length === 0) breakTimes.push(5); // Đảm bảo luôn có ít nhất 1 giá trị
 
-            for (let i = 1; i < numLessons; i++) {
-                if (c > 0) scheduleArray.push({ time: minuteToTime(a + i*d + e + i*b + (i-1)*c), description: `Ra chơi tiết ${i}`});
-                if (d > 0) scheduleArray.push({ time: minuteToTime(a + i*d + e + i*b + i*c), description: `Dự vào tiết ${i+1}`});
-                scheduleArray.push({ time: minuteToTime(a + (i+1)*d + e + i*b + i*c), description: `Vào tiết ${i+1}`});
-            }
-            if (c > 0) scheduleArray.push({ time: minuteToTime(a + numLessons*d + e + numLessons*b + (numLessons-1)*c), description: "Ra về"});
-
-        } else {
-            scheduleArray.push({ time: minuteToTime(a), description: "Vào tiết 1"});
-            for (let i = 1; i <= numLessons; i++) {
-                if(i > 1) scheduleArray.push({ time: minuteToTime(a + (i-1)*d + (i-1)*b + (i-1)*c), description: `Vào tiết ${i}`});
-                if (c > 0) scheduleArray.push({ time: minuteToTime(a + (i-1)*d + i*b + (i-1)*c), description: `Ra chơi tiết ${i}`});
-                if (d > 0 && i < numLessons) scheduleArray.push({ time: minuteToTime(a + (i-1)*d + i*b + i*c), description: `Dự vào tiết ${i+1}`});
+        let specialEventTime = 0;
+        if (hasSpecial) {
+            if (hasChaoCo) {
+                specialEventTime = getVal(`chaoco_${dayId}`, 0);
+            } else if (hasChuNhiem) {
+                specialEventTime = getVal(`chunhiem_${dayId}`, 0);
             }
         }
         
-        const uniqueSchedule = Array.from(new Map(scheduleArray.map(item => [item.time, item])).values());
-        return uniqueSchedule.sort((x, y) => timeToMinute(x.time) - timeToMinute(y.time));
+        // [THÊM] Đọc thời gian chuẩn bị sau sự kiện đặc biệt
+        const specialPrepareTime = hasSpecial ? getVal(`prepare_after_special_${dayId}`, 0) : 0;
+        
+        if (startTime === 0 || lessonTime === 0 || lessonCount === 0) return [];
+
+        let schedule = [];
+        let currentTime = startTime;
+
+        // 2. Xử lý sự kiện đặc biệt (Chào cờ/Sinh hoạt) nếu có
+        if (hasSpecial && specialEventTime > 0) {
+            schedule.push({ time: currentTime, description: hasChaoCo ? "Chào cờ" : "Sinh hoạt" });
+            currentTime += specialEventTime;
+            
+            if (specialPrepareTime > 0) {
+                schedule.push({ time: currentTime, description: "Nghỉ sau SH/CC" });
+                currentTime += specialPrepareTime;
+            }
+        }
+
+        // 3. Vòng lặp qua các tiết học và giờ ra chơi
+        for (let i = 1; i <= lessonCount; i++) {
+            schedule.push({ time: currentTime, description: `Vào tiết ${i}` });
+            currentTime += lessonTime;
+
+            if (i < lessonCount) {
+                // Lấy thời gian ra chơi cho tiết hiện tại
+                const currentBreakTime = breakTimes[i - 1] ?? breakTimes[breakTimes.length - 1]; 
+                
+                if (currentBreakTime > 0) {
+                    schedule.push({ time: currentTime, description: `Ra chơi tiết ${i}` });
+                    currentTime += currentBreakTime;
+
+                    if (prepareTime > 0) {
+                        schedule.push({ time: currentTime, description: `Dự vào tiết ${i + 1}` });
+                        currentTime += prepareTime;
+                    }
+                }
+            }
+        }
+
+        // 4. Thêm sự kiện "Ra về"
+        schedule.push({ time: currentTime, description: "Ra về" });
+        
+        // 5. Lọc các mốc thời gian trùng lặp và sắp xếp
+        const uniqueSchedule = Array.from(new Map(schedule.map(item => [item.time, item])).values());
+        return uniqueSchedule
+            .map(item => ({ ...item, timeInMinutes: item.time, time: minuteToTime(item.time) }))
+            .sort((a, b) => a.timeInMinutes - b.timeInMinutes);
     }
 
     function updatePreviewTable(dayId) {
