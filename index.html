@@ -39,13 +39,42 @@
     .details-container table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     .details-container th, .details-container td { border: 1px solid #444; padding: 8px; text-align: center; font-size:13px; }
     .details-container th { background-color: #3a3a3a; }
+    /* --- [THÊM MỚI] CSS CHO ĐỒNG HỒ --- */
+.clock-container { 
+    text-align: center; 
+    margin: 15px auto 10px auto; 
+    background: #3a3a3a;
+    border: 1px solid #555; 
+    border-radius: 8px; 
+    padding: 8px 10px;
+    width: 90%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.clock {
+    font-size: 2.2em;
+    color: #ffa500;
+    text-shadow: 0 0 5px rgba(255, 165, 0, 0.5);
+    letter-spacing: 2px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+}
+.date-display { 
+    font-size: 0.9em; 
+    color: #f0f0f0; 
+    margin-top: 5px; 
+    font-weight: 500; 
+}
   </style>
 </head>
 <body>
   <div id="main">
     <div id="content">
       <div style="text-align: center;">
-        <h2>CHUÔNG BÁO TỰ ĐỘNG (INTERNET)</h2>
+        <h2>CHUÔNG BÁO TỰ ĐỘNG</h2>
+        <div class="clock-container" id="clock-wrapper" style="display: none;">
+  <div id="clock" class="clock">--:--:--</div>
+  <div id="date" class="date-display">Đang chờ đồng bộ...</div>
+</div>
       </div>
       
       <div id="status" class="status-bar status-disconnected">Đang kết nối...</div>
@@ -93,7 +122,7 @@
 
   <script>
     let client; // Khai báo biến client ở phạm vi toàn cục
-
+    let serverTime = null; // <-- THÊM BIẾN NÀY
     // Cấu hình kết nối
     const brokerUrl = 'wss://8bdef73996bb4030affe9483eecde31b.s1.eu.hivemq.cloud:8884/mqtt';
     const options = {
@@ -132,21 +161,30 @@
       });
 
       // Xử lý khi nhận được tin nhắn từ các topic đã đăng ký
-      client.on('message', (topic, payload) => {
-        const payloadString = payload.toString();
-        console.log(`Nhận được tin nhắn từ topic: ${topic}`);
-        if (topic === 'esp8266/bell/data/status') {
-          // [SỬA LỖI] Phân tích gói dữ liệu JSON mới (có thể có 'schedule' lồng bên trong)
-          try {
+      // Xử lý khi nhận được tin nhắn từ các topic đã đăng ký
+  client.on('message', (topic, payload) => {
+    const payloadString = payload.toString();
+    console.log(`Nhận được tin nhắn từ topic: ${topic}`);
+
+    if (topic === 'esp8266/bell/data/status') { // Khớp với topic ông đã sửa ở Giải pháp 1
+       try {
             const data = JSON.parse(payloadString);
-            // Kiểm tra xem dữ liệu có nằm trong key 'schedule' hay là object gốc
+
+            // [THÊM MỚI] Trích xuất dữ liệu epoch để chạy đồng hồ
+            if (data.epoch && data.epoch > 100000) {
+                setTime(data.epoch);
+                document.getElementById('clock-wrapper').style.display = 'block'; // Hiển thị đồng hồ
+            }
+
+            // Trích xuất dữ liệu lịch (kiểm tra cả cấu trúc cũ và mới)
             const allData = data.schedule ? data.schedule : data;
             populateForm(allData);
-          } catch(e) {
-             console.error("Lỗi parse JSON:", e, payloadString);
-          }
+
+        } catch (e) {
+            console.error("Lỗi parse JSON:", e, payloadString);
         }
-      });
+    }
+  });
 
       // Xử lý khi có lỗi kết nối
       client.on('error', (err) => {
@@ -470,10 +508,28 @@
       table += "</tbody></table>";
       container.innerHTML = table;
     }
+// [THÊM 2 HÀM MỚI NÀY]
+function setTime(e){
+    if(isNaN(e)||e<1e5) {
+        console.log("Invalid epoch received:",e);
+        serverTime=null;
+    } else {
+        serverTime=new Date(1e3*e); // Chuyển epoch giây sang mili giây
+        document.getElementById("date").innerHTML=serverTime.toLocaleDateString("vi-VN",{weekday:"long",year:"numeric",month:"long",day:"numeric",timeZone:"Asia/Ho_Chi_Minh"});
+        updateLocalClock(); // Cập nhật lần đầu
+    }
+}
 
+function updateLocalClock(){
+    if(serverTime){ // Chỉ chạy nếu serverTime đã được thiết lập
+        serverTime.setSeconds(serverTime.getSeconds()+1); // Tăng 1 giây
+        document.getElementById("clock").innerHTML=serverTime.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"Asia/Ho_Chi_Minh",hour12:false});
+    }
+}
     // Hàm này sẽ được gọi khi trang được tải xong
     window.onload = function() { 
         connectToMqtt(); // Gọi hàm kết nối MQTT mới
+        setInterval(updateLocalClock, 1000); // <-- THÊM DÒNG NÀY ĐỂ ĐỒNG HỒ TỰ ĐẾM
         document.querySelector('.tablinks-sang').click();
     };
   </script>
