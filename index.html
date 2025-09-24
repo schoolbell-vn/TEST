@@ -2134,6 +2134,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 <span id="btn-logout">Đăng xuất</span>
             </button>
+            <button class="modern-btn test-button" onclick="openErrorLogModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M11 11h2v6h-2zm0-4h2v2h-2z"></path></svg>
+                <span>Xem Lịch Sử Lỗi</span>
+            </button>
           </div>
         </div>
 
@@ -2309,6 +2313,27 @@
         </div>
     </div>
   </div>
+  <div class="modal-overlay" id="error-log-modal">
+    <div class="modal-content">
+        <h4>Lịch Sử Lỗi Hệ Thống</h4>
+        <div class="interface-table-container" style="max-height: 400px;">
+            <table class="scenario-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">STT</th>
+                        <th style="width: 30%;">Thời gian</th>
+                        <th>Nội dung lỗi</th>
+                    </tr>
+                </thead>
+                <tbody id="error-log-table-body">
+                    </tbody>
+            </table>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-cancel-btn" onclick="closeErrorLogModal()">Đóng</button>
+        </div>
+    </div>
+</div>
   <script>
    // [MỚI] HÀM ĐIỀU KHIỂN CÁC TAB CHÍNH
     function openMainTab(evt, tabName) {
@@ -3289,30 +3314,16 @@ function _load(e) {
         window.allData = null; 
 
         if (t.data) { // Cấu trúc mới
-            if (t.data.epoch) setTime(t.data.epoch);
-            if (t.data.schedule) {
-                window.allData = t.data.schedule;
-                populateForm(t.data.schedule);
-            }
-            if (t.data.holidays) loadHolidayData(t.data.holidays);
-            if (t.data.scenario) {
-                console.log("Nhan du lieu scenario tu MQTT, dang cap nhat UI...");
-                renderSavedScenario(t.data.scenario);
-                
-                // Đồng bộ lại localStorage với dữ liệu mới nhất từ thiết bị
-                localStorage.setItem('savedScenario', JSON.stringify(t.data.scenario));
+            // ... (các khối if cho epoch, schedule, holidays, scenario giữ nguyên) ...
+
+            // [THÊM MỚI VÀO ĐÂY]
+            if (t.data.error_log) {
+                renderErrorLogTable(t.data.error_log);
             }
 
         } else { // Cấu trúc cũ (dự phòng)
-             if (t.epoch) setTime(t.epoch);
-             if (t.schedule) {
-                window.allData = t.schedule;
-                populateForm(t.schedule);
-             }
-             if (t.holidays) loadHolidayData(t.holidays);
-             // Cấu trúc cũ không có kịch bản nên không cần làm gì thêm.
+             // ... (giữ nguyên)
         }
-
     } catch (error) {
         console.error("Lỗi parse JSON từ MQTT:", error);
     }
@@ -3416,91 +3427,56 @@ function loadHolidayData(holidays) {
     // === [NÂNG CẤP] CÁC HÀM TẠO GIAO DIỆN VÀ TÍNH TOÁN LỊCH HỌC ===
     // =======================================================
 
-    const createDayContent = (e, t, o) => {
-        const isMondayMorning = (e === 't2_sang');
-        
-        // Icons
-        const d = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z"></path></svg></div>`;
-        const r = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2zm-1 15H6V7h12v12z"></path></svg></div>`;
-        const l = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 2H6c-1.206 0-3 .799-3 3v14c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.806 5 19s.55-.988 1.012-1H21V4c0-1.103-.897-2-2-2zm0 13H6V5h13v10z"></path></svg></div>`;
-        const c = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 5h-2V2H8v3H6c-1.654 0-3 1.346-3 3v6c0 1.654 1.346 3 3 3h1v1c0 .552.447 1 1 1h6c.553 0 1-.448 1-1v-1h1c1.654 0 3-1.346 3-3V8c0-1.654-1.346-3-3-3zm1 9c0 .552-.447 1-1 1H6c-.553 0-1-.448-1-1V8c0-.552.447-1 1-1h12c.553 0 1 .448 1 1v6z"></path></svg></div>`;
-        const m = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M14 12V8h-4v4H8l4 4 4-4h-2z"></path></svg></div>`;
-        const p = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h2v2H4zm0 5h2v2H4zm0 5h2v2H4zm16-8V6H8v2h12zm0 5H8v2h12zm0 5H8v2h12z"></path></svg></div>`;
-        
-        // [NÂNG CẤP] Tạo HTML cho khu vực sự kiện đặc biệt, bao gồm cả ô nhập thời gian chuẩn bị
-        const specialEventInput = isMondayMorning 
-            ? `<div class="setting-item full-width">${r}<div class="input-wrapper"><label for="chaoco_${e}">TG Chào cờ</label><div class="unit-input"><input id="chaoco_${e}" type="number" value="40"><span>phút</span></div></div></div>`
-            : `<div class="setting-item full-width">${r}<div class="input-wrapper"><label for="chunhiem_${e}">TG Sinh hoạt</label><div class="unit-input"><input id="chunhiem_${e}" type="number" value="15"><span>phút</span></div></div></div>`;
-        const prepareAfterSpecialInput = `<div class="setting-item full-width">${m}<div class="input-wrapper"><label for="prepare_after_special_${e}">TG chuẩn bị sau SH/CC</label><div class="unit-input"><input id="prepare_after_special_${e}" type="number" value="2"><span>phút</span></div></div></div>`;
-        const u = specialEventInput + prepareAfterSpecialInput;
+    // [THAY THẾ TOÀN BỘ HÀM NÀY]
+const createDayContent = (e, t, o) => {
+    const isMondayMorning = (e === 't2_sang');
+    const d = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z"></path></svg></div>`;
+    const r = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2zm-1 15H6V7h12v12z"></path></svg></div>`;
+    const l = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 2H6c-1.206 0-3 .799-3 3v14c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.806 5 19s.55-.988 1.012-1H21V4c0-1.103-.897-2-2-2zm0 13H6V5h13v10z"></path></svg></div>`;
+    const c = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 5h-2V2H8v3H6c-1.654 0-3 1.346-3 3v6c0 1.654 1.346 3 3 3h1v1c0 .552.447 1 1 1h6c.553 0 1-.448 1-1v-1h1c1.654 0 3-1.346 3-3V8c0-1.654-1.346-3-3-3zm1 9c0 .552-.447 1-1 1H6c-.553 0-1-.448-1-1V8c0-.552.447-1 1-1h12c.553 0 1 .448 1 1v6z"></path></svg></div>`;
+    const m = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M14 12V8h-4v4H8l4 4 4-4h-2z"></path></svg></div>`;
+    const p = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h2v2H4zm0 5h2v2H4zm0 5h2v2H4zm16-8V6H8v2h12zm0 5H8v2h12zm0 5H8v2h12z"></path></svg></div>`;
+    
+    const specialEventInput = isMondayMorning 
+        ? `<div class="setting-item full-width">${r}<div class="input-wrapper"><label for="chaoco_${e}">TG Chào cờ</label><div class="unit-input"><input id="chaoco_${e}" type="number" value="40"><span>phút</span></div></div></div>`
+        : `<div class="setting-item full-width">${r}<div class="input-wrapper"><label for="chunhiem_${e}">TG Sinh hoạt</label><div class="unit-input"><input id="chunhiem_${e}" type="number" value="15"><span>phút</span></div></div></div>`;
+    const prepareAfterSpecialInput = `<div class="setting-item full-width">${m}<div class="input-wrapper"><label for="prepare_after_special_${e}">TG chuẩn bị sau SH/CC</label><div class="unit-input"><input id="prepare_after_special_${e}" type="number" value="2"><span>phút</span></div></div></div>`;
+    const u = specialEventInput + prepareAfterSpecialInput;
 
-        let g = ""; // Copy button HTML
-        if (!isMondayMorning) {
-            if (o === 'sang') {
-                g = `<div class="copy-button-container"><button class="copy-button sang" onclick="copyMorningSchedule('${e}')">Sao chép đến T3-CN (Sáng)</button></div>`;
-            } else { // 'chieu'
-                g = `<div class="copy-button-container"><button class="copy-button chieu" onclick="copyAfternoonSchedule('${e}')">Sao chép đến các ngày Chiều</button></div>`;
-            }
-        }
-        
-        return `
-        <div id="${e}" class="tabcontent">
-            <h3 onclick="toggleSettings(this)">Cài đặt Lịch ${t}<br><span class="session-subtitle">(Buổi ${"sang"===o?"Sáng":"Chiều"})</span></h3>
-            
-            <div class="collapsible-settings">
-                <div class="toggle-actions-group">
-                    <div id="toggle_item_enable_${e}" class="toggle-action-item">
-                        <div class="toggle-action-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-1.93.78-3.68 2-4.95L5.59 5.64A8.96 8.96 0 0 0 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.49-1-4.73-2.67-6.41z"/></svg></div>
-                        <div class="toggle-action-text">Kích hoạt Lịch</div>
-                        <label class="switch ${"chieu"===o?"chieu-toggle":""}">
-                            <input type="checkbox" id="enable_${e}" onchange="toggleScheduleActivation('${e}')" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div id="toggle_item_special_${e}" class="toggle-action-item">
-                        <div class="toggle-action-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
-                        <div class="toggle-action-text">${isMondayMorning ? 'Có Giờ Chào cờ' : 'Có Giờ Sinh hoạt'}</div>
-                        <label class="switch ${"chieu"===o?"chieu-toggle":""}">
-                            <input type="checkbox" id="has_special_${e}" onchange="toggleSpecialEvent('${e}')">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div id="toggle_item_duvao_${e}" class="toggle-action-item">
-                        <div class="toggle-action-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20h4c0 1.1-.9 2-2 2s-2-.9-2-2zm10-2.64V11c0-3.35-2.36-6.15-5.5-6.83V3.5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5V4.17C8.36 4.85 6 7.65 6 11v6.36L4 19.72V20h16v-.28l-2-2.36zM15 11h2v2h-2v-2zm-4 0h2v2h-2v-2zm-4 0h2v2H7v-2z"/></svg></div>
-                        <div class="toggle-action-text">Có Chuông Dự vào lớp</div>
-                        <label class="switch ${"chieu"===o?"chieu-toggle":""}">
-                            <input type="checkbox" id="has_duvao_${e}" onchange="toggleDuVao('${e}')" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div id="settings_container_${e}" class="settings-grid-container">
-                    ${g}
-                    <hr style="margin: 15px; background: #414345; height: 1px; opacity: 0.5;">
-
-                    <div class="settings-grid">
-                        <div class="setting-item full-width">${d}<div class="input-wrapper"><label for="gio_${e}">Giờ vào học</label><input id="gio_${e}" type="time"></div></div>
-                        
-                        <div id="special_event_container_${e}" class="settings-grid full-width" style="display: none; grid-template-columns: 1fr; gap: 8px; padding: 0;">${u}</div>
-                        
-                        <div class="setting-item">${l}<div class="input-wrapper"><label for="tiethoc_${e}">TG Tiết học</label><div class="unit-input"><input id="tiethoc_${e}" type="number" value="45"><span>phút</span></div></div></div>
-                        <div class="setting-item">${c}<div class="input-wrapper"><label for="rachoi_${e}">TG Ra chơi</label><div class="unit-input"><input id="rachoi_${e}" type="text" value="5"><span>phút</span></div><div class="input-helper-text">VD: 5,15,5,5</div></div></div>
-                        <div class="setting-item" id="duvao_wrapper_${e}">${m}<div class="input-wrapper"><label for="duvaotiet_${e}">TG Dự vào</label><div class="unit-input"><input id="duvaotiet_${e}" type="number" value="3"><span>phút</span></div></div></div>
-                        <div class="setting-item">${p}<div class="input-wrapper"><label for="sotiet_${e}">Số tiết học</label><div class="unit-input"><input id="sotiet_${e}" type="number" value="5"><span>tiết</span></div></div></div>
-                    </div>
-                    
-                    <button class="modern-btn preview-button" onclick="updatePreviewTable('${e}')" style="height: 40px; font-size: 0.85em; background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; margin-top: 15px;">Cập nhật bảng chi tiết</button>
-
-                </div>
-            </div>
-
-            <details style="margin-top: 15px;">
-                <summary>Xem chi tiết lịch</summary>
-                <div class="details-container" id="details-${e}"></div>
-            </details>
-        </div>`
+    let g = ""; 
+    if (!isMondayMorning) {
+        if (o === 'sang') g = `<div class="copy-button-container"><button class="copy-button sang" onclick="copyMorningSchedule('${e}')">Sao chép đến T3-CN (Sáng)</button></div>`;
+        else g = `<div class="copy-button-container"><button class="copy-button chieu" onclick="copyAfternoonSchedule('${e}')">Sao chép đến các ngày Chiều</button></div>`;
     }
+    
+    return `
+    <div id="${e}" class="tabcontent">
+        <h3 onclick="toggleSettings(this)">Cài đặt Lịch ${t}<br><span class="session-subtitle">(Buổi ${"sang"===o?"Sáng":"Chiều"})</span></h3>
+        <div class="collapsible-settings">
+            <div class="toggle-actions-group">
+                </div>
+            <div id="settings_container_${e}" class="settings-grid-container">
+                ${g}
+                <hr style="margin: 15px; background: #414345; height: 1px; opacity: 0.5;">
+                <div class="settings-grid">
+                    <div class="setting-item full-width">${d}<div class="input-wrapper"><label for="gio_${e}">Giờ vào học</label><input id="gio_${e}" type="time"></div></div>
+                    <div id="special_event_container_${e}" class="settings-grid full-width" style="display: none; grid-template-columns: 1fr; gap: 8px; padding: 0;">${u}</div>
+                    
+                    <div class="setting-item">${l}<div class="input-wrapper"><label for="tiethoc_${e}">TG Tiết học</label><div class="unit-input"><input id="tiethoc_${e}" type="text" value="45"><span>phút</span></div><div class="input-helper-text">VD: 45,45,45,25</div></div></div>
+
+                    <div class="setting-item">${c}<div class="input-wrapper"><label for="rachoi_${e}">TG Ra chơi</label><div class="unit-input"><input id="rachoi_${e}" type="text" value="5"><span>phút</span></div><div class="input-helper-text">VD: 5,15,5,5</div></div></div>
+                    <div class="setting-item" id="duvao_wrapper_${e}">${m}<div class="input-wrapper"><label for="duvaotiet_${e}">TG Dự vào</label><div class="unit-input"><input id="duvaotiet_${e}" type="number" value="3"><span>phút</span></div></div></div>
+                    <div class="setting-item">${p}<div class="input-wrapper"><label for="sotiet_${e}">Số tiết học</label><div class="unit-input"><input id="sotiet_${e}" type="number" value="5"><span>tiết</span></div></div></div>
+                </div>
+                <button class="modern-btn preview-button" onclick="updatePreviewTable('${e}')" style="height: 40px; font-size: 0.85em; background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; margin-top: 15px;">Cập nhật bảng chi tiết</button>
+            </div>
+        </div>
+        <details style="margin-top: 15px;">
+            <summary>Xem chi tiết lịch</summary>
+            <div class="details-container" id="details-${e}"></div>
+        </details>
+    </div>`
+}
     
     const contentWrapper = document.getElementById("tab-content-wrapper");
     const days=[{id:"t2",name:"Thứ 2"},{id:"t3",name:"Thứ 3"},{id:"t4",name:"Thứ 4"},{id:"t5",name:"Thứ 5"},{id:"t6",name:"Thứ 6"},{id:"t7",name:"Thứ 7"},{id:"cn",name:"Chủ Nhật"}];
@@ -3587,57 +3563,53 @@ function loadHolidayData(holidays) {
     }
 
     function gatherDataFromForm(){
-        const e={sohoi:{},lich:{sang:{},chieu:{}}};
-        
-        const bellTypes = ["batdau","vaotiet","rachoi","duvao"];
-        bellTypes.forEach(type => {
-            e.sohoi[type] = {
-                num: parseInt(document.getElementById(`sohoi_${type}`).value) || 0,
-                action: document.getElementById(`sohoi_${type}_action`).value,
-                track: document.getElementById(`sohoi_${type}_track`).value,
-                volume: parseInt(document.getElementById(`sohoi_${type}_volume`).value) || 0
-            };
-            if (type === 'rachoi') {
-                e.sohoi[type].random = document.getElementById('sohoi_rachoi_random').checked;
+    const e={sohoi:{},lich:{sang:{},chieu:{}}};
+    
+    const bellTypes = ["batdau","vaotiet","rachoi","duvao"];
+    bellTypes.forEach(type => {
+        e.sohoi[type] = {
+            num: parseInt(document.getElementById(`sohoi_${type}`).value) || 0
+        };
+    });
+    ["tg_reo", "tg_nghi"].forEach(t=>{
+        e.sohoi[t]=parseInt(document.getElementById(`sohoi_${t}`).value)||0
+    });
+
+    ["sang","chieu"].forEach(t=>{
+        days.forEach(o=>{
+            const dayId = `${o.id}_${t}`;
+            const n=e.lich[t][o.id]={};
+            n.enabled=document.getElementById(`enable_${dayId}`).checked;
+            n.gio=document.getElementById(`gio_${dayId}`).value;
+
+            // [SỬA ĐỔI] Lấy chuỗi giá trị thay vì số
+            n.tiethoc=document.getElementById(`tiethoc_${dayId}`).value||"45"; 
+            
+            n.rachoi=document.getElementById(`rachoi_${dayId}`).value || "5";
+            n.duvaotiet=parseInt(document.getElementById(`duvaotiet_${dayId}`).value)||0;
+            n.sotiet=parseInt(document.getElementById(`sotiet_${dayId}`).value)||0;
+            
+            const chaocoInput = document.getElementById(`chaoco_${dayId}`);
+            if(chaocoInput) n.chaoco=parseInt(chaocoInput.value)||0;
+            
+            const chunhiemInput = document.getElementById(`chunhiem_${dayId}`);
+            if(chunhiemInput) n.chunhiem=parseInt(chunhiemInput.value)||0;
+            
+            const prepareSpecialInput = document.getElementById(`prepare_after_special_${dayId}`);
+            if(prepareSpecialInput) {
+                const val = parseInt(prepareSpecialInput.value);
+                n.prepare_after_special = isNaN(val) ? 0 : val;
             }
-        });
-        ["tg_reo", "tg_nghi"].forEach(t=>{
-            e.sohoi[t]=parseInt(document.getElementById(`sohoi_${t}`).value)||0
-        });
 
-        ["sang","chieu"].forEach(t=>{
-            days.forEach(o=>{
-                const dayId = `${o.id}_${t}`;
-                const n=e.lich[t][o.id]={};
-                n.enabled=document.getElementById(`enable_${dayId}`).checked;
-                n.gio=document.getElementById(`gio_${dayId}`).value;
-                n.tiethoc=parseInt(document.getElementById(`tiethoc_${dayId}`).value)||0;
-                n.rachoi=document.getElementById(`rachoi_${dayId}`).value || "5"; // [NÂNG CẤP]
-                n.duvaotiet=parseInt(document.getElementById(`duvaotiet_${dayId}`).value)||0;
-                n.sotiet=parseInt(document.getElementById(`sotiet_${dayId}`).value)||0;
-                
-                const chaocoInput = document.getElementById(`chaoco_${dayId}`);
-                if(chaocoInput) n.chaoco=parseInt(chaocoInput.value)||0;
-                
-                const chunhiemInput = document.getElementById(`chunhiem_${dayId}`);
-                if(chunhiemInput) n.chunhiem=parseInt(chunhiemInput.value)||0;
-                
-                // [NÂNG CẤP & SỬA LỖI] Thu thập dữ liệu từ trường mới và xử lý đúng giá trị 0
-                const prepareSpecialInput = document.getElementById(`prepare_after_special_${dayId}`);
-                if(prepareSpecialInput) {
-                    const val = parseInt(prepareSpecialInput.value);
-                    n.prepare_after_special = isNaN(val) ? 0 : val;
-                }
+            const hasSpecialCheckbox = document.getElementById(`has_special_${dayId}`);
+            if (hasSpecialCheckbox) n.has_special_event = hasSpecialCheckbox.checked;
 
-                const hasSpecialCheckbox = document.getElementById(`has_special_${dayId}`);
-                if (hasSpecialCheckbox) n.has_special_event = hasSpecialCheckbox.checked;
-
-                const hasDuVaoCheckbox = document.getElementById(`has_duvao_${dayId}`);
-                if (hasDuVaoCheckbox) n.has_duvao_bell = hasDuVaoCheckbox.checked;
-            })
-        });
-        return e;
-    }
+            const hasDuVaoCheckbox = document.getElementById(`has_duvao_${dayId}`);
+            if (hasDuVaoCheckbox) n.has_duvao_bell = hasDuVaoCheckbox.checked;
+        })
+    });
+    return e;
+}
 
     function selectDay(evt, day) {
         selectedDay = day;
@@ -3676,70 +3648,69 @@ function loadHolidayData(holidays) {
 
     // [NÂNG CẤP TOÀN BỘ] Hàm tính toán lịch học được viết lại để linh hoạt hơn
     function calculateSchedule(dayId) {
-        const isEnabled = document.getElementById(`enable_${dayId}`)?.checked;
-        if (!isEnabled) return []; // [MỚI] Trả về mảng rỗng nếu lịch bị tắt
+    const isEnabled = document.getElementById(`enable_${dayId}`)?.checked;
+    if (!isEnabled) return [];
 
-        const hasSpecial = document.getElementById(`has_special_${dayId}`)?.checked;
-        const hasDuVao = document.getElementById(`has_duvao_${dayId}`)?.checked;
-        
-        const startTime = timeToMinute(document.getElementById(`gio_${dayId}`).value);
-        const lessonTime = getVal(`tiethoc_${dayId}`, 45);
-        const lessonCount = getVal(`sotiet_${dayId}`, 5);
-        const prepareTime = hasDuVao ? getVal(`duvaotiet_${dayId}`, 3) : 0;
-        
-        const breakTimeStr = document.getElementById(`rachoi_${dayId}`).value || '5';
-        const breakTimes = breakTimeStr.split(',').map(s => parseInt(s.trim()) || 0);
+    const hasSpecial = document.getElementById(`has_special_${dayId}`)?.checked;
+    const hasDuVao = document.getElementById(`has_duvao_${dayId}`)?.checked;
+    
+    const startTime = timeToMinute(document.getElementById(`gio_${dayId}`).value);
+    
+    // [SỬA ĐỔI] Đọc và tách chuỗi thời gian tiết học
+    const lessonTimeStr = document.getElementById(`tiethoc_${dayId}`).value || '45';
+    const lessonTimes = lessonTimeStr.split(',').map(s => parseInt(s.trim()) || 0);
+    
+    const lessonCount = getVal(`sotiet_${dayId}`, 5);
+    const prepareTime = hasDuVao ? getVal(`duvaotiet_${dayId}`, 3) : 0;
+    
+    const breakTimeStr = document.getElementById(`rachoi_${dayId}`).value || '5';
+    const breakTimes = breakTimeStr.split(',').map(s => parseInt(s.trim()) || 0);
 
-        const isMondayMorning = dayId.includes('t2_sang');
-        const specialEventTime = hasSpecial ? getVal(isMondayMorning ? `chaoco_${dayId}` : `chunhiem_${dayId}`) : 0;
-        
-        // [SỬA LỖI] Mặc định thời gian chuẩn bị là 0 nếu để trống, theo yêu cầu
-        const specialPrepareTime = hasSpecial ? getVal(`prepare_after_special_${dayId}`, 0) : 0;
-        
-        if (startTime === 0 || lessonTime === 0 || lessonCount === 0) return [];
+    const isMondayMorning = dayId.includes('t2_sang');
+    const specialEventTime = hasSpecial ? getVal(isMondayMorning ? `chaoco_${dayId}` : `chunhiem_${dayId}`) : 0;
+    const specialPrepareTime = hasSpecial ? getVal(`prepare_after_special_${dayId}`, 0) : 0;
+    
+    if (startTime === 0 || lessonTimes.length === 0 || lessonTimes[0] === 0 || lessonCount === 0) return [];
 
-        let schedule = [];
-        let currentTime = startTime;
+    let schedule = [];
+    let currentTime = startTime;
 
-        // 1. Xử lý sự kiện đặc biệt (Chào cờ/Sinh hoạt) nếu có
-        if (hasSpecial && specialEventTime > 0) {
-            schedule.push({ time: currentTime, description: isMondayMorning ? "Chào cờ" : "Sinh hoạt" });
-            currentTime += specialEventTime;
-            
-            if (specialPrepareTime > 0) {
-                schedule.push({ time: currentTime, description: "Nghỉ sau SH/CC" });
-                currentTime += specialPrepareTime;
-            }
+    if (hasSpecial && specialEventTime > 0) {
+        schedule.push({ time: currentTime, description: isMondayMorning ? "Chào cờ" : "Sinh hoạt" });
+        currentTime += specialEventTime;
+        if (specialPrepareTime > 0) {
+            schedule.push({ time: currentTime, description: "Nghỉ sau SH/CC" });
+            currentTime += specialPrepareTime;
         }
+    }
 
-        // 2. Vòng lặp qua các tiết học và giờ ra chơi
-        for (let i = 1; i <= lessonCount; i++) {
-            schedule.push({ time: currentTime, description: `Vào tiết ${i}` });
-            currentTime += lessonTime;
+    // [SỬA ĐỔI] Vòng lặp sử dụng mảng thời gian tiết học
+    for (let i = 1; i <= lessonCount; i++) {
+        schedule.push({ time: currentTime, description: `Vào tiết ${i}` });
+        
+        // Lấy thời gian của tiết học hiện tại, nếu thiếu thì dùng giá trị cuối cùng
+        const currentLessonTime = lessonTimes[i - 1] ?? lessonTimes[lessonTimes.length - 1];
+        currentTime += currentLessonTime;
 
-            if (i < lessonCount) {
-                const currentBreakTime = breakTimes[i - 1] ?? breakTimes[breakTimes.length - 1]; 
-                
-                if (currentBreakTime > 0) {
-                    schedule.push({ time: currentTime, description: `Ra chơi tiết ${i}` });
-                    currentTime += currentBreakTime;
-
-                    if (prepareTime > 0) {
-                        schedule.push({ time: currentTime, description: `Dự vào tiết ${i + 1}` });
-                        currentTime += prepareTime;
-                    }
+        if (i < lessonCount) {
+            const currentBreakTime = breakTimes[i - 1] ?? breakTimes[breakTimes.length - 1]; 
+            if (currentBreakTime > 0) {
+                schedule.push({ time: currentTime, description: `Ra chơi tiết ${i}` });
+                currentTime += currentBreakTime;
+                if (prepareTime > 0) {
+                     schedule.push({ time: currentTime, description: `Dự vào tiết ${i + 1}` });
+                     currentTime += prepareTime;
                 }
             }
         }
-
-        // 3. Thêm sự kiện "Ra về"
-        schedule.push({ time: currentTime, description: "Ra về" });
-        
-        const uniqueSchedule = Array.from(new Map(schedule.map(item => [item.time, item])).values());
-        return uniqueSchedule
-            .map(item => ({ ...item, timeInMinutes: item.time, time: minuteToTime(item.time) }))
-            .sort((a, b) => a.timeInMinutes - b.timeInMinutes);
     }
+
+    schedule.push({ time: currentTime, description: "Ra về" });
+    const uniqueSchedule = Array.from(new Map(schedule.map(item => [item.time, item])).values());
+    return uniqueSchedule
+        .map(item => ({ ...item, timeInMinutes: item.time, time: minuteToTime(item.time) }))
+        .sort((a, b) => a.timeInMinutes - b.timeInMinutes);
+}
 
     function updatePreviewTable(e){const t=document.getElementById(`enable_${e}`).checked,o=document.getElementById("details-"+e);if(!o)return;if(!t)return void(o.innerHTML="<p style='text-align:center; padding: 10px;'>Lịch này đang tắt.</p>");const n=calculateSchedule(e);let a="<table><thead><tr><th>STT</th><th>Thời gian</th><th>Nội dung</th></tr></thead><tbody>";n.forEach((e,t)=>{a+=`<tr><td>${t+1}</td><td>${e.time}</td><td>${e.description}</td></tr>`}),a+="</tbody></table>",o.innerHTML=a}
     
@@ -4382,6 +4353,37 @@ function showNotification(msg, type="info") {
     div.classList.remove("show");
     if (div.parentNode) div.parentNode.removeChild(div);
   }, 3000);
+}
+// [THÊM MỚI] CÁC HÀM CHO LỊCH SỬ LỖI
+function openErrorLogModal() {
+    document.getElementById('error-log-modal').classList.add('visible');
+}
+
+function closeErrorLogModal() {
+    document.getElementById('error-log-modal').classList.remove('visible');
+}
+
+function renderErrorLogTable(logArray) {
+    const tableBody = document.getElementById('error-log-table-body');
+    if (!tableBody) return;
+    
+    if (!logArray || !Array.isArray(logArray) || logArray.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="3" class="list-placeholder">Không có lỗi nào được ghi nhận.</td></tr>`;
+        return;
+    }
+
+    let tableHTML = '';
+    // Đảo ngược mảng để hiển thị lỗi mới nhất lên đầu
+    logArray.slice().reverse().forEach((log, index) => {
+        tableHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${log.time || 'N/A'}</td>
+                <td style="text-align: left; padding-left: 10px;">${log.msg || ''}</td>
+            </tr>
+        `;
+    });
+    tableBody.innerHTML = tableHTML;
 }
 </script>
 
