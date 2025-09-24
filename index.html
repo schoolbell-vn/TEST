@@ -3314,16 +3314,34 @@ function _load(e) {
         window.allData = null; 
 
         if (t.data) { // Cấu trúc mới
-            // ... (các khối if cho epoch, schedule, holidays, scenario giữ nguyên) ...
-
+            if (t.data.epoch) setTime(t.data.epoch);
+            if (t.data.schedule) {
+                window.allData = t.data.schedule;
+                populateForm(t.data.schedule);
+            }
+            if (t.data.holidays) loadHolidayData(t.data.holidays);
+            if (t.data.scenario) {
+                console.log("Nhan du lieu scenario tu MQTT, dang cap nhat UI...");
+                renderSavedScenario(t.data.scenario);
+                
+                // Đồng bộ lại localStorage với dữ liệu mới nhất từ thiết bị
+                localStorage.setItem('savedScenario', JSON.stringify(t.data.scenario));
+            }
             // [THÊM MỚI VÀO ĐÂY]
             if (t.data.error_log) {
                 renderErrorLogTable(t.data.error_log);
             }
 
         } else { // Cấu trúc cũ (dự phòng)
-             // ... (giữ nguyên)
+             if (t.epoch) setTime(t.epoch);
+             if (t.schedule) {
+                window.allData = t.schedule;
+                populateForm(t.schedule);
+             }
+             if (t.holidays) loadHolidayData(t.holidays);
+             // Cấu trúc cũ không có kịch bản nên không cần làm gì thêm.
         }
+
     } catch (error) {
         console.error("Lỗi parse JSON từ MQTT:", error);
     }
