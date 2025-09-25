@@ -282,6 +282,7 @@
         padding: 8px 10px;
         box-shadow: 0 2px 12px rgba(241, 196, 15, 0.10), 0 2px 5px rgba(0,0,0,0.08);
         width: 90%;
+        cursor: pointer; /* << THÊM DÒNG NÀY */
     }
     .clock {
         font-size: 2.5em;
@@ -1733,7 +1734,7 @@
         <h2 id="index-main-title" style="margin: 0; padding: 0;">CHUÔNG BÁO TỰ ĐỘNG</h2>
         <p id="school-name-status" style="margin: 5px 0 0 0; padding: 0; font-size: 1.1em; font-weight: bold; text-shadow: 0 2px 8px #000; letter-spacing: 1.2px;">THPT YÊN KHÁNH A</p>
       </div>
-      <div class="clock-container" id="clock-wrapper" style="display: none;">
+      <div class="clock-container" id="clock-wrapper" style="display: none;" onclick="syncTimeManually()">
         <div id="clock" class="clock">--:--:--</div>
         <div id="date" class="date-display">Đang chờ đồng bộ...</div>
       </div>
@@ -2120,22 +2121,28 @@
         </div>
         
         <div id="tab-he-thong" class="main-tab-content">
-          <div class="button-section">
-            <button class="modern-btn interface-button" onclick="openInterfaceSettingsModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path><path d="M12 22.31V12h10.31"></path><path d="M12 12H1.69"></path><path d="m12 12 5.66-5.66"></path></svg>
-                <span id="btn-interface-settings">Cài đặt giao diện</span>
-            </button>
-            <button class="modern-btn advanced-button" onclick="openAdvancedSettingsModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                <span id="btn-advanced-settings">Cài đặt nâng cao</span>
-            </button>
-            <div class="divider-yellow" style="margin: 10px auto;"></div>
-            <button class="modern-btn logout-button" onclick="logout()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                <span id="btn-logout">Đăng xuất</span>
-            </button>
-          </div>
-        </div>
+  <div class="button-section">
+    <button class="modern-btn advanced-button" onclick="syncTimeManually()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z"></path></svg>
+        <span>Đồng bộ thời gian thủ công</span>
+    </button>
+    <div class="divider-yellow" style="margin: 10px auto;"></div>
+    
+    <button class="modern-btn interface-button" onclick="openInterfaceSettingsModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path><path d="M12 22.31V12h10.31"></path><path d="M12 12H1.69"></path><path d="m12 12 5.66-5.66"></path></svg>
+        <span id="btn-interface-settings">Cài đặt giao diện</span>
+    </button>
+    <button class="modern-btn advanced-button" onclick="openAdvancedSettingsModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <span id="btn-advanced-settings">Cài đặt nâng cao</span>
+    </button>
+    <div class="divider-yellow" style="margin: 10px auto;"></div>
+    <button class="modern-btn logout-button" onclick="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span id="btn-logout">Đăng xuất</span>
+    </button>
+  </div>
+</div>
 
       </div>
       </div>
@@ -2973,7 +2980,31 @@
         const sec = Math.floor(seconds % 60);
         return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
     }
-    // KẾT THÚC CÁC HÀM VỀ NHẠC
+  
+    function syncTimeManually() {
+        if (!client || !client.connected) {
+            return showNotification("Chưa kết nối máy chủ!", 'error');
+        }
+
+        // Hỏi người dùng để xác nhận
+        if (!confirm("Ông có muốn đồng bộ thời gian của thiết bị ESP32 theo giờ trên điện thoại/máy tính này không?")) {
+            return;
+        }
+
+        // 1. Lấy thời gian hiện tại từ trình duyệt (tính bằng giây)
+        const nowEpoch = Math.floor(new Date().getTime() / 1000);
+
+        // 2. Tạo payload để gửi đi
+        const payload = {
+            command: "MANUAL_SYNC_TIME",
+            epoch: nowEpoch
+        };
+
+        // 3. Gửi lệnh lên ESP32
+        client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+        showNotification("Đã gửi yêu cầu đồng bộ thời gian...", 'info');
+    }
+    // =======================================================
 
     function showNotification(message, type = 'success') {
         const area = document.getElementById('notification-area');
@@ -3484,7 +3515,7 @@ function loadHolidayData(holidays) {
                         
                         <div id="special_event_container_${e}" class="settings-grid full-width" style="display: none; grid-template-columns: 1fr; gap: 8px; padding: 0;">${u}</div>
                         
-                        <div class="setting-item">${l}<div class="input-wrapper"><label for="tiethoc_${e}">TG Tiết học</label><div class="unit-input"><input id="tiethoc_${e}" type="text" value="45"><span>phút</span></div><div class="input-helper-text">VD: 45,45,45,35</div></div></div>
+                        <div class="setting-item">${l}<div class="input-wrapper"><label for="tiethoc_${e}">TG Tiết học</label><div class="unit-input"><input id="tiethoc_${e}" type="number" value="45"><span>phút</span></div></div></div>
                         <div class="setting-item">${c}<div class="input-wrapper"><label for="rachoi_${e}">TG Ra chơi</label><div class="unit-input"><input id="rachoi_${e}" type="text" value="5"><span>phút</span></div><div class="input-helper-text">VD: 5,15,5,5</div></div></div>
                         <div class="setting-item" id="duvao_wrapper_${e}">${m}<div class="input-wrapper"><label for="duvaotiet_${e}">TG Dự vào</label><div class="unit-input"><input id="duvaotiet_${e}" type="number" value="3"><span>phút</span></div></div></div>
                         <div class="setting-item">${p}<div class="input-wrapper"><label for="sotiet_${e}">Số tiết học</label><div class="unit-input"><input id="sotiet_${e}" type="number" value="5"><span>tiết</span></div></div></div>
@@ -3611,7 +3642,7 @@ function loadHolidayData(holidays) {
                 const n=e.lich[t][o.id]={};
                 n.enabled=document.getElementById(`enable_${dayId}`).checked;
                 n.gio=document.getElementById(`gio_${dayId}`).value;
-                n.tiethoc=document.getElementById(`tiethoc_${dayId}`).value || "45";
+                n.tiethoc=parseInt(document.getElementById(`tiethoc_${dayId}`).value)||0;
                 n.rachoi=document.getElementById(`rachoi_${dayId}`).value || "5"; // [NÂNG CẤP]
                 n.duvaotiet=parseInt(document.getElementById(`duvaotiet_${dayId}`).value)||0;
                 n.sotiet=parseInt(document.getElementById(`sotiet_${dayId}`).value)||0;
@@ -3683,8 +3714,7 @@ function loadHolidayData(holidays) {
         const hasDuVao = document.getElementById(`has_duvao_${dayId}`)?.checked;
         
         const startTime = timeToMinute(document.getElementById(`gio_${dayId}`).value);
-        const lessonTimeStr = document.getElementById(`tiethoc_${dayId}`).value || '45';
-        const lessonTimes = lessonTimeStr.split(',').map(s => parseInt(s.trim()) || 0);
+        const lessonTime = getVal(`tiethoc_${dayId}`, 45);
         const lessonCount = getVal(`sotiet_${dayId}`, 5);
         const prepareTime = hasDuVao ? getVal(`duvaotiet_${dayId}`, 3) : 0;
         
@@ -3716,8 +3746,7 @@ function loadHolidayData(holidays) {
         // 2. Vòng lặp qua các tiết học và giờ ra chơi
         for (let i = 1; i <= lessonCount; i++) {
             schedule.push({ time: currentTime, description: `Vào tiết ${i}` });
-            const currentLessonTime = lessonTimes[i - 1] ?? lessonTimes[lessonTimes.length - 1]; 
-            currentTime += currentLessonTime;
+            currentTime += lessonTime;
 
             if (i < lessonCount) {
                 const currentBreakTime = breakTimes[i - 1] ?? breakTimes[breakTimes.length - 1]; 
