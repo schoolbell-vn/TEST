@@ -1734,7 +1734,7 @@
         <h2 id="index-main-title" style="margin: 0; padding: 0;">CHUÔNG BÁO TỰ ĐỘNG</h2>
         <p id="school-name-status" style="margin: 5px 0 0 0; padding: 0; font-size: 1.1em; font-weight: bold; text-shadow: 0 2px 8px #000; letter-spacing: 1.2px;">THPT YÊN KHÁNH A</p>
       </div>
-      <div class="clock-container" id="clock-wrapper" style="display: none;" onclick="syncTimeManually()">
+     <div class="clock-container" id="clock-wrapper" style="display: none;">
         <div id="clock" class="clock">--:--:--</div>
         <div id="date" class="date-display">Đang chờ đồng bộ...</div>
       </div>
@@ -2123,11 +2123,6 @@
         
         <div id="tab-he-thong" class="main-tab-content">
   <div class="button-section">
-    <button class="modern-btn advanced-button" onclick="syncTimeManually()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z"></path></svg>
-        <span>Đồng bộ thời gian thủ công</span>
-    </button>
-    <div class="divider-yellow" style="margin: 10px auto;"></div>
     
     <button class="modern-btn interface-button" onclick="openInterfaceSettingsModal()">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path><path d="M12 22.31V12h10.31"></path><path d="M12 12H1.69"></path><path d="m12 12 5.66-5.66"></path></svg>
@@ -3057,30 +3052,7 @@
         const sec = Math.floor(seconds % 60);
         return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
     }
-  
-    function syncTimeManually() {
-        if (!client || !client.connected) {
-            return showNotification("Chưa kết nối máy chủ!", 'error');
-        }
 
-        // Hỏi người dùng để xác nhận
-        if (!confirm("Ông có muốn đồng bộ thời gian của thiết bị ESP32 theo giờ trên điện thoại/máy tính này không?")) {
-            return;
-        }
-
-        // 1. Lấy thời gian hiện tại từ trình duyệt (tính bằng giây)
-        const nowEpoch = Math.floor(new Date().getTime() / 1000);
-
-        // 2. Tạo payload để gửi đi
-        const payload = {
-            command: "MANUAL_SYNC_TIME",
-            epoch: nowEpoch
-        };
-
-        // 3. Gửi lệnh lên ESP32
-        client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-        showNotification("Đã gửi yêu cầu đồng bộ thời gian...", 'info');
-    }
     // =======================================================
 
     function showNotification(message, type = 'success') {
