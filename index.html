@@ -1738,7 +1738,8 @@
         <div id="clock" class="clock">--:--:--</div>
         <div id="date" class="date-display">Đang chờ đồng bộ...</div>
       </div>
-      
+      <div id="countdown-status" style="text-align: center; color: #00e6ff; font-weight: bold; font-size: 1.1em; margin-top: -5px; margin-bottom: 10px; height: 25px; text-shadow: 0 0 8px #00e6ff88;">
+    </div>
       <div class="main-tabs">
         <button class="main-tab-button active" onclick="openMainTab(event, 'tab-lich-hoc')">🗓️ Lịch Học</button>
         <button class="main-tab-button" onclick="openMainTab(event, 'tab-hen-gio')">⏱️ Hẹn Giờ</button>
@@ -2672,7 +2673,7 @@
     
     let client, serverTime = null, targetDevice = null, targetAction = null, otaInProgress = false;
     let selectedDay = 't2', selectedSession = 'sang';
-    
+    let todaySchedule = []; 
     const brokerUrl="wss://8bdef73996bb4030affe9483eecde31b.s1.eu.hivemq.cloud:8884/mqtt";
     const options={username:"ngoctuyka",password:"Tu12345678@",clientId:"WebAppClient_"+parseInt(1e3*Math.random()),reconnectPeriod:2e3,protocolVersion: 4};
     
@@ -2841,7 +2842,83 @@
             musicOptions.classList.remove('visible');
         }
     }
+    function updateClockAndCountdown() {
+    updateLocalClock(); // Gọi hàm cập nhật đồng hồ cũ
+    updateCountdown();  // Gọi hàm cập nhật đếm ngược mới
+}
+    function calculateAndStoreTodaySchedule() {
+        if (!window.allData || !window.allData.lich) {
+            todaySchedule = [];
+            return;
+        }
 
+        const dayMap = ['cn', 't2', 't3', 't4', 't5', 't6', 't7'];
+        const currentDayKey = dayMap[new Date().getDay()];
+
+        // Tính toán lịch cho cả buổi sáng và chiều
+        const morningSchedule = calculateSchedule(`${currentDayKey}_sang`);
+        const afternoonSchedule = calculateSchedule(`${currentDayKey}_chieu`);
+
+        // Gộp lịch 2 buổi và sắp xếp lại theo thời gian
+        todaySchedule = [...morningSchedule, ...afternoonSchedule].sort((a, b) => a.timeInMinutes - b.timeInMinutes);
+        console.log("Đã tính toán lịch cho hôm nay:", todaySchedule);
+    }
+    function updateCountdown() {
+    const countdownEl = document.getElementById('countdown-status');
+    if (!serverTime || !countdownEl || todaySchedule.length === 0) {
+        countdownEl.innerHTML = ''; // Xóa nội dung nếu không có dữ liệu
+        return;
+    }
+
+    // Lấy thời gian hiện tại (tính bằng phút từ đầu ngày)
+    const nowInMinutes = serverTime.getHours() * 60 + serverTime.getMinutes();
+
+    // Tìm sự kiện tiếp theo trong lịch trình của ngày hôm nay
+    const nextEvent = todaySchedule.find(event => event.timeInMinutes > nowInMinutes);
+
+    if (!nextEvent) {
+        countdownEl.innerHTML = "Đã hết lịch học hôm nay.";
+        return;
+    }
+
+    // Tính toán thời gian còn lại (tính bằng giây)
+    const nowInSeconds = serverTime.getHours() * 3600 + serverTime.getMinutes() * 60 + serverTime.getSeconds();
+    const nextEventInSeconds = nextEvent.timeInMinutes * 60;
+    const secondsRemaining = nextEventInSeconds - nowInSeconds;
+
+    if (secondsRemaining < 0) return; // Bỏ qua nếu có lỗi tính toán
+
+    // Định dạng thời gian còn lại thành MM:SS
+    const minutes = Math.floor(secondsRemaining / 60);
+    const seconds = secondsRemaining % 60;
+    const countdownText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    // Tạo thông báo mô tả sự kiện
+    let message = "";
+    const description = nextEvent.description;
+
+    if (description.includes("Vào tiết")) {
+        message = `Còn ${countdownText} phút ${description.toLowerCase()}`;
+    } else if (description.includes("Ra chơi")) {
+        // "Ra chơi tiết 1" nghĩa là "Hết tiết 1"
+        const tiet = description.match(/\d+/); // Lấy số từ chuỗi
+        if (tiet) {
+            message = `Còn ${countdownText} phút hết tiết ${tiet[0]}`;
+        }
+    } else if (description.includes("Ra về")) {
+        message = `Còn ${countdownText} phút là tan học`;
+    } else if (description.includes("Dự vào")) {
+        message = `Còn ${countdownText} phút chuẩn bị vào lớp`;
+    } else if (description.includes("Chào cờ") || description.includes("Sinh hoạt")) {
+        message = `Còn ${countdownText} phút bắt đầu ${description.toLowerCase()}`;
+    } else {
+        // Trường hợp dự phòng
+        message = `Sự kiện tiếp theo: ${description} sau ${countdownText}`;
+    }
+
+    // Cập nhật nội dung lên giao diện
+    countdownEl.innerHTML = message;
+}
     // [THÊM MỚI] Hàm cập nhật danh sách bài hát cho các dropdown trong cài đặt
     function updateTrackSelectors(playlist) {
         const bellTypes = ['batdau', 'vaotiet', 'rachoi', 'duvao'];
@@ -3323,6 +3400,7 @@ function _load(e) {
             if (t.data.epoch) setTime(t.data.epoch);
             if (t.data.schedule) {
                 window.allData = t.data.schedule;
+                calculateAndStoreTodaySchedule();
                 populateForm(t.data.schedule);
             }
             if (t.data.holidays) loadHolidayData(t.data.holidays);
@@ -3338,6 +3416,7 @@ function _load(e) {
              if (t.epoch) setTime(t.epoch);
              if (t.schedule) {
                 window.allData = t.schedule;
+                calculateAndStoreTodaySchedule();
                 populateForm(t.schedule);
              }
              if (t.holidays) loadHolidayData(t.holidays);
@@ -4258,7 +4337,7 @@ function toggleHoliday(dateString) {
     window.onload = function() { 
         loadInterfaceSettings();
         connectToMqtt();
-        setInterval(updateLocalClock, 1000);
+        setInterval(updateClockAndCountdown, 1000);
 
         // [SỬA LỖI] Tải kịch bản đã lưu từ bộ nhớ trình duyệt ngay khi vào trang
         try {
@@ -4424,6 +4503,7 @@ function showNotification(msg, type="info") {
     if (div.parentNode) div.parentNode.removeChild(div);
   }, 3000);
 }
+
 </script>
 
 </body>
