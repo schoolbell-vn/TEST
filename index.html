@@ -3372,8 +3372,9 @@ function _load(e) {
             if (t.data.epoch) setTime(t.data.epoch);
             if (t.data.schedule) {
                 window.allData = t.data.schedule;
-                calculateAndStoreTodaySchedule();
                 populateForm(t.data.schedule);
+                calculateAndStoreTodaySchedule();
+                
             }
             if (t.data.holidays) loadHolidayData(t.data.holidays);
             if (t.data.scenario) {
@@ -3388,8 +3389,9 @@ function _load(e) {
              if (t.epoch) setTime(t.epoch);
              if (t.schedule) {
                 window.allData = t.schedule;
-                calculateAndStoreTodaySchedule();
                 populateForm(t.schedule);
+                calculateAndStoreTodaySchedule();
+                
              }
              if (t.holidays) loadHolidayData(t.holidays);
              // Cấu trúc cũ không có kịch bản nên không cần làm gì thêm.
