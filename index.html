@@ -3515,7 +3515,7 @@ function loadHolidayData(holidays) {
                         
                         <div id="special_event_container_${e}" class="settings-grid full-width" style="display: none; grid-template-columns: 1fr; gap: 8px; padding: 0;">${u}</div>
                         
-                        <div class="setting-item">${l}<div class="input-wrapper"><label for="tiethoc_${e}">TG Tiết học</label><div class="unit-input"><input id="tiethoc_${e}" type="number" value="45"><span>phút</span></div></div></div>
+                        <div class="setting-item">${l}<div class="input-wrapper"><label for="tiethoc_${e}">TG Tiết học</label><div class="unit-input"><input id="tiethoc_${e}" type="text" value="45"><span>phút</span></div><div class="input-helper-text">VD: 45,45,45,30</div></div></div>
                         <div class="setting-item">${c}<div class="input-wrapper"><label for="rachoi_${e}">TG Ra chơi</label><div class="unit-input"><input id="rachoi_${e}" type="text" value="5"><span>phút</span></div><div class="input-helper-text">VD: 5,15,5,5</div></div></div>
                         <div class="setting-item" id="duvao_wrapper_${e}">${m}<div class="input-wrapper"><label for="duvaotiet_${e}">TG Dự vào</label><div class="unit-input"><input id="duvaotiet_${e}" type="number" value="3"><span>phút</span></div></div></div>
                         <div class="setting-item">${p}<div class="input-wrapper"><label for="sotiet_${e}">Số tiết học</label><div class="unit-input"><input id="sotiet_${e}" type="number" value="5"><span>tiết</span></div></div></div>
@@ -3642,7 +3642,7 @@ function loadHolidayData(holidays) {
                 const n=e.lich[t][o.id]={};
                 n.enabled=document.getElementById(`enable_${dayId}`).checked;
                 n.gio=document.getElementById(`gio_${dayId}`).value;
-                n.tiethoc=parseInt(document.getElementById(`tiethoc_${dayId}`).value)||0;
+                n.tiethoc=document.getElementById(`tiethoc_${dayId}`).value || "45";
                 n.rachoi=document.getElementById(`rachoi_${dayId}`).value || "5"; // [NÂNG CẤP]
                 n.duvaotiet=parseInt(document.getElementById(`duvaotiet_${dayId}`).value)||0;
                 n.sotiet=parseInt(document.getElementById(`sotiet_${dayId}`).value)||0;
@@ -3707,70 +3707,80 @@ function loadHolidayData(holidays) {
 
     // [NÂNG CẤP TOÀN BỘ] Hàm tính toán lịch học được viết lại để linh hoạt hơn
     function calculateSchedule(dayId) {
-        const isEnabled = document.getElementById(`enable_${dayId}`)?.checked;
-        if (!isEnabled) return []; // [MỚI] Trả về mảng rỗng nếu lịch bị tắt
+    const getVal = (id, defaultValue = 0) => {
+        const el = document.getElementById(id);
+        if (!el) return defaultValue;
+        const parsedValue = parseInt(el.value);
+        return isNaN(parsedValue) ? defaultValue : parsedValue;
+    };
 
-        const hasSpecial = document.getElementById(`has_special_${dayId}`)?.checked;
-        const hasDuVao = document.getElementById(`has_duvao_${dayId}`)?.checked;
-        
-        const startTime = timeToMinute(document.getElementById(`gio_${dayId}`).value);
-        const lessonTime = getVal(`tiethoc_${dayId}`, 45);
-        const lessonCount = getVal(`sotiet_${dayId}`, 5);
-        const prepareTime = hasDuVao ? getVal(`duvaotiet_${dayId}`, 3) : 0;
-        
-        const breakTimeStr = document.getElementById(`rachoi_${dayId}`).value || '5';
-        const breakTimes = breakTimeStr.split(',').map(s => parseInt(s.trim()) || 0);
+    const isEnabled = document.getElementById(`enable_${dayId}`)?.checked;
+    if (!isEnabled) return [];
 
-        const isMondayMorning = dayId.includes('t2_sang');
-        const specialEventTime = hasSpecial ? getVal(isMondayMorning ? `chaoco_${dayId}` : `chunhiem_${dayId}`) : 0;
-        
-        // [SỬA LỖI] Mặc định thời gian chuẩn bị là 0 nếu để trống, theo yêu cầu
-        const specialPrepareTime = hasSpecial ? getVal(`prepare_after_special_${dayId}`, 0) : 0;
-        
-        if (startTime === 0 || lessonTime === 0 || lessonCount === 0) return [];
+    const hasSpecial = document.getElementById(`has_special_${dayId}`)?.checked;
+    const hasDuVao = document.getElementById(`has_duvao_${dayId}`)?.checked;
 
-        let schedule = [];
-        let currentTime = startTime;
+    const startTime = timeToMinute(document.getElementById(`gio_${dayId}`).value);
 
-        // 1. Xử lý sự kiện đặc biệt (Chào cờ/Sinh hoạt) nếu có
-        if (hasSpecial && specialEventTime > 0) {
-            schedule.push({ time: currentTime, description: isMondayMorning ? "Chào cờ" : "Sinh hoạt" });
-            currentTime += specialEventTime;
-            
-            if (specialPrepareTime > 0) {
-                schedule.push({ time: currentTime, description: "Nghỉ sau SH/CC" });
-                currentTime += specialPrepareTime;
-            }
+    // --- [THAY ĐỔI LỚN BẮT ĐẦU TỪ ĐÂY] ---
+    const lessonTimeStr = document.getElementById(`tiethoc_${dayId}`).value || '45';
+    const lessonTimes = lessonTimeStr.split(',').map(s => parseInt(s.trim()) || 45);
+    // --- [KẾT THÚC THAY ĐỔI] ---
+
+    const lessonCount = getVal(`sotiet_${dayId}`, 5);
+    const prepareTime = hasDuVao ? getVal(`duvaotiet_${dayId}`, 3) : 0;
+
+    const breakTimeStr = document.getElementById(`rachoi_${dayId}`).value || '5';
+    const breakTimes = breakTimeStr.split(',').map(s => parseInt(s.trim()) || 0);
+
+    const isMondayMorning = dayId.includes('t2_sang');
+    const specialEventTime = hasSpecial ? getVal(isMondayMorning ? `chaoco_${dayId}` : `chunhiem_${dayId}`) : 0;
+    const specialPrepareTime = hasSpecial ? getVal(`prepare_after_special_${dayId}`, 0) : 0;
+
+    if (startTime === 0 || lessonCount === 0) return [];
+
+    let schedule = [];
+    let currentTime = startTime;
+
+    if (hasSpecial && specialEventTime > 0) {
+        schedule.push({ time: currentTime, description: isMondayMorning ? "Chào cờ" : "Sinh hoạt" });
+        currentTime += specialEventTime;
+
+        if (specialPrepareTime > 0) {
+            schedule.push({ time: currentTime, description: "Nghỉ sau SH/CC" });
+            currentTime += specialPrepareTime;
         }
+    }
 
-        // 2. Vòng lặp qua các tiết học và giờ ra chơi
-        for (let i = 1; i <= lessonCount; i++) {
-            schedule.push({ time: currentTime, description: `Vào tiết ${i}` });
-            currentTime += lessonTime;
+    for (let i = 1; i <= lessonCount; i++) {
+        // Lấy thời gian cho tiết học hiện tại, nếu thiếu thì dùng giá trị cuối cùng
+        const currentLessonTime = lessonTimes[i - 1] ?? lessonTimes[lessonTimes.length - 1];
 
-            if (i < lessonCount) {
-                const currentBreakTime = breakTimes[i - 1] ?? breakTimes[breakTimes.length - 1]; 
-                
-                if (currentBreakTime > 0) {
-                    schedule.push({ time: currentTime, description: `Ra chơi tiết ${i}` });
-                    currentTime += currentBreakTime;
+        schedule.push({ time: currentTime, description: `Vào tiết ${i}` });
+        currentTime += currentLessonTime; // Sử dụng thời gian tiết học tương ứng
 
-                    if (prepareTime > 0) {
-                        schedule.push({ time: currentTime, description: `Dự vào tiết ${i + 1}` });
-                        currentTime += prepareTime;
-                    }
+        if (i < lessonCount) {
+            const currentBreakTime = breakTimes[i - 1] ?? breakTimes[breakTimes.length - 1]; 
+
+            if (currentBreakTime > 0) {
+                schedule.push({ time: currentTime, description: `Ra chơi tiết ${i}` });
+                currentTime += currentBreakTime;
+
+                if (prepareTime > 0) {
+                    schedule.push({ time: currentTime, description: `Dự vào tiết ${i + 1}` });
+                    currentTime += prepareTime;
                 }
             }
         }
-
-        // 3. Thêm sự kiện "Ra về"
-        schedule.push({ time: currentTime, description: "Ra về" });
-        
-        const uniqueSchedule = Array.from(new Map(schedule.map(item => [item.time, item])).values());
-        return uniqueSchedule
-            .map(item => ({ ...item, timeInMinutes: item.time, time: minuteToTime(item.time) }))
-            .sort((a, b) => a.timeInMinutes - b.timeInMinutes);
     }
+
+    schedule.push({ time: currentTime, description: "Ra về" });
+
+    const uniqueSchedule = Array.from(new Map(schedule.map(item => [item.time, item])).values());
+    return uniqueSchedule
+        .map(item => ({ ...item, timeInMinutes: item.time, time: minuteToTime(item.time) }))
+        .sort((a, b) => a.timeInMinutes - b.timeInMinutes);
+}
 
     function updatePreviewTable(e){const t=document.getElementById(`enable_${e}`).checked,o=document.getElementById("details-"+e);if(!o)return;if(!t)return void(o.innerHTML="<p style='text-align:center; padding: 10px;'>Lịch này đang tắt.</p>");const n=calculateSchedule(e);let a="<table><thead><tr><th>STT</th><th>Thời gian</th><th>Nội dung</th></tr></thead><tbody>";n.forEach((e,t)=>{a+=`<tr><td>${t+1}</td><td>${e.time}</td><td>${e.description}</td></tr>`}),a+="</tbody></table>",o.innerHTML=a}
     
