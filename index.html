@@ -2005,6 +2005,14 @@
                               <span id="btn-test-bell">Thử Chuông Báo Chung</span>
                           </button>
                       </div>
+                            <div style="padding: 10px 0 0 0;">
+                            <button class="modern-btn advanced-button" onclick="manualSyncTime()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 10px;">
+                                    <path d="M13.5 2.5a1 1 0 1 0-2 0v2.4a6.5 6.5 0 1 0 9.9 7.4 1 1 0 1 0-1.8-1a4.5 4.5 0 1 1-6.6-5.9V8a1 1 0 1 0 2 0V2.5z"></path>
+                                </svg>
+                                <span>Đồng bộ thời gian NTP</span>
+                            </button>
+                        </div>
                   </div>
               </details>
             </div>
@@ -3441,7 +3449,16 @@ function loadHolidayData(holidays) {
             showNotification("Chưa kết nối máy chủ!", 'error');
         }
     }
-
+    
+    function manualSyncTime() {
+    if (!client || !client.connected) {
+        return showNotification("Chưa kết nối máy chủ!", 'error');
+    }
+    // Gửi một lệnh đơn giản đến ESP32 để yêu cầu nó tự đồng bộ NTP
+    const payload = { command: "TRIGGER_NTP_SYNC" };
+    client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+    showNotification("Đã gửi yêu cầu đồng bộ thời gian NTP...", 'info');
+}
     function logout(){sessionStorage.removeItem("isLoggedIn"),window.location.href="login.html"}
     function setTime(e){isNaN(e)||e<1e5?(console.log("Invalid epoch received, clock not set:",e),serverTime=null):(serverTime=new Date(1e3*e),document.getElementById("date").innerHTML=serverTime.toLocaleDateString("vi-VN",{weekday:"long",year:"numeric",month:"long",day:"numeric",timeZone:"Asia/Ho_Chi_Minh"}),updateLocalClock())}
     function updateLocalClock(){serverTime&&(serverTime.setSeconds(serverTime.getSeconds()+1),document.getElementById("clock").innerHTML=serverTime.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"Asia/Ho_Chi_Minh",hour12:!1}))}
