@@ -3255,30 +3255,44 @@
         const otaDeviceListDiv = document.getElementById('ota-device-selection-list');
         const zoningListDiv = document.getElementById('zoning-device-list');
             if (zoningListDiv) {
-                zoningListDiv.innerHTML = ''; // Xóa nội dung cũ
-                if (managed.length === 0) {
-                    zoningListDiv.innerHTML = '<p class="list-placeholder">Chưa có máy vệ tinh nào được quản lý.</p>';
-                } else {
-                    managed.forEach(dev => {
-                        // Chỉ hiển thị các thiết bị là vệ tinh
-                        if (dev.name !== 'ESP32-MayChu') {
-                            const item = document.createElement('div');
-                            item.className = 'toggle-action-item active'; // Mặc định là active
-                            item.innerHTML = `
-                                <div class="toggle-action-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13.586V10c0-3.217-2.185-5.927-5-6.758V2h-4v1.242C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zM12 22a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"></path></svg>
-                                </div>
-                                <div class="toggle-action-text">${dev.name}</div>
-                                <label class="switch">
-                                    <input type="checkbox" class="zoning-toggle" data-device-name="${dev.name}">
-                                    <span class="slider"></span>
-                                </label>
-                            `;
-                            zoningListDiv.appendChild(item);
-                        }
-                    });
+        const currentlySelectedToggles = {};
+        // Lưu lại trạng thái hiện tại của các toggle (nếu người dùng đã thay đổi nhưng chưa lưu)
+        document.querySelectorAll('.zoning-toggle').forEach(toggle => {
+            currentlySelectedToggles[toggle.dataset.deviceName] = toggle.checked;
+        });
+
+        zoningListDiv.innerHTML = ''; // Xóa nội dung cũ
+        if (managed.length === 0) {
+            zoningListDiv.innerHTML = '<p class="list-placeholder">Chưa có máy vệ tinh nào được quản lý.</p>';
+        } else {
+            managed.forEach(dev => {
+                if (dev.name !== 'ESP32-MayChu') {
+                    const item = document.createElement('div');
+                    item.className = 'toggle-action-item active';
+                    item.innerHTML = `
+                        <div class="toggle-action-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13.586V10c0-3.217-2.185-5.927-5-6.758V2h-4v1.242C7.185 4.073 5 6.783 5 10v3.586l-1.707 1.707A.996.996 0 0 0 3 16v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2a.996.996 0 0 0-.293-.707L19 13.586zM19 17H5v-.586l1.707-1.707A.996.996 0 0 0 7 14v-4c0-2.757 2.243-5 5-5s5 2.243 5 5v4c0 .266.105.52.293.707L19 16.414V17zM12 22a2.98 2.98 0 0 0 2.818-2H9.182A2.98 2.98 0 0 0 12 22z"></path></svg>
+                        </div>
+                        <div class="toggle-action-text">${dev.name}</div>
+                        <label class="switch">
+                            <input type="checkbox" class="zoning-toggle" data-device-name="${dev.name}">
+                            <span class="slider"></span>
+                        </label>
+                    `;
+                    const checkbox = item.querySelector('.zoning-toggle');
+                    // Khôi phục lại trạng thái đã chọn trước đó, nếu không thì dùng trạng thái từ allData
+                    if (currentlySelectedToggles.hasOwnProperty(dev.name)) {
+                        checkbox.checked = currentlySelectedToggles[dev.name];
+                    } else if (window.allData && window.allData.activeSatellites) {
+                        checkbox.checked = window.allData.activeSatellites.includes(dev.name);
+                    } else {
+                        checkbox.checked = true; // Mặc định là Bật nếu chưa có dữ liệu
+                    }
+                    zoningListDiv.appendChild(item);
                 }
-            }
+            });
+        }
+    }
         managedListDiv.innerHTML = '';
         discoveredListDiv.innerHTML = '';
         resetWifiListDiv.innerHTML = '';
