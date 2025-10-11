@@ -3127,9 +3127,6 @@ function loadHolidayData(holidays) {
             e.sohoi[type] = {
     num: parseInt(document.getElementById(`sohoi_${type}`).value) || 0
 };
-            if (type === 'rachoi') {
-                e.sohoi[type].random = document.getElementById('sohoi_rachoi_random').checked;
-            }
         });
         ["tg_reo", "tg_nghi"].forEach(t=>{
             e.sohoi[t]=parseInt(document.getElementById(`sohoi_${t}`).value)||0
@@ -3923,4 +3920,5 @@ function showNotification(msg, type="info") {
 </script>
 </body>
 </html>
+
 
