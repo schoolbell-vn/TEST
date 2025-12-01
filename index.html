@@ -2245,9 +2245,45 @@
         </div>
 
         <div id="adv-tab-reset-esp" class="adv-modal-tab-content">
-            <div id="reset-esp-actions-list" class="actions-list">
+    <h5 style="text-align: center; color: #f39c12; margin: 10px 0 15px 0;">CẤU HÌNH TỰ ĐỘNG KHỞI ĐỘNG LẠI</h5>
+    
+    <div class="actions-list" style="margin-bottom: 20px;">
+        <div class="action-item" style="flex-direction: column; align-items: stretch; gap: 10px;">
+            <div style="display: flex; align-items: center;">
+                <div class="action-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z"></path></svg>
                 </div>
+                <div class="action-text">
+                    <div class="title">Chế độ bảo trì tự động</div>
+                    <div class="description">Hệ thống sẽ tự khởi động lại khi đủ thời gian hoạt động.</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: row; gap: 15px; padding-left: 45px; width: 100%;">
+                
+                <div class="control-group" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 0.8em; color: #bdc3c7; margin-bottom: 5px; display: block; white-space: nowrap;">Chu kỳ (Ngày)</label>
+                    <input type="number" id="auto-restart-days-input" class="modal-input" 
+                           style="padding: 8px; text-align: center; width: 100%; box-sizing: border-box; height: 40px; margin: 0;" 
+                           min="0" max="30" placeholder="0 để tắt">
+                </div>
+
+                <div class="control-group" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 0.8em; color: #bdc3c7; margin-bottom: 5px; display: block; white-space: nowrap;">Thực hiện lúc</label>
+                    <input type="time" id="auto-restart-time-input" class="modal-input" 
+                           style="padding: 8px; text-align: center; width: 100%; box-sizing: border-box; height: 40px; margin: 0;">
+                </div>
+            </div>
+
+            <button class="action-btn" onclick="saveAutoRestartConfig()" style="background-color: #27ae60; margin-left: 45px; margin-top: 5px;">Lưu Cấu Hình</button>
         </div>
+    </div>
+
+    <hr style="margin: 10px 0; background: #414345; height: 1px; opacity: 0.5;">
+
+    <div id="reset-esp-actions-list" class="actions-list">
+    </div>
+</div>
 
         <div id="adv-tab-change-pass" class="adv-modal-tab-content">
             <h5>THAY ĐỔI MẬT KHẨU QUẢN TRỊ</h5>
@@ -3159,8 +3195,64 @@
             requestSystemInfo();
         }
     }
+    // [MỚI] Hàm gửi lệnh lưu cấu hình Auto Restart
+function saveAutoRestartConfig() {
+    const days = document.getElementById('auto-restart-days-input').value;
+    const timeVal = document.getElementById('auto-restart-time-input').value;
+
+    if (days < 0 || days > 30) {
+        showNotification("Số ngày không hợp lệ (0-30)", "error");
+        return;
+    }
     
+    // Nếu nhập ngày > 0 mà không chọn giờ, báo lỗi
+    if (days > 0 && !timeVal) {
+        showNotification("Vui lòng chọn giờ thực hiện!", "error");
+        return;
+    }
+
+    let hour = 0, minute = 0;
+    if (timeVal) {
+        const parts = timeVal.split(':');
+        hour = parseInt(parts[0]);
+        minute = parseInt(parts[1]);
+    }
+    
+    if (client && client.connected) {
+        const payload = {
+            command: "SET_AUTO_RESTART",
+            days: parseInt(days),
+            hour: hour,
+            minute: minute
+        };
+        client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+        showNotification("Đã gửi cài đặt tự động khởi động lại.", "success");
+    } else {
+        showNotification("Chưa kết nối máy chủ!", "error");
+    }
+}
     function renderSystemInfo(info) {
+        // --- [PHẦN 1] CẬP NHẬT CÁC Ô NHẬP LIỆU AUTO RESET ---
+        // Cập nhật số ngày
+        if (info.restart_days !== undefined) {
+            const dayInput = document.getElementById('auto-restart-days-input');
+            if (dayInput) {
+                dayInput.value = info.restart_days;
+            }
+        }
+        
+        // Cập nhật giờ thực hiện (Định dạng HH:MM)
+        if (info.restart_hour !== undefined && info.restart_minute !== undefined) {
+            const timeInput = document.getElementById('auto-restart-time-input');
+            if (timeInput) {
+                // Chuyển đổi số thành chuỗi 2 ký tự (ví dụ: 1 -> "01")
+                const h = String(info.restart_hour).padStart(2, '0');
+                const m = String(info.restart_minute).padStart(2, '0');
+                timeInput.value = `${h}:${m}`;
+            }
+        }
+
+        // --- [PHẦN 2] VẼ DANH SÁCH THÔNG TIN HỆ THỐNG ---
         const listDiv = document.getElementById('system-info-actions-list');
         if (!listDiv) return;
 
@@ -3184,15 +3276,14 @@
         const lcdIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4c-1.103 0-2 .897-2 2v11c0 1.103.897 2 2 2h3l-1 2v1h12v-1l-1-2h3c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM4 14V5h16l.002 9H4z"></path></svg>';
         const flashIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"></path></svg>';
         const ramIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v2H4zm0 4h16v2H4zm0 4h16v2H4zm0 4h16v2H4z"></path></svg>';
-        const mp3Icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path></svg>'; // <<< THÊM DÒNG NÀY
+        const mp3Icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path></svg>';
         
         listDiv.innerHTML += createItem(wifiIcon, 'Tên WiFi (SSID)', info.ssid || 'N/A');
         listDiv.innerHTML += createItem(ipIcon, 'Địa chỉ IP', info.ip || 'N/A');
         listDiv.innerHTML += createItem(rtcIcon, 'Module RTC', info.rtc ? 'Đã kết nối' : 'Không tìm thấy', info.rtc ? 'description connected' : 'description disconnected');
         listDiv.innerHTML += createItem(lcdIcon, 'Màn hình LCD', info.lcd ? 'Đã kết nối' : 'Không tìm thấy', info.lcd ? 'description connected' : 'description disconnected');
-        listDiv.innerHTML += createItem(mp3Icon, 'Module MP3', info.mp3 ? 'Đã kết nối' : 'Không tìm thấy', info.mp3 ? 'description connected' : 'description disconnected'); // <<< THÊM DÒNG NÀY
+        listDiv.innerHTML += createItem(mp3Icon, 'Module MP3', info.mp3 ? 'Đã kết nối' : 'Không tìm thấy', info.mp3 ? 'description connected' : 'description disconnected');
         listDiv.innerHTML += createItem(flashIcon, 'Bộ nhớ Flash', `${info.flash_usage || 'N/A'} % (${info.running_partition || ''})`);
-        
         listDiv.innerHTML += createItem(ramIcon, 'RAM trong (SRAM)', `${info.sram_usage_percent || 'N/A'} % (Còn trống ${info.sram_free_kb || 'N/A'} KB)`);
         listDiv.innerHTML += createItem(ramIcon, 'RAM ngoài (PSRAM)', `${info.psram_usage_percent || 'N/A'} % (Còn trống ${info.psram_free_mb || 'N/A'} MB)`);
     }
