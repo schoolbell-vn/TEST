@@ -2196,16 +2196,22 @@
                 </div>
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-left: 45px;">
-                <div class="control-group">
-                    <label style="font-size: 0.8em; color: #bdc3c7;">Chu kỳ (Ngày)</label>
-                    <input type="number" id="auto-restart-days-input" class="modal-input" style="padding: 5px; text-align: center;" min="0" max="30" placeholder="0 để tắt">
+            <div style="display: flex; flex-direction: row; gap: 15px; padding-left: 45px; width: 100%;">
+                
+                <div class="control-group" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 0.8em; color: #bdc3c7; margin-bottom: 5px; display: block; white-space: nowrap;">Chu kỳ (Ngày)</label>
+                    <input type="number" id="auto-restart-days-input" class="modal-input" 
+                           style="padding: 8px; text-align: center; width: 100%; box-sizing: border-box; height: 40px; margin: 0;" 
+                           min="0" max="30" placeholder="0 để tắt">
                 </div>
-                <div class="control-group">
-                    <label style="font-size: 0.8em; color: #bdc3c7;">Thực hiện lúc (Giờ:Phút)</label>
-                    <input type="time" id="auto-restart-time-input" class="modal-input" style="padding: 5px; text-align: center;">
+
+                <div class="control-group" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 0.8em; color: #bdc3c7; margin-bottom: 5px; display: block; white-space: nowrap;">Thực hiện lúc</label>
+                    <input type="time" id="auto-restart-time-input" class="modal-input" 
+                           style="padding: 8px; text-align: center; width: 100%; box-sizing: border-box; height: 40px; margin: 0;">
                 </div>
             </div>
+
             <button class="action-btn" onclick="saveAutoRestartConfig()" style="background-color: #27ae60; margin-left: 45px; margin-top: 5px;">Lưu Cấu Hình</button>
         </div>
     </div>
