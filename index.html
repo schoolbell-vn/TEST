@@ -1722,7 +1722,42 @@
         box-shadow: none;
         transform: none;
     }
+    /* --- CSS CHO MICROPHONE VÀ ZONE --- */
+    .mic-container {
+        display: flex; flex-direction: column; align-items: center; padding: 20px;
+    }
+    .mic-button {
+        width: 140px; height: 140px;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #e74c3c, #c0392b);
+        border: 6px solid #333;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 5px 15px rgba(255,255,255,0.2);
+        display: flex; justify-content: center; align-items: center;
+        cursor: pointer; transition: all 0.1s;
+        margin-bottom: 20px;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+    }
+    .mic-button:active, .mic-button.active {
+        transform: scale(0.95);
+        background: linear-gradient(145deg, #c0392b, #a93226);
+        box-shadow: 0 0 30px #e74c3c;
+        border-color: #f1c40f;
+    }
+    .mic-icon { width: 60px; height: 60px; fill: white; pointer-events: none; }
+    .mic-status { font-weight: bold; color: #bdc3c7; margin-bottom: 15px; font-size: 1.2em; text-transform: uppercase;}
     
+    .zone-selector {
+        width: 100%; background: #232526; padding: 15px; border-radius: 12px;
+        border: 1px solid #414345; margin-top: 10px;
+    }
+    .zone-item {
+        display: flex; align-items: center; padding: 10px;
+        border-bottom: 1px solid #414345;
+        cursor: pointer;
+    }
+    .zone-item:last-child { border-bottom: none; }
+    .zone-checkbox { width: 22px; height: 22px; margin-right: 12px; accent-color: #f1c40f; }
   </style>
 </head>
 <body>
@@ -1745,6 +1780,7 @@
         <button class="main-tab-button" onclick="openMainTab(event, 'tab-hen-gio')">⏱️ Hẹn Giờ</button>
         <button class="main-tab-button" onclick="openMainTab(event, 'tab-cai-dat')">⚙️ Cài Đặt</button>
         <button class="main-tab-button" onclick="openMainTab(event, 'tab-phat-nhac')">🎶 Phát Nhạc</button>
+        <button class="main-tab-button" onclick="openMainTab(event, 'tab-micro')">🎤 Micro</button>
         <button class="main-tab-button" onclick="openMainTab(event, 'tab-he-thong')">🛠️ Hệ Thống</button>
       </div>
 
@@ -2119,6 +2155,32 @@
               </details>
             </div>
         </div>
+    <div id="tab-micro" class="main-tab-content">
+            <div class="mic-container">
+                <div id="mic-status-text" class="mic-status">SẴN SÀNG</div>
+                
+                <div id="push-to-talk-btn" class="mic-button" 
+                     ontouchstart="startMic(event)" ontouchend="stopMic(event)" 
+                     onmousedown="startMic(event)" onmouseup="stopMic(event)"
+                     onmouseleave="stopMic(event)">
+                    <svg class="mic-icon" viewBox="0 0 24 24">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    </svg>
+                </div>
+                <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 20px;">Nhấn và Giữ nút để nói</p>
+
+                <div class="zone-selector">
+                    <h4 style="margin: 0 0 10px 0; color: #f1c40f; text-align: center; border-bottom: 1px solid #444; padding-bottom: 5px;">CHỌN LOA PHÁT</h4>
+                    <div id="mic-zone-list">
+                        <div style="text-align: center; color: #777; padding: 10px;">Đang tìm thiết bị...</div>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button class="modern-btn" style="background: #34495e; font-size: 0.8em; height: 35px; width: auto; padding: 0 20px;" onclick="selectAllZones()">Chọn Tất Cả</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div id="tab-he-thong" class="main-tab-content">
   <div class="button-section">
@@ -2183,7 +2245,8 @@
         </div>
 
         <div id="adv-tab-reset-esp" class="adv-modal-tab-content">
-    <h5>CẤU HÌNH TỰ ĐỘNG KHỞI ĐỘNG LẠI</h5>
+    <h5 style="text-align: center; color: #f39c12; margin: 10px 0 15px 0;">CẤU HÌNH TỰ ĐỘNG KHỞI ĐỘNG LẠI</h5>
+    
     <div class="actions-list" style="margin-bottom: 20px;">
         <div class="action-item" style="flex-direction: column; align-items: stretch; gap: 10px;">
             <div style="display: flex; align-items: center;">
@@ -2197,12 +2260,14 @@
             </div>
             
             <div style="display: flex; flex-direction: row; gap: 15px; padding-left: 45px; width: 100%;">
+                
                 <div class="control-group" style="flex: 1; min-width: 0;">
                     <label style="font-size: 0.8em; color: #bdc3c7; margin-bottom: 5px; display: block; white-space: nowrap;">Chọn thiết bị</label>
                     <select id="auto-restart-target-select" class="modal-input" style="padding: 8px; width: 100%; height: 40px; margin: 0;">
-                    <option value="MASTER">Máy chủ (Master)</option>
-                         </select>
+                        <option value="MASTER">Máy chủ (Master)</option>
+                    </select>
                 </div>
+
                 <div class="control-group" style="flex: 1; min-width: 0;">
                     <label style="font-size: 0.8em; color: #bdc3c7; margin-bottom: 5px; display: block; white-space: nowrap;">Chu kỳ (Ngày)</label>
                     <input type="number" id="auto-restart-days-input" class="modal-input" 
@@ -2732,8 +2797,9 @@
     // [MỚI] TOPICS MQTT CHO ĐIỀU KHIỂN NHẠC
     const MUSIC_CONTROL_TOPIC = "esp32/bell/music/control";
     const MUSIC_STATUS_TOPIC = "esp32/bell/music/status";
-
-
+    // --- TOPIC MỚI CHO MIC & NHẠC ---
+    const MIC_CONTROL_TOPIC = "esp32/bell/mic/control";
+  
     function connectToMqtt(){
         console.log("Đang kết nối đến MQTT broker...");
         const schoolNameStatus = document.getElementById("school-name-status");
@@ -2759,10 +2825,6 @@
                 } else {
                     console.log("Đăng ký nhận các topic thành công!");
                     client.publish(GET_DATA_TOPIC, '1', { qos: 1 });
-                    setTimeout(() => {
-                    console.log("Tự động gửi yêu cầu lấy thông tin hệ thống (Auto Reset)...");
-                    requestSystemInfo();
-                }, 500);
                 }
             });
         });
@@ -2799,6 +2861,10 @@
                 try {
                     const data = JSON.parse(payloadString);
                     renderDeviceLists(data.managed || [], data.discovered || []);
+                    
+                    // --- THÊM DÒNG NÀY ĐỂ CẬP NHẬT TAB MIC ---
+                    updateMicZoneList(data.managed || []); 
+                    // ------------------------------------------
                 } catch(e) {
                     console.error("Lỗi parse JSON quản lý vệ tinh:", e);
                 }
@@ -3132,12 +3198,14 @@
         evt.currentTarget.classList.add('active');
         document.getElementById(tabName).classList.add('active');
         
+        // [SỬA ĐỔI] Lấy thông tin hệ thống khi vào tab 'Hệ thống' HOẶC tab 'Reset ESP'
         if (tabName === 'adv-tab-system' || tabName === 'adv-tab-reset-esp') {
             requestSystemInfo(); // Gửi lệnh lấy dữ liệu từ ESP
         }
     }
-    function saveAutoRestartConfig() {
-    // 1. Lấy thiết bị đích (Máy chủ hay Vệ tinh?)
+    // [MỚI] Hàm gửi lệnh lưu cấu hình Auto Restart
+function saveAutoRestartConfig() {
+    // 1. Lấy thiết bị đích từ ô chọn (vừa tạo ở Bước 1)
     const targetSelect = document.getElementById('auto-restart-target-select');
     const target = targetSelect ? targetSelect.value : "MASTER"; 
     
@@ -3149,6 +3217,7 @@
         return;
     }
     
+    // Nếu nhập ngày > 0 mà không chọn giờ, báo lỗi
     if (days > 0 && !timeVal) {
         showNotification("Vui lòng chọn giờ thực hiện!", "error");
         return;
@@ -3161,20 +3230,21 @@
         minute = parseInt(parts[1]);
     }
     
+    // 2. Gửi lệnh xuống ESP32
     if (client && client.connected) {
         const payload = {
             command: "SET_AUTO_RESTART",
-            target: target, // <--- GỬI KÈM TÊN THIẾT BỊ ĐÍCH
+            target: target, // <--- QUAN TRỌNG: Gửi kèm tên thiết bị đích
             days: parseInt(days),
             hour: hour,
             minute: minute
         };
         
-        // Gửi lệnh đi
         client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
         showNotification(`Đã gửi cấu hình Auto Reset cho: ${target}`, "success");
 
-        // Chỉ lưu LocalStorage nếu là Master (để hiển thị nhanh lần sau)
+        // 3. Chỉ lưu vào LocalStorage nếu là Master (để lần sau mở web lên thấy ngay)
+        // Các vệ tinh không lưu vào đây để tránh nhầm lẫn
         if (target === "MASTER") {
             localStorage.setItem("autoRestartConfig", JSON.stringify({
                 days: parseInt(days),
@@ -3188,10 +3258,9 @@
     }
 }
     function renderSystemInfo(info) {
-        
-        
-        // 1. CẬP NHẬT CÁC Ô NHẬP LIỆU AUTO RESET (Phần Mới)
-        // Cập nhật số ngày
+        // --- [PHẦN 1] CẬP NHẬT CÁC Ô NHẬP LIỆU AUTO RESET ---
+        // Lưu ý: Chỉ cập nhật nếu web chưa có dữ liệu hoặc user đang xem Master
+        // Code này sẽ điền dữ liệu Master gửi về vào ô input
         if (info.restart_days !== undefined) {
             const dayInput = document.getElementById('auto-restart-days-input');
             if (dayInput) {
@@ -3199,20 +3268,19 @@
             }
         }
         
-        // Cập nhật giờ thực hiện (Định dạng HH:MM)
         if (info.restart_hour !== undefined && info.restart_minute !== undefined) {
             const timeInput = document.getElementById('auto-restart-time-input');
             if (timeInput) {
-                // Chuyển đổi số thành chuỗi 2 ký tự (ví dụ: 1 -> "01")
                 const h = String(info.restart_hour).padStart(2, '0');
                 const m = String(info.restart_minute).padStart(2, '0');
                 timeInput.value = `${h}:${m}`;
             }
         }
 
-        // 2. VẼ DANH SÁCH THÔNG TIN HỆ THỐNG (Phần Cũ)
+        // --- [PHẦN 2] VẼ DANH SÁCH THÔNG TIN HỆ THỐNG (Giữ nguyên giao diện cũ) ---
         const listDiv = document.getElementById('system-info-actions-list');
         if (!listDiv) return;
+
         listDiv.innerHTML = ''; 
 
         const createItem = (icon, title, value, valueClass = '') => {
@@ -3227,7 +3295,6 @@
             `;
         };
 
-        // Định nghĩa các Icon (SVG)
         const wifiIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.486 2 3.407 3.585 0 6l1.414 1.414C4.195 5.53 7.855 4 12 4s7.805 1.53 10.586 3.414L24 6C20.593 3.585 16.514 2 12 2zm0 4c-3.145 0-6.195 1.229-8.485 3.414L5.414 11.31C7.21 9.898 9.51 9 12 9s4.79 0.898 6.586 2.31l1.899-1.898C18.195 7.229 15.145 6 12 6zm0 5c-1.854 0-3.58.718-4.828 1.968L9.07 14.864C9.945 14.18 10.94 13.8 12 13.8s2.055 0.38 2.93 1.064l1.898-1.898C15.58 11.718 13.854 11 12 11zm0 4.2c-0.828 0-1.5 0.672-1.5 1.5s0.672 1.5 1.5 1.5 1.5-0.672 1.5-1.5-0.672-1.5-1.5-1.5z"></path></svg>';
         const ipIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm-1.999 14.413-3.713-3.713 1.414-1.414 2.299 2.299 4.949-4.95 1.414 1.414-6.363 6.364z"></path></svg>';
         const rtcIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z"></path></svg>';
@@ -3236,35 +3303,11 @@
         const ramIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5h16v2H4zm0 4h16v2H4zm0 4h16v2H4zm0 4h16v2H4z"></path></svg>';
         const mp3Icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path></svg>';
         
-        // Thêm các dòng thông tin vào danh sách
         listDiv.innerHTML += createItem(wifiIcon, 'Tên WiFi (SSID)', info.ssid || 'N/A');
         listDiv.innerHTML += createItem(ipIcon, 'Địa chỉ IP', info.ip || 'N/A');
-        
-        // Module RTC
-        listDiv.innerHTML += createItem(
-            rtcIcon, 
-            'Module RTC', 
-            info.rtc ? 'Đã kết nối' : 'Không tìm thấy', 
-            info.rtc ? 'description connected' : 'description disconnected'
-        );
-        
-        // Module LCD
-        listDiv.innerHTML += createItem(
-            lcdIcon, 
-            'Màn hình LCD', 
-            info.lcd ? 'Đã kết nối' : 'Không tìm thấy', 
-            info.lcd ? 'description connected' : 'description disconnected'
-        );
-        
-        // Module MP3
-        listDiv.innerHTML += createItem(
-            mp3Icon, 
-            'Module MP3', 
-            info.mp3 ? 'Đã kết nối' : 'Không tìm thấy', 
-            info.mp3 ? 'description connected' : 'description disconnected'
-        );
-
-        // Flash & RAM
+        listDiv.innerHTML += createItem(rtcIcon, 'Module RTC', info.rtc ? 'Đã kết nối' : 'Không tìm thấy', info.rtc ? 'description connected' : 'description disconnected');
+        listDiv.innerHTML += createItem(lcdIcon, 'Màn hình LCD', info.lcd ? 'Đã kết nối' : 'Không tìm thấy', info.lcd ? 'description connected' : 'description disconnected');
+        listDiv.innerHTML += createItem(mp3Icon, 'Module MP3', info.mp3 ? 'Đã kết nối' : 'Không tìm thấy', info.mp3 ? 'description connected' : 'description disconnected');
         listDiv.innerHTML += createItem(flashIcon, 'Bộ nhớ Flash', `${info.flash_usage || 'N/A'} % (${info.running_partition || ''})`);
         listDiv.innerHTML += createItem(ramIcon, 'RAM trong (SRAM)', `${info.sram_usage_percent || 'N/A'} % (Còn trống ${info.sram_free_kb || 'N/A'} KB)`);
         listDiv.innerHTML += createItem(ramIcon, 'RAM ngoài (PSRAM)', `${info.psram_usage_percent || 'N/A'} % (Còn trống ${info.psram_free_mb || 'N/A'} MB)`);
@@ -3406,6 +3449,20 @@
         resetEspListDiv.innerHTML = '';
         otaDeviceListDiv.innerHTML = '';
 
+        // --- [PHẦN MỚI] CẬP NHẬT Ô CHỌN AUTO RESTART ---
+        const restartSelect = document.getElementById('auto-restart-target-select');
+        if (restartSelect) {
+            // Giữ lại option đầu tiên (Master) và xóa các option cũ
+            restartSelect.innerHTML = '<option value="MASTER">Máy chủ (Master)</option>';
+            managed.forEach(dev => {
+                const option = document.createElement('option');
+                option.value = dev.name;
+                option.textContent = dev.name + " (Vệ tinh)";
+                restartSelect.appendChild(option);
+            });
+        }
+        // -----------------------------------------------
+
         if (managed.length === 0) {
             managedListDiv.innerHTML = '<p class="list-placeholder">Chưa có thiết bị nào được quản lý.</p>';
         } else {
@@ -3500,20 +3557,6 @@
         } else {
             otaDeviceListDiv.innerHTML = '<p class="list-placeholder">Không có thiết bị nào.</p>';
         }
-    // --- [THÊM ĐOẠN NÀY ĐỂ CẬP NHẬT LIST CHỌN RESTART] ---
-    const restartSelect = document.getElementById('auto-restart-target-select');
-    if (restartSelect) {
-        // Giữ lại option đầu tiên (Master)
-        restartSelect.innerHTML = '<option value="MASTER">Máy chủ (Master)</option>';
-        // Thêm các vệ tinh vào
-        managed.forEach(dev => {
-            const option = document.createElement('option');
-            option.value = dev.name;
-            option.textContent = dev.name + " (Vệ tinh)";
-            restartSelect.appendChild(option);
-        });
-    }
-    // -----------------------------------------------------
     }
 
 function _load(e) {
@@ -4471,78 +4514,52 @@ function toggleHoliday(dateString) {
     // =======================================================
 
     window.onload = function() { 
-    // 1. Load cài đặt giao diện cũ
-    loadInterfaceSettings();
+        loadInterfaceSettings();
+        connectToMqtt();
+        setInterval(updateClockAndCountdown, 1000);
 
-    // 2. [MỚI] Load cài đặt Auto Restart từ LocalStorage lên giao diện ngay lập tức
-    const savedRestart = localStorage.getItem("autoRestartConfig");
-    if (savedRestart) {
-       try {
-           const cfg = JSON.parse(savedRestart);
-           const dayInput = document.getElementById('auto-restart-days-input');
-           const timeInput = document.getElementById('auto-restart-time-input');
-           
-           if(dayInput) dayInput.value = cfg.days;
-           if(timeInput) {
-                // Định dạng lại giờ phút thành HH:MM để input type="time" hiểu
-                const h = String(cfg.hour).padStart(2, '0');
-                const m = String(cfg.minute).padStart(2, '0');
-                timeInput.value = `${h}:${m}`;
-           }
-       } catch(e) { console.error("Lỗi đọc LocalStorage AutoRestart", e); }
-    }
-
-    // 3. Kết nối MQTT (Sau khi kết nối sẽ tự gọi requestSystemInfo để lấy dữ liệu gốc)
-    connectToMqtt();
-    
-    // 4. Các tác vụ khác
-    setInterval(updateClockAndCountdown, 1000);
-
-    // Load kịch bản đã lưu
-    try {
-        const lastScenario = localStorage.getItem('savedScenario');
-        if (lastScenario) {
-            renderSavedScenario(JSON.parse(lastScenario));
+        // [SỬA LỖI] Tải kịch bản đã lưu từ bộ nhớ trình duyệt ngay khi vào trang
+        try {
+            const lastScenario = localStorage.getItem('savedScenario');
+            if (lastScenario) {
+                renderSavedScenario(JSON.parse(lastScenario));
+            }
+        } catch (e) {
+            console.error("Không thể tải kịch bản từ localStorage:", e);
         }
-    } catch (e) {
-        console.error("Không thể tải kịch bản từ localStorage:", e);
-    }
-    
-    // Gán sự kiện enter cho mật khẩu
-    document.getElementById('admin-password-input').addEventListener('keyup', function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            document.querySelector('#password-modal-overlay .modal-confirm-btn').click();
-        }
-    });
+        
+        document.getElementById('admin-password-input').addEventListener('keyup', function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.querySelector('#password-modal-overlay .modal-confirm-btn').click();
+            }
+        });
 
-    // Gán sự kiện chọn file OTA
-    document.getElementById('ota-file-input').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        const uploadBtn = document.getElementById('ota-upload-btn');
-        const fileNameDiv = document.getElementById('ota-file-name');
-        if (file) {
-            fileNameDiv.textContent = file.name;
-            uploadBtn.style.display = 'block';
-        } else {
-            fileNameDiv.textContent = 'Chưa chọn tệp nào';
-            uploadBtn.style.display = 'none';
-        }
-    });
-    
-    // Gán các sự kiện giao diện
-    document.getElementById('text-editor-input').addEventListener('input', (e) => applyInterfaceChanges('text', e.target.value));
-    document.getElementById('color-picker-input').addEventListener('input', (e) => applyInterfaceChanges('color', e.target.value));
-    document.getElementById('font-size-input').addEventListener('input', (e) => applyInterfaceChanges('fontSize', e.target.value));
-    document.getElementById('font-family-select').addEventListener('change', (e) => applyInterfaceChanges('fontFamily', e.target.value));
+        document.getElementById('ota-file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const uploadBtn = document.getElementById('ota-upload-btn');
+            const fileNameDiv = document.getElementById('ota-file-name');
+            if (file) {
+                fileNameDiv.textContent = file.name;
+                uploadBtn.style.display = 'block';
+            } else {
+                fileNameDiv.textContent = 'Chưa chọn tệp nào';
+                uploadBtn.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('text-editor-input').addEventListener('input', (e) => applyInterfaceChanges('text', e.target.value));
+        document.getElementById('color-picker-input').addEventListener('input', (e) => applyInterfaceChanges('color', e.target.value));
+        document.getElementById('font-size-input').addEventListener('input', (e) => applyInterfaceChanges('fontSize', e.target.value));
+        document.getElementById('font-family-select').addEventListener('change', (e) => applyInterfaceChanges('fontFamily', e.target.value));
 
-    document.getElementById('volume-slider').addEventListener('change', (e) => handleMusicControl('set_volume', e.target.value));
-    document.getElementById('music-progress-bar').addEventListener('change', (e) => handleMusicControl('seek', e.target.value));
+        document.getElementById('volume-slider').addEventListener('change', (e) => handleMusicControl('set_volume', e.target.value));
+        document.getElementById('music-progress-bar').addEventListener('change', (e) => handleMusicControl('seek', e.target.value));
 
-    initializeTabs();
-    generateCalendar(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth());
-    document.querySelector('.sticky-action-bar').style.display = 'flex';
-};
+        initializeTabs();
+        generateCalendar(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth());
+        document.querySelector('.sticky-action-bar').style.display = 'flex';
+    };
 
 function renderSavedScenario(savedData) {
     const wrapper = document.getElementById('saved-scenario-table-wrapper');
@@ -4665,7 +4682,99 @@ function showNotification(msg, type="info") {
     if (div.parentNode) div.parentNode.removeChild(div);
   }, 3000);
 }
+// ==========================================
+    // === CODE XỬ LÝ MICROPHONE & ZONE ===
+    // ==========================================
+    let isTalking = false;
 
+    function startMic(e) {
+        if(e && e.cancelable) e.preventDefault(); // Chống sự kiện chạm mặc định trên điện thoại
+        if (isTalking) return;
+        
+        // Lấy danh sách các loa được chọn
+        const selectedZones = [];
+        document.querySelectorAll('.zone-checkbox:checked').forEach(cb => {
+            selectedZones.push(cb.value);
+        });
+
+        // Luôn luôn thêm 'Master' vào (nếu muốn máy chủ cũng phát)
+        // selectedZones.push("ESP32-Master"); 
+
+        if (selectedZones.length === 0) {
+            showNotification("Vui lòng chọn ít nhất 1 loa!", "error");
+            return;
+        }
+
+        isTalking = true;
+        document.getElementById("push-to-talk-btn").classList.add("active");
+        document.getElementById("mic-status-text").innerText = "ĐANG PHÁT THANH...";
+        document.getElementById("mic-status-text").style.color = "#e74c3c";
+        
+        // Gửi lệnh MQTT Start
+        const payload = { command: "start", targets: selectedZones };
+        if(client && client.connected) {
+            client.publish(MIC_CONTROL_TOPIC, JSON.stringify(payload), {qos: 0});
+        }
+        
+        // Rung nhẹ điện thoại (nếu hỗ trợ)
+        if(navigator.vibrate) navigator.vibrate(50);
+    }
+
+    function stopMic(e) {
+        if(e && e.cancelable) e.preventDefault();
+        if (!isTalking) return;
+
+        isTalking = false;
+        document.getElementById("push-to-talk-btn").classList.remove("active");
+        document.getElementById("mic-status-text").innerText = "SẴN SÀNG";
+        document.getElementById("mic-status-text").style.color = "#bdc3c7";
+
+        // Gửi lệnh MQTT Stop
+        const payload = { command: "stop" };
+        if(client && client.connected) {
+            client.publish(MIC_CONTROL_TOPIC, JSON.stringify(payload), {qos: 0});
+        }
+    }
+
+    function selectAllZones() {
+        const checkboxes = document.querySelectorAll('.zone-checkbox');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => cb.checked = !allChecked);
+    }
+
+    // Hàm cập nhật danh sách vệ tinh vào Tab Micro (Gọi hàm này khi nhận được MQTT MANAGE_STATUS)
+    // Bạn cần tìm chỗ xử lý `client.on("message", ...)` và gọi hàm này khi có data vệ tinh
+    function updateMicZoneList(managedDevices) {
+        const listDiv = document.getElementById("mic-zone-list");
+        if (!listDiv) return;
+        
+        if (!managedDevices || managedDevices.length === 0) {
+            listDiv.innerHTML = '<div style="text-align: center; color: #777; padding: 10px;">Chưa có vệ tinh nào kết nối.</div>';
+            return;
+        }
+
+        // Giữ lại trạng thái đã tick chọn cũ
+        const currentChecked = Array.from(document.querySelectorAll('.zone-checkbox:checked')).map(cb => cb.value);
+        
+        let html = '';
+        managedDevices.forEach(dev => {
+            const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
+            const statusColor = dev.online ? '#2ecc71' : '#e74c3c'; // Xanh hoặc Đỏ
+            
+            html += `
+                <label class="zone-item">
+                    <input type="checkbox" class="zone-checkbox" value="${dev.name}" ${isChecked}>
+                    <div style="flex-grow:1;">
+                        <div style="font-weight:bold; color: #ecf0f1;">${dev.name}</div>
+                        <div style="font-size:0.8em; color: ${statusColor};">
+                            ${dev.online ? 'Online' : 'Offline'} • IP: ${dev.ip || 'N/A'}
+                        </div>
+                    </div>
+                </label>
+            `;
+        });
+        listDiv.innerHTML = html;
+    }
 </script>
 
 </body>
