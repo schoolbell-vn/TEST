@@ -2197,7 +2197,12 @@
             </div>
             
             <div style="display: flex; flex-direction: row; gap: 15px; padding-left: 45px; width: 100%;">
-                
+                <div class="control-group" style="flex: 1; min-width: 0;">
+                    <label style="font-size: 0.8em; color: #bdc3c7; margin-bottom: 5px; display: block; white-space: nowrap;">Chọn thiết bị</label>
+                    <select id="auto-restart-target-select" class="modal-input" style="padding: 8px; width: 100%; height: 40px; margin: 0;">
+                    <option value="MASTER">Máy chủ (Master)</option>
+                         </select>
+                </div>
                 <div class="control-group" style="flex: 1; min-width: 0;">
                     <label style="font-size: 0.8em; color: #bdc3c7; margin-bottom: 5px; display: block; white-space: nowrap;">Chu kỳ (Ngày)</label>
                     <input type="number" id="auto-restart-days-input" class="modal-input" 
@@ -3132,6 +3137,10 @@
         }
     }
     function saveAutoRestartConfig() {
+    // 1. Lấy thiết bị đích (Máy chủ hay Vệ tinh?)
+    const targetSelect = document.getElementById('auto-restart-target-select');
+    const target = targetSelect ? targetSelect.value : "MASTER"; 
+    
     const days = document.getElementById('auto-restart-days-input').value;
     const timeVal = document.getElementById('auto-restart-time-input').value;
 
@@ -3140,7 +3149,6 @@
         return;
     }
     
-    // Nếu nhập ngày > 0 mà không chọn giờ, báo lỗi
     if (days > 0 && !timeVal) {
         showNotification("Vui lòng chọn giờ thực hiện!", "error");
         return;
@@ -3153,23 +3161,27 @@
         minute = parseInt(parts[1]);
     }
     
-    // 1. Gửi lệnh xuống ESP32
     if (client && client.connected) {
         const payload = {
             command: "SET_AUTO_RESTART",
+            target: target, // <--- GỬI KÈM TÊN THIẾT BỊ ĐÍCH
             days: parseInt(days),
             hour: hour,
             minute: minute
         };
+        
+        // Gửi lệnh đi
         client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-        showNotification("Đã gửi cài đặt tự động khởi động lại.", "success");
+        showNotification(`Đã gửi cấu hình Auto Reset cho: ${target}`, "success");
 
-        // 2. [MỚI] Lưu ngay vào LocalStorage để lần sau vào web hiện luôn
-        localStorage.setItem("autoRestartConfig", JSON.stringify({
-            days: parseInt(days),
-            hour: hour,
-            minute: minute
-        }));
+        // Chỉ lưu LocalStorage nếu là Master (để hiển thị nhanh lần sau)
+        if (target === "MASTER") {
+            localStorage.setItem("autoRestartConfig", JSON.stringify({
+                days: parseInt(days),
+                hour: hour,
+                minute: minute
+            }));
+        }
 
     } else {
         showNotification("Chưa kết nối máy chủ!", "error");
@@ -3488,6 +3500,20 @@
         } else {
             otaDeviceListDiv.innerHTML = '<p class="list-placeholder">Không có thiết bị nào.</p>';
         }
+    // --- [THÊM ĐOẠN NÀY ĐỂ CẬP NHẬT LIST CHỌN RESTART] ---
+    const restartSelect = document.getElementById('auto-restart-target-select');
+    if (restartSelect) {
+        // Giữ lại option đầu tiên (Master)
+        restartSelect.innerHTML = '<option value="MASTER">Máy chủ (Master)</option>';
+        // Thêm các vệ tinh vào
+        managed.forEach(dev => {
+            const option = document.createElement('option');
+            option.value = dev.name;
+            option.textContent = dev.name + " (Vệ tinh)";
+            restartSelect.appendChild(option);
+        });
+    }
+    // -----------------------------------------------------
     }
 
 function _load(e) {
@@ -4644,4 +4670,3 @@ function showNotification(msg, type="info") {
 
 </body>
 </html>
-
