@@ -1822,6 +1822,16 @@
         
         <div class="details-content" style="padding-top: 20px; display: flex; flex-direction: column; gap: 15px;">
             <div class="scenario-input-group">
+    <label for="scenario-target-select">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.486 2 3.407 3.585 0 6l1.414 1.414C4.195 5.53 7.855 4 12 4s7.805 1.53 10.586 3.414L24 6C20.593 3.585 16.514 2 12 2zm0 4c-3.145 0-6.195 1.229-8.485 3.414L5.414 11.31C7.21 9.898 9.51 9 12 9s4.79 0.898 6.586 2.31l1.899-1.898C18.195 7.229 15.145 6 12 6zm0 5c-1.854 0-3.58.718-4.828 1.968L9.07 14.864C9.945 14.18 10.94 13.8 12 13.8s2.055 0.38 2.93 1.064l1.898-1.898C15.58 11.718 13.854 11 12 11zm0 4.2c-0.828 0-1.5 0.672-1.5 1.5s0.672 1.5 1.5 1.5 1.5-0.672 1.5-1.5-0.672-1.5-1.5-1.5z"></path></svg>
+        Áp dụng cho thiết bị
+    </label>
+    <select id="scenario-target-select" class="modal-input" style="background: #232526; color: #fff; padding: 10px; border: 1px solid #7f8c8d;">
+        <option value="ALL">🔔 Toàn hệ thống (Mặc định)</option>
+        <option value="MASTER">Máy chủ (Master)</option>
+        </select>
+</div>
+            <div class="scenario-input-group">
                 <label for="scenario-start-time">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z"></path></svg>
                     Thời gian bắt đầu
@@ -2065,6 +2075,16 @@
         </div>
 
         <div id="tab-phat-nhac" class="main-tab-content">
+            <div class="sohoi-container" style="margin-top: 15px;">
+    <div style="background: #232526; border: 1px solid #f1c40f; border-radius: 8px; padding: 10px;">
+        <label for="music-target-select" style="color: #f1c40f; font-weight: bold; display: block; margin-bottom: 8px; text-align: center;">
+            CHỌN LOA PHÁT NHẠC
+        </label>
+        <select id="music-target-select" onchange="changeMusicTarget()" style="width: 100%; padding: 10px; background: #2c3e50; color: white; border: 1px solid #414345; border-radius: 5px; font-size: 1em;">
+            <option value="MASTER">Máy chủ (Master)</option>
+            </select>
+    </div>
+</div>
             <div class="music-player-container" style="margin-top: 5px;">
               <details open>
                   <summary>
@@ -2168,6 +2188,14 @@
                         <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
                     </svg>
                 </div>
+                <div style="width: 80%; max-width: 250px; margin: 15px 0; background: #2c3e50; padding: 10px; border-radius: 10px;">
+    <label style="color: #bdc3c7; font-size: 0.8em; display: block; text-align: center; margin-bottom: 5px;">Độ nhạy Micro (Gain)</label>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="color:#7f8c8d; font-size: 0.8em;">Nhỏ</span>
+        <input type="range" id="mic-gain-slider" min="0" max="64" value="32" style="flex-grow: 1; height: 5px;" onchange="updateMicGain(this.value)">
+        <span style="color:#7f8c8d; font-size: 0.8em;">To</span>
+    </div>
+</div>
                 <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 20px;">Nhấn và Giữ nút để nói</p>
 
                 <div class="zone-selector">
@@ -2672,6 +2700,7 @@
     }
 
     // [CHỈNH SỬA THEO YÊU CẦU] Hàm mới dùng để gửi lệnh (trước đây là addScenario)
+    // [CẬP NHẬT] Hàm gửi kịch bản (Đã thêm target)
     async function sendScenario() {
         if (!client || !client.connected) {
             return showNotification("Chưa kết nối máy chủ!", 'error');
@@ -2681,6 +2710,9 @@
             showNotification("Vui lòng nhấn 'Xem Trước Kịch Bản' trước khi gửi lệnh.", "error");
             return;
         }
+
+        // Lấy thiết bị đích từ dropdown
+        const targetDevice = document.getElementById('scenario-target-select').value;
 
         const { scenario, days } = previewedScenarioData;
 
@@ -2703,23 +2735,18 @@
             userPriority = userChoice;
         }
 
-        // Đây là payload của MỘT kịch bản
+        // Payload thêm trường targets (dạng mảng để mở rộng sau này)
         const payload = {
             scenario: scenario,
             priority: userPriority,
-            days: days
+            days: days,
+            targets: [targetDevice] // <--- MỚI THÊM
         };
 
-        // === [SỬA LỖI QUAN TRỌNG] ===
-        // Chúng ta gửi MỘT kịch bản đến topic "ADD" (THÊM)
         const SCENARIO_ADD_TOPIC = "esp32/bell/scenario/add"; 
         client.publish(SCENARIO_ADD_TOPIC, JSON.stringify(payload), { qos: 1 });
-        // ==============================
 
-        showNotification("Đã gửi lệnh THÊM kịch bản mới!", "success");
-        
-        // Không cần tự cập nhật localStorage, vì ESP32 sẽ gửi lại danh sách mới
-        // và hàm _load() sẽ xử lý (XÓA CÁC DÒNG LIÊN QUAN ĐẾN localStorage TỪ HÀM CŨ)
+        showNotification(`Đã gửi kịch bản cho: ${targetDevice === 'ALL' ? 'Toàn hệ thống' : targetDevice}`, "success");
         
         document.getElementById('scenario-preview-table-container').innerHTML = '';
         previewedScenarioData = null;
@@ -4480,20 +4507,28 @@ function loadHolidayData(holidays) {
 
     // File: index full.html
 
-function toggleHoliday(dateString) {
-    function loadHolidayData(data) {
+// === [ĐOẠN CODE ĐÃ SỬA LẠI CHO ĐÚNG] ===
+
+// Hàm tải dữ liệu ngày nghỉ (Được tách ra ngoài)
+function loadHolidayData(data) {
     if (data) {
         holidayData = data; // Cập nhật biến toàn cục với dữ liệu từ thiết bị
         // Vẽ lại giao diện lịch với dữ liệu mới
         generateCalendar(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth());
     }
 }
+
+// Hàm xử lý khi bấm vào một ngày trên lịch
+function toggleHoliday(dateString) {
     const cell = document.querySelector(`.calendar-day[data-date="${dateString}"]`);
+    
     if (holidayData[dateString]) {
+        // Nếu đã là ngày nghỉ -> Xóa
         delete holidayData[dateString];
         if(cell) cell.classList.remove('holiday');
     } else {
-        holidayData[dateString] = true; // Giá trị có thể là true hoặc một object rỗng
+        // Nếu chưa là ngày nghỉ -> Thêm vào
+        holidayData[dateString] = true; 
         if(cell) cell.classList.add('holiday');
     }
 
@@ -4561,72 +4596,74 @@ function toggleHoliday(dateString) {
         document.querySelector('.sticky-action-bar').style.display = 'flex';
     };
 
-function renderSavedScenario(savedData) {
-    const wrapper = document.getElementById('saved-scenario-table-wrapper');
-    const priorityDiv = document.getElementById('saved-scenario-priority');
-    const placeholder = document.getElementById('saved-scenario-placeholder');
-    const daysDisplayContainer = document.getElementById('saved-scenario-days-display');
+// [CẬP NHẬT] Hàm hiển thị kịch bản (Đã thêm hiển thị thiết bị áp dụng)
+    function renderSavedScenario(savedData) {
+        const wrapper = document.getElementById('saved-scenario-table-wrapper');
+        const placeholder = document.getElementById('saved-scenario-placeholder');
 
-    // Xóa nội dung cũ
-    wrapper.innerHTML = '';
-    priorityDiv.innerHTML = '';
-    daysDisplayContainer.innerHTML = '';
+        wrapper.innerHTML = '';
 
-    // 1. Kiểm tra xem dữ liệu có phải là một mảng HỢP LỆ không
-    if (!savedData || !Array.isArray(savedData)) {
-        wrapper.style.display = 'none';
-        placeholder.style.display = 'block';
-        return; 
-    }
-    
-    // 2. Nếu là mảng HỢP LỆ (kể cả rỗng), ẩn placeholder
-    wrapper.style.display = 'block';
-    placeholder.style.display = 'none';
-
-    // 3. Bây giờ mới kiểm tra xem mảng có rỗng không
-    if (savedData.length === 0) {
-        wrapper.innerHTML = '<p class="list-placeholder" style="display: block; padding: 10px;">Không có kịch bản nào được lưu.</p>';
-        return;
-    }
-    
-    // 4. Nếu mảng không rỗng, lặp và hiển thị
-    let listHTML = '';
-    const dayNameMap = {t2: 'T2', t3: 'T3', t4: 'T4', t5: 'T5', t6: 'T6', t7: 'T7', cn: 'CN'};
-
-    savedData.forEach((scenarioDoc, index) => {
-        const events = scenarioDoc.scenario || [];
-        const days = scenarioDoc.days || [];
-        const priority = scenarioDoc.priority || 'none';
+        if (!savedData || !Array.isArray(savedData)) {
+            wrapper.style.display = 'none';
+            placeholder.style.display = 'block';
+            return; 
+        }
         
-        // [SỬA ĐỔI 1] Lấy danh sách giờ hẹn
-        const eventTimes = events.map(e => e.time).join(', ');
-        
-        let priorityText = 'Không ưu tiên';
-        if (priority === 'scenario') priorityText = '<span style="color: #2ecc71;">Ưu tiên Kịch Bản</span>';
-        if (priority === 'schedule') priorityText = '<span style="color: #3498db;">Ưu tiên Lịch Học</span>';
+        wrapper.style.display = 'block';
+        placeholder.style.display = 'none';
 
-        listHTML += `
-            <div class="scenario-item" style="border: 1px solid #414345; border-radius: 8px; margin-bottom: 10px; background: #232526;">
-                <div class="scenario-item-header" style="background: #34495e; padding: 8px 12px; border-radius: 8px 8px 0 0; font-weight: bold; color: #f1c40f;">
-                    KỊCH BẢN #${index + 1} (${events.length} sự kiện)
+        if (savedData.length === 0) {
+            wrapper.innerHTML = '<p class="list-placeholder" style="display: block; padding: 10px;">Không có kịch bản nào được lưu.</p>';
+            return;
+        }
+        
+        let listHTML = '';
+        const dayNameMap = {t2: 'T2', t3: 'T3', t4: 'T4', t5: 'T5', t6: 'T6', t7: 'T7', cn: 'CN'};
+
+        savedData.forEach((scenarioDoc, index) => {
+            const events = scenarioDoc.scenario || [];
+            const days = scenarioDoc.days || [];
+            const priority = scenarioDoc.priority || 'none';
+            
+            // Xử lý hiển thị targets (MỚI)
+            let targets = scenarioDoc.targets || ['ALL'];
+            let targetDisplay = '';
+            if (targets.includes('ALL')) {
+                targetDisplay = '<span style="color: #e67e22; font-weight: bold;">Toàn hệ thống</span>';
+            } else {
+                targetDisplay = `<span style="color: #3498db; font-weight: bold;">${targets.join(', ')}</span>`;
+            }
+            
+            const eventTimes = events.map(e => e.time).join(', ');
+            
+            let priorityText = 'Không ưu tiên';
+            if (priority === 'scenario') priorityText = '<span style="color: #2ecc71;">Ưu tiên Kịch Bản</span>';
+            if (priority === 'schedule') priorityText = '<span style="color: #3498db;">Ưu tiên Lịch Học</span>';
+
+            listHTML += `
+                <div class="scenario-item" style="border: 1px solid #414345; border-radius: 8px; margin-bottom: 10px; background: #232526;">
+                    <div class="scenario-item-header" style="background: #34495e; padding: 8px 12px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold; color: #f1c40f;">KỊCH BẢN #${index + 1}</span>
+                        <span style="font-size: 0.8em; color: #bdc3c7;">(${events.length} mốc)</span>
+                    </div>
+                    <div class="scenario-item-body" style="padding: 12px; font-size: 0.9em; line-height: 1.6;">
+                        <div style="margin-bottom: 5px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                            <strong>Áp dụng cho:</strong> ${targetDisplay}
+                        </div>
+                        <div style="margin-bottom: 5px;"><strong>Ngày:</strong> ${days.map(d => dayNameMap[d] || d).join(', ') || 'Chưa chọn'}</div>
+                        <div style="margin-bottom: 5px; color: #f1c40f;"><strong>Giờ hẹn:</strong> ${eventTimes}</div>
+                        <div style="margin-bottom: 10px;"><strong>Ưu tiên:</strong> ${priorityText}</div>
+                        
+                        <button class="device-action-btn remove-btn" style="width: 100%; font-size: 0.8em;" onclick="deleteSingleScenario(${index})">
+                            Xóa Kịch bản này
+                        </button>
+                    </div>
                 </div>
-                <div class="scenario-item-body" style="padding: 12px; font-size: 0.9em; line-height: 1.6;">
-                    <div style="margin-bottom: 5px;"><strong>Áp dụng:</strong> ${days.map(d => dayNameMap[d] || d).join(', ') || 'Không có'}</div>
-                    
-                    <div style="margin-bottom: 5px; color: #f1c40f;"><strong>Giờ hẹn:</strong> ${eventTimes}</div>
-                    
-                    <div style="margin-bottom: 10px;"><strong>Ưu tiên:</strong> ${priorityText}</div>
-                    
-                    <button class="device-action-btn remove-btn" style="width: 100%; font-size: 0.8em;" onclick="deleteSingleScenario(${index})">
-                        Xóa Kịch bản này
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    
-    wrapper.innerHTML = listHTML;
-}
+            `;
+        });
+        
+        wrapper.innerHTML = listHTML;
+    }
 
   </script>
   
@@ -4744,38 +4781,142 @@ function showNotification(msg, type="info") {
 
     // Hàm cập nhật danh sách vệ tinh vào Tab Micro (Gọi hàm này khi nhận được MQTT MANAGE_STATUS)
     // Bạn cần tìm chỗ xử lý `client.on("message", ...)` và gọi hàm này khi có data vệ tinh
-    function updateMicZoneList(managedDevices) {
-        const listDiv = document.getElementById("mic-zone-list");
-        if (!listDiv) return;
+    // ==========================================================
+    // === [CODE MỚI] LOGIC ĐIỀU KHIỂN NHẠC VÀ MIC NÂNG CAO ===
+    // ==========================================================
+
+    // Biến lưu thiết bị đang chọn để chỉnh nhạc
+    let currentMusicTarget = "MASTER";
+
+    // 1. Hàm xử lý khi bạn chọn thiết bị phát nhạc khác
+    function changeMusicTarget() {
+        const select = document.getElementById('music-target-select');
+        currentMusicTarget = select.value;
         
-        if (!managedDevices || managedDevices.length === 0) {
-            listDiv.innerHTML = '<div style="text-align: center; color: #777; padding: 10px;">Chưa có vệ tinh nào kết nối.</div>';
-            return;
+        showNotification(`Đang chuyển sang điều khiển: ${currentMusicTarget}`, 'info');
+        
+        // Xóa danh sách nhạc cũ để chờ tải mới
+        document.getElementById('music-playlist-container').innerHTML = '<p class="list-placeholder" style="padding:10px;">Đang tải danh sách bài hát...</p>';
+        document.getElementById('now-playing-title').textContent = "Đang đồng bộ...";
+
+        // Gửi lệnh MQTT yêu cầu lấy danh sách nhạc mới
+        if (client && client.connected) {
+            // Nếu chọn Master thì gửi topic cũ, nếu chọn Vệ tinh thì gửi topic vệ tinh
+            // Lưu ý: Phần xử lý topic này cần khớp với Code Arduino
+            const payload = { command: "get_status" }; 
+            
+            // Tạm thời ta gửi lệnh refresh, Arduino cần xử lý logic định tuyến dựa trên target
+            // Ở đây ta gửi vào topic điều khiển nhạc chung, kèm theo target
+            const musicPayload = { 
+                command: "refresh_playlist",
+                target: currentMusicTarget 
+            };
+            
+            client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(musicPayload), { qos: 1 });
+        }
+    }
+
+    // 2. Hàm gửi độ nhạy Mic (Gain)
+    function updateMicGain(val) {
+        // Gửi lệnh set gain
+        if(client && client.connected) {
+             // Topic điều khiển mic (cần khai báo trong Arduino)
+            client.publish("esp32/bell/mic/control", JSON.stringify({
+                command: "set_gain",
+                value: parseInt(val)
+            }), {qos: 0});
+        }
+    }
+
+    // 3. Hàm cập nhật danh sách Vệ tinh (Đã nâng cấp để cập nhật cả Tab Nhạc)
+    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ CHO TOÀN BỘ GIAO DIỆN ===
+    function updateMicZoneList(managedDevices) {
+        // 1. Cập nhật Tab Micro (Zone Selector)
+        const micListDiv = document.getElementById("mic-zone-list");
+        if (micListDiv) {
+            if (!managedDevices || managedDevices.length === 0) {
+                micListDiv.innerHTML = '<div style="text-align: center; color: #777; padding: 10px;">Chưa có vệ tinh nào kết nối.</div>';
+            } else {
+                const currentChecked = Array.from(document.querySelectorAll('.zone-checkbox:checked')).map(cb => cb.value);
+                let html = '';
+                managedDevices.forEach(dev => {
+                    const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
+                    const statusColor = dev.online ? '#2ecc71' : '#e74c3c';
+                    html += `
+                        <label class="zone-item">
+                            <input type="checkbox" class="zone-checkbox" value="${dev.name}" ${isChecked}>
+                            <div style="flex-grow:1;">
+                                <div style="font-weight:bold; color: #ecf0f1;">${dev.name}</div>
+                                <div style="font-size:0.8em; color: ${statusColor};">
+                                    ${dev.online ? 'Online' : 'Offline'} • IP: ${dev.ip || 'N/A'}
+                                </div>
+                            </div>
+                        </label>`;
+                });
+                micListDiv.innerHTML = html;
+            }
         }
 
-        // Giữ lại trạng thái đã tick chọn cũ
-        const currentChecked = Array.from(document.querySelectorAll('.zone-checkbox:checked')).map(cb => cb.value);
+        // Hàm hỗ trợ cập nhật dropdown (Dùng chung cho Tab Nhạc và Tab Hẹn Giờ)
+        const updateDropdown = (selectId, defaultOption) => {
+            const selectEl = document.getElementById(selectId);
+            if(selectEl) {
+                const currentVal = selectEl.value;
+                selectEl.innerHTML = ''; // Xóa cũ
+                selectEl.appendChild(defaultOption); // Thêm mặc định
+
+                if (managedDevices && managedDevices.length > 0) {
+                    managedDevices.forEach(dev => {
+                        const option = document.createElement('option');
+                        option.value = dev.name;
+                        option.textContent = `${dev.name} ${dev.online ? '(Online)' : '(Offline)'}`;
+                        if(!dev.online && selectId === 'music-target-select') option.disabled = true; 
+                        selectEl.appendChild(option);
+                    });
+                }
+                // Khôi phục giá trị cũ nếu còn tồn tại
+                if (Array.from(selectEl.options).some(opt => opt.value === currentVal)) {
+                    selectEl.value = currentVal;
+                }
+            }
+        };
+
+        // 2. Cập nhật Tab Nhạc
+        const musicDefault = document.createElement('option');
+        musicDefault.value = "MASTER";
+        musicDefault.textContent = "Máy chủ (Master)";
+        updateDropdown('music-target-select', musicDefault);
+
+        // 3. Cập nhật Tab Hẹn Giờ (MỚI THÊM)
+        const scenarioDefault = document.createElement('option');
+        scenarioDefault.value = "ALL";
+        scenarioDefault.textContent = "🔔 Toàn hệ thống (Mặc định)";
         
-        let html = '';
-        managedDevices.forEach(dev => {
-            const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
-            const statusColor = dev.online ? '#2ecc71' : '#e74c3c'; // Xanh hoặc Đỏ
-            
-            html += `
-                <label class="zone-item">
-                    <input type="checkbox" class="zone-checkbox" value="${dev.name}" ${isChecked}>
-                    <div style="flex-grow:1;">
-                        <div style="font-weight:bold; color: #ecf0f1;">${dev.name}</div>
-                        <div style="font-size:0.8em; color: ${statusColor};">
-                            ${dev.online ? 'Online' : 'Offline'} • IP: ${dev.ip || 'N/A'}
-                        </div>
-                    </div>
-                </label>
-            `;
-        });
-        listDiv.innerHTML = html;
+        // Thêm option Master cho Hẹn giờ
+        const masterOpt = document.createElement('option');
+        masterOpt.value = "MASTER";
+        masterOpt.textContent = "Máy chủ (Master)";
+        
+        const scenarioSelect = document.getElementById('scenario-target-select');
+        if(scenarioSelect) {
+             const currentVal = scenarioSelect.value;
+             scenarioSelect.innerHTML = '';
+             scenarioSelect.appendChild(scenarioDefault);
+             scenarioSelect.appendChild(masterOpt);
+             
+             if (managedDevices && managedDevices.length > 0) {
+                managedDevices.forEach(dev => {
+                    const option = document.createElement('option');
+                    option.value = dev.name;
+                    option.textContent = dev.name;
+                    scenarioSelect.appendChild(option);
+                });
+            }
+            if (Array.from(scenarioSelect.options).some(opt => opt.value === currentVal)) {
+                scenarioSelect.value = currentVal;
+            }
+        }
     }
 </script>
-
 </body>
 </html>
