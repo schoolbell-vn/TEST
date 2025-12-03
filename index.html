@@ -1821,15 +1821,23 @@
         </summary>
         
         <div class="details-content" style="padding-top: 20px; display: flex; flex-direction: column; gap: 15px;">
-            <div class="scenario-input-group">
-    <label for="scenario-target-select">
+           <div class="scenario-input-group">
+    <label>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.486 2 3.407 3.585 0 6l1.414 1.414C4.195 5.53 7.855 4 12 4s7.805 1.53 10.586 3.414L24 6C20.593 3.585 16.514 2 12 2zm0 4c-3.145 0-6.195 1.229-8.485 3.414L5.414 11.31C7.21 9.898 9.51 9 12 9s4.79 0.898 6.586 2.31l1.899-1.898C18.195 7.229 15.145 6 12 6zm0 5c-1.854 0-3.58.718-4.828 1.968L9.07 14.864C9.945 14.18 10.94 13.8 12 13.8s2.055 0.38 2.93 1.064l1.898-1.898C15.58 11.718 13.854 11 12 11zm0 4.2c-0.828 0-1.5 0.672-1.5 1.5s0.672 1.5 1.5 1.5 1.5-0.672 1.5-1.5-0.672-1.5-1.5-1.5z"></path></svg>
-        Áp dụng cho thiết bị
+        Áp dụng cho các thiết bị
     </label>
-    <select id="scenario-target-select" class="modal-input" style="background: #232526; color: #fff; padding: 10px; border: 1px solid #7f8c8d;">
-        <option value="ALL">🔔 Toàn hệ thống (Mặc định)</option>
-        <option value="MASTER">Máy chủ (Master)</option>
-        </select>
+    
+    <div class="zone-selector" style="padding: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px;">
+        <div id="scenario-target-list">
+            <div style="text-align: center; color: #777;">Đang tải danh sách...</div>
+        </div>
+    </div>
+    
+    <div style="text-align: right; margin-top: 5px;">
+        <button type="button" onclick="toggleAllScenarioTargets()" style="background: none; border: none; color: #3498db; cursor: pointer; font-size: 0.85em; font-weight: bold;">
+            Chọn tất cả / Bỏ chọn
+        </button>
+    </div>
 </div>
             <div class="scenario-input-group">
                 <label for="scenario-start-time">
@@ -4830,14 +4838,16 @@ function showNotification(msg, type="info") {
 
     // 3. Hàm cập nhật danh sách Vệ tinh (Đã nâng cấp để cập nhật cả Tab Nhạc)
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ CHO TOÀN BỘ GIAO DIỆN ===
+    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ NÂNG CẤP CHECKBOX ĐA CHỌN) ===
     function updateMicZoneList(managedDevices) {
-        // 1. Cập nhật Tab Micro (Zone Selector)
+        // --- 1. Cập nhật Tab Micro (Zone Selector) ---
         const micListDiv = document.getElementById("mic-zone-list");
         if (micListDiv) {
             if (!managedDevices || managedDevices.length === 0) {
                 micListDiv.innerHTML = '<div style="text-align: center; color: #777; padding: 10px;">Chưa có vệ tinh nào kết nối.</div>';
             } else {
-                const currentChecked = Array.from(document.querySelectorAll('.zone-checkbox:checked')).map(cb => cb.value);
+                // (Giữ logic cũ của Tab Mic)
+                const currentChecked = Array.from(document.querySelectorAll('#mic-zone-list .zone-checkbox:checked')).map(cb => cb.value);
                 let html = '';
                 managedDevices.forEach(dev => {
                     const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
@@ -4857,65 +4867,123 @@ function showNotification(msg, type="info") {
             }
         }
 
-        // Hàm hỗ trợ cập nhật dropdown (Dùng chung cho Tab Nhạc và Tab Hẹn Giờ)
-        const updateDropdown = (selectId, defaultOption) => {
-            const selectEl = document.getElementById(selectId);
-            if(selectEl) {
-                const currentVal = selectEl.value;
-                selectEl.innerHTML = ''; // Xóa cũ
-                selectEl.appendChild(defaultOption); // Thêm mặc định
-
-                if (managedDevices && managedDevices.length > 0) {
-                    managedDevices.forEach(dev => {
-                        const option = document.createElement('option');
-                        option.value = dev.name;
-                        option.textContent = `${dev.name} ${dev.online ? '(Online)' : '(Offline)'}`;
-                        if(!dev.online && selectId === 'music-target-select') option.disabled = true; 
-                        selectEl.appendChild(option);
-                    });
-                }
-                // Khôi phục giá trị cũ nếu còn tồn tại
-                if (Array.from(selectEl.options).some(opt => opt.value === currentVal)) {
-                    selectEl.value = currentVal;
-                }
-            }
-        };
-
-        // 2. Cập nhật Tab Nhạc
-        const musicDefault = document.createElement('option');
-        musicDefault.value = "MASTER";
-        musicDefault.textContent = "Máy chủ (Master)";
-        updateDropdown('music-target-select', musicDefault);
-
-        // 3. Cập nhật Tab Hẹn Giờ (MỚI THÊM)
-        const scenarioDefault = document.createElement('option');
-        scenarioDefault.value = "ALL";
-        scenarioDefault.textContent = "🔔 Toàn hệ thống (Mặc định)";
-        
-        // Thêm option Master cho Hẹn giờ
-        const masterOpt = document.createElement('option');
-        masterOpt.value = "MASTER";
-        masterOpt.textContent = "Máy chủ (Master)";
-        
-        const scenarioSelect = document.getElementById('scenario-target-select');
-        if(scenarioSelect) {
-             const currentVal = scenarioSelect.value;
-             scenarioSelect.innerHTML = '';
-             scenarioSelect.appendChild(scenarioDefault);
-             scenarioSelect.appendChild(masterOpt);
-             
-             if (managedDevices && managedDevices.length > 0) {
+        // --- 2. Cập nhật Tab Nhạc (Vẫn dùng Dropdown select 1 cái) ---
+        const musicSelect = document.getElementById('music-target-select');
+        if(musicSelect) {
+            const currentVal = musicSelect.value;
+            musicSelect.innerHTML = '<option value="MASTER">Máy chủ (Master)</option>';
+            if (managedDevices && managedDevices.length > 0) {
                 managedDevices.forEach(dev => {
                     const option = document.createElement('option');
                     option.value = dev.name;
-                    option.textContent = dev.name;
-                    scenarioSelect.appendChild(option);
+                    option.textContent = `${dev.name} ${dev.online ? '(Online)' : '(Offline)'}`;
+                    if(!dev.online) option.disabled = true; 
+                    musicSelect.appendChild(option);
                 });
             }
-            if (Array.from(scenarioSelect.options).some(opt => opt.value === currentVal)) {
-                scenarioSelect.value = currentVal;
-            }
+            if (Array.from(musicSelect.options).some(opt => opt.value === currentVal)) musicSelect.value = currentVal;
         }
+
+        // --- 3. Cập nhật Tab Hẹn Giờ (CHUYỂN SANG CHECKBOX ĐA CHỌN) ---
+        const scenarioListDiv = document.getElementById('scenario-target-list');
+        if(scenarioListDiv) {
+            // Lấy danh sách đang chọn hiện tại để bảo lưu
+            const currentChecked = Array.from(document.querySelectorAll('#scenario-target-list .zone-checkbox:checked')).map(cb => cb.value);
+            
+            let html = '';
+            
+            // Luôn thêm Master đầu tiên
+            const masterChecked = currentChecked.includes('MASTER') ? 'checked' : '';
+            html += `
+                <label class="zone-item">
+                    <input type="checkbox" class="zone-checkbox scenario-cb" value="MASTER" ${masterChecked}>
+                    <div style="flex-grow:1; font-weight:bold; color: #f1c40f;">Máy chủ (Master)</div>
+                </label>`;
+
+            // Thêm các vệ tinh
+            if (managedDevices && managedDevices.length > 0) {
+                managedDevices.forEach(dev => {
+                    const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
+                    html += `
+                        <label class="zone-item">
+                            <input type="checkbox" class="zone-checkbox scenario-cb" value="${dev.name}" ${isChecked}>
+                            <div style="flex-grow:1; font-weight:bold; color: #ecf0f1;">${dev.name}</div>
+                        </label>`;
+                });
+            } else {
+                html += '<div style="text-align: center; color: #777; padding: 5px;">Chưa có vệ tinh.</div>';
+            }
+            scenarioListDiv.innerHTML = html;
+        }
+    }
+// [MỚI] Hàm chọn tất cả/bỏ chọn cho Tab Hẹn Giờ
+    function toggleAllScenarioTargets() {
+        const checkboxes = document.querySelectorAll('.scenario-cb');
+        // Kiểm tra xem có phải tất cả đang được chọn không
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        // Đảo ngược trạng thái
+        checkboxes.forEach(cb => cb.checked = !allChecked);
+    }
+
+    // [CẬP NHẬT] Hàm gửi kịch bản (Lấy dữ liệu từ danh sách Checkbox)
+    async function sendScenario() {
+        if (!client || !client.connected) {
+            return showNotification("Chưa kết nối máy chủ!", 'error');
+        }
+
+        if (!previewedScenarioData) {
+            showNotification("Vui lòng nhấn 'Xem Trước Kịch Bản' trước khi gửi lệnh.", "error");
+            return;
+        }
+
+        // --- THAY ĐỔI: Lấy danh sách từ Checkbox thay vì Select ---
+        const checkboxes = document.querySelectorAll('.scenario-cb:checked');
+        const targetList = Array.from(checkboxes).map(cb => cb.value);
+
+        // Nếu không chọn ai -> Báo lỗi
+        if (targetList.length === 0) {
+            return showNotification("Vui lòng chọn ít nhất một thiết bị!", "error");
+        }
+        
+        // Kiểm tra xem có chọn HẾT không -> Nếu hết thì gán là ALL để tiết kiệm, hoặc gửi cả list cũng được
+        // Ở đây ta gửi cả list cho chính xác
+        // ----------------------------------------------------------
+
+        const { scenario, days } = previewedScenarioData;
+
+        if (days.length === 0) {
+            return showNotification("Vui lòng chọn ngày áp dụng!", "error");
+        }
+
+        let userPriority = 'none'; 
+        const conflict = await checkForConflicts(scenario, days);
+
+        if (conflict.conflicting) {
+            const userChoice = await openConflictModal(conflict.message);
+            if (userChoice === 'cancel') {
+                showNotification("Đã hủy gửi lệnh.", "info");
+                return;
+            }
+            userPriority = userChoice;
+        }
+
+        const payload = {
+            scenario: scenario,
+            priority: userPriority,
+            days: days,
+            targets: targetList // Gửi mảng danh sách tên thiết bị: ["MASTER", "VeTinh-1", ...]
+        };
+
+        const SCENARIO_ADD_TOPIC = "esp32/bell/scenario/add"; 
+        client.publish(SCENARIO_ADD_TOPIC, JSON.stringify(payload), { qos: 1 });
+
+        showNotification(`Đã gửi kịch bản cho ${targetList.length} thiết bị!`, "success");
+        
+        document.getElementById('scenario-preview-table-container').innerHTML = '';
+        previewedScenarioData = null;
+        
+        // Reset checkbox sau khi gửi nếu muốn (tùy chọn)
+        // toggleAllScenarioTargets(); 
     }
 </script>
 </body>
