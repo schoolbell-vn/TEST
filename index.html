@@ -1747,17 +1747,30 @@
     .mic-icon { width: 60px; height: 60px; fill: white; pointer-events: none; }
     .mic-status { font-weight: bold; color: #bdc3c7; margin-bottom: 15px; font-size: 1.2em; text-transform: uppercase;}
     
+    /* === [ĐÃ CHỈNH SỬA] CSS CHO MICROPHONE VÀ ZONE === */
     .zone-selector {
-        width: 100%; background: #232526; padding: 15px; border-radius: 12px;
+        width: 100%; background: #232526; padding: 5px; /* Giảm padding khung ngoài */
+        border-radius: 12px;
         border: 1px solid #414345; margin-top: 10px;
     }
     .zone-item {
-        display: flex; align-items: center; padding: 10px;
+        display: flex; align-items: center; 
+        padding: 6px 2px; /* Sát lề: Trên dưới 6px, Trái phải 2px */
         border-bottom: 1px solid #414345;
         cursor: pointer;
     }
     .zone-item:last-child { border-bottom: none; }
-    .zone-checkbox { width: 22px; height: 22px; margin-right: 12px; accent-color: #f1c40f; }
+    
+    .zone-checkbox { 
+        width: 18px; height: 18px; /* Checkbox bé lại một chút */
+        margin-right: 8px; margin-left: 2px; /* Căn chỉnh khoảng cách */
+        accent-color: #f1c40f; 
+    }
+    
+    /* Thêm đoạn này để chỉnh cỡ chữ tên thiết bị bé lại */
+    .zone-item div {
+        font-size: 0.9em; /* Cỡ chữ khoảng 90% so với bình thường */
+    }
   </style>
 </head>
 <body>
@@ -4839,14 +4852,14 @@ function showNotification(msg, type="info") {
     // 3. Hàm cập nhật danh sách Vệ tinh (Đã nâng cấp để cập nhật cả Tab Nhạc)
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ CHO TOÀN BỘ GIAO DIỆN ===
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ NÂNG CẤP CHECKBOX ĐA CHỌN) ===
+    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ CHỈNH STYLE CHỮ BÉ LẠI) ===
     function updateMicZoneList(managedDevices) {
         // --- 1. Cập nhật Tab Micro (Zone Selector) ---
         const micListDiv = document.getElementById("mic-zone-list");
         if (micListDiv) {
             if (!managedDevices || managedDevices.length === 0) {
-                micListDiv.innerHTML = '<div style="text-align: center; color: #777; padding: 10px;">Chưa có vệ tinh nào kết nối.</div>';
+                micListDiv.innerHTML = '<div style="text-align: center; color: #777; padding: 10px; font-size: 0.9em;">Chưa có vệ tinh nào kết nối.</div>';
             } else {
-                // (Giữ logic cũ của Tab Mic)
                 const currentChecked = Array.from(document.querySelectorAll('#mic-zone-list .zone-checkbox:checked')).map(cb => cb.value);
                 let html = '';
                 managedDevices.forEach(dev => {
@@ -4856,8 +4869,8 @@ function showNotification(msg, type="info") {
                         <label class="zone-item">
                             <input type="checkbox" class="zone-checkbox" value="${dev.name}" ${isChecked}>
                             <div style="flex-grow:1;">
-                                <div style="font-weight:bold; color: #ecf0f1;">${dev.name}</div>
-                                <div style="font-size:0.8em; color: ${statusColor};">
+                                <div style="color: #ecf0f1; font-size: 0.95em;">${dev.name}</div>
+                                <div style="font-size:0.8em; color: ${statusColor}; margin-top: 2px;">
                                     ${dev.online ? 'Online' : 'Offline'} • IP: ${dev.ip || 'N/A'}
                                 </div>
                             </div>
@@ -4867,7 +4880,7 @@ function showNotification(msg, type="info") {
             }
         }
 
-        // --- 2. Cập nhật Tab Nhạc (Vẫn dùng Dropdown select 1 cái) ---
+        // --- 2. Cập nhật Tab Nhạc (Giữ nguyên) ---
         const musicSelect = document.getElementById('music-target-select');
         if(musicSelect) {
             const currentVal = musicSelect.value;
@@ -4884,34 +4897,33 @@ function showNotification(msg, type="info") {
             if (Array.from(musicSelect.options).some(opt => opt.value === currentVal)) musicSelect.value = currentVal;
         }
 
-        // --- 3. Cập nhật Tab Hẹn Giờ (CHUYỂN SANG CHECKBOX ĐA CHỌN) ---
+        // --- 3. Cập nhật Tab Hẹn Giờ (CHECKBOX) ---
         const scenarioListDiv = document.getElementById('scenario-target-list');
         if(scenarioListDiv) {
-            // Lấy danh sách đang chọn hiện tại để bảo lưu
             const currentChecked = Array.from(document.querySelectorAll('#scenario-target-list .zone-checkbox:checked')).map(cb => cb.value);
             
             let html = '';
             
-            // Luôn thêm Master đầu tiên
+            // Master (Bỏ font-weight:bold, chỉnh size)
             const masterChecked = currentChecked.includes('MASTER') ? 'checked' : '';
             html += `
                 <label class="zone-item">
                     <input type="checkbox" class="zone-checkbox scenario-cb" value="MASTER" ${masterChecked}>
-                    <div style="flex-grow:1; font-weight:bold; color: #f1c40f;">Máy chủ (Master)</div>
+                    <div style="flex-grow:1; color: #f1c40f; font-size: 0.95em;">Máy chủ (Master)</div>
                 </label>`;
 
-            // Thêm các vệ tinh
+            // Vệ tinh
             if (managedDevices && managedDevices.length > 0) {
                 managedDevices.forEach(dev => {
                     const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
                     html += `
                         <label class="zone-item">
                             <input type="checkbox" class="zone-checkbox scenario-cb" value="${dev.name}" ${isChecked}>
-                            <div style="flex-grow:1; font-weight:bold; color: #ecf0f1;">${dev.name}</div>
+                            <div style="flex-grow:1; color: #ecf0f1; font-size: 0.95em;">${dev.name}</div>
                         </label>`;
                 });
             } else {
-                html += '<div style="text-align: center; color: #777; padding: 5px;">Chưa có vệ tinh.</div>';
+                html += '<div style="text-align: center; color: #777; padding: 5px; font-size: 0.9em;">Chưa có vệ tinh.</div>';
             }
             scenarioListDiv.innerHTML = html;
         }
