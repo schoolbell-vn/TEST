@@ -1751,44 +1751,41 @@
     
     /* === [ĐÃ CHỈNH SỬA] CSS CHO MICROPHONE VÀ ZONE === */
    /* === CSS CHUẨN CHO KHUNG CHỌN THIẾT BỊ (ZONE) === */
+/* === FIX CỨNG GIAO DIỆN DANH SÁCH THIẾT BỊ === */
 .zone-selector {
     width: 100%;
     background: #232526;
-    /* QUAN TRỌNG: Padding = 0 để nội dung sát viền khung */
-    padding: 0; 
-    border-radius: 8px;
+    padding: 0 !important; /* Ép sát viền */
     border: 1px solid #414345;
-    margin-top: 10px;
-    /* Thêm thanh cuộn đẹp nếu danh sách dài */
-    overflow-y: auto; 
+    border-radius: 8px;
+    margin-top: 5px;
+    overflow-y: auto;
+    text-align: left !important; /* Ép toàn bộ nội dung căn trái */
 }
-.zone-selector::-webkit-scrollbar { width: 6px; }
-.zone-selector::-webkit-scrollbar-track { background: #232526; }
-.zone-selector::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
 
 .zone-item {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start; /* Đẩy nội dung sang trái */
-    /* Padding: Trên/Dưới 10px cho thoáng, Trái 5px để sát lề nhưng không dính viền */
-    padding: 10px 0px 10px 5px;
+    display: flex !important; /* Bắt buộc dùng Flexbox */
+    align-items: center !important;
+    justify-content: flex-start !important; /* Bắt buộc căn trái */
+    padding: 10px 10px !important; /* Khoảng cách chuẩn */
     border-bottom: 1px solid #414345;
     cursor: pointer;
-    text-align: left;
-    transition: background 0.2s;
+    width: 100%; /* Chiếm hết chiều ngang */
+    box-sizing: border-box;
 }
-.zone-item:last-child { border-bottom: none; }
-.zone-item:hover { background-color: #34495e; }
+
+.zone-item:last-child {
+    border-bottom: none;
+}
 
 .zone-checkbox {
-    width: 18px;
-    height: 18px;
-    /* QUAN TRỌNG: Margin phải 4px -> Chữ nằm ngay cạnh checkbox */
-    margin-right: 4px; 
-    margin-left: 0;
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 10px !important; /* Cách chữ ra 10px */
+    margin-left: 0 !important;
     accent-color: #f1c40f;
-    flex-shrink: 0;
     cursor: pointer;
+    flex-shrink: 0; /* Không bị co lại */
 }
   </style>
 </head>
@@ -4882,66 +4879,57 @@ function showNotification(msg, type="info") {
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ NÂNG CẤP CHECKBOX ĐA CHỌN) ===
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ CHỈNH STYLE CHỮ BÉ LẠI) ===
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ SỬA LỖI ID VÀ CÚ PHÁP) ===
-    function updateMicZoneList(managedDevices) {
-        // Hàm hỗ trợ vẽ HTML checkbox (Tái sử dụng code cho gọn)
-        const renderCheckboxList = (containerId, checkboxClass) => {
-            const listDiv = document.getElementById(containerId);
-            
-            // [QUAN TRỌNG] Kiểm tra xem khung chứa có tồn tại không
-            if (!listDiv) {
-                console.log("Không tìm thấy khung chứa có ID: " + containerId);
-                return;
-            }
+    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ CHỈNH SỬA GIAO DIỆN CHUẨN) ===
+function updateMicZoneList(managedDevices) {
+    // Hàm hỗ trợ vẽ HTML checkbox
+    const renderCheckboxList = (containerId, checkboxClass) => {
+        const listDiv = document.getElementById(containerId);
+        
+        if (!listDiv) return;
 
-            // Lấy danh sách đang chọn hiện tại để bảo lưu trạng thái
-            const currentChecked = Array.from(document.querySelectorAll(`#${containerId} .zone-checkbox:checked`)).map(cb => cb.value);
-            
-            let html = '';
-            
-            // 1. Luôn thêm Master đầu tiên
-            const masterChecked = currentChecked.includes('MASTER') ? 'checked' : '';
-            html += `
-                <label class="zone-item">
-                    <input type="checkbox" class="zone-checkbox ${checkboxClass}" value="MASTER" ${masterChecked}>
-                    <div style="flex-grow:1; color: #f1c40f; font-size: 0.95em;">Máy chủ (Master)</div>
-                </label>`;
+        // Lưu trạng thái checkbox đang chọn
+        const currentChecked = Array.from(document.querySelectorAll(`#${containerId} .zone-checkbox:checked`)).map(cb => cb.value);
+        
+        let html = '';
+        
+        // 1. Luôn thêm Master (Máy chủ)
+        const masterChecked = currentChecked.includes('MASTER') ? 'checked' : '';
+        // Lưu ý: Tôi đã bỏ các thẻ div thừa, chỉ giữ cấu trúc đơn giản để CSS dễ căn chỉnh
+        html += `
+            <label class="zone-item">
+                <input type="checkbox" class="zone-checkbox ${checkboxClass}" value="MASTER" ${masterChecked}>
+                <div style="color: #f1c40f; font-weight: bold; font-size: 0.95em;">Máy chủ (Master)</div>
+            </label>`;
 
-            // 2. Thêm các vệ tinh
-            if (managedDevices && managedDevices.length > 0) {
-                managedDevices.forEach(dev => {
-                    const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
-                    // Kiểm tra Online/Offline để hiển thị màu
-                    const statusColor = dev.online ? '#2ecc71' : '#e74c3c'; 
-                    const statusText = dev.online ? '(Online)' : '(Offline)';
-                    
-                    html += `
-                        <label class="zone-item">
-                            <input type="checkbox" class="zone-checkbox ${checkboxClass}" value="${dev.name}" ${isChecked}>
-                            <div style="flex-grow:1;">
-                                <div style="color: #ecf0f1; font-size: 0.95em;">${dev.name}</div>
-                                <div style="font-size:0.8em; color: ${statusColor}; margin-top: 2px;">
-                                    ${statusText} • IP: ${dev.ip || 'N/A'}
-                                </div>
+        // 2. Thêm các vệ tinh
+        if (managedDevices && managedDevices.length > 0) {
+            managedDevices.forEach(dev => {
+                const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
+                const statusColor = dev.online ? '#2ecc71' : '#e74c3c'; 
+                const statusText = dev.online ? 'Online' : 'Offline';
+                
+                html += `
+                    <label class="zone-item">
+                        <input type="checkbox" class="zone-checkbox ${checkboxClass}" value="${dev.name}" ${isChecked}>
+                        <div style="flex-grow: 1;">
+                            <div style="color: #ecf0f1; font-weight: 500;">${dev.name}</div>
+                            <div style="font-size: 0.8em; color: ${statusColor}; margin-top: 2px;">
+                                ● ${statusText} (IP: ${dev.ip || 'N/A'})
                             </div>
-                        </label>`;
-                });
-            } else {
-                html += '<div style="text-align: center; color: #777; padding: 5px; font-size: 0.9em;">Chưa có vệ tinh.</div>';
-            }
-            listDiv.innerHTML = html;
-        };
+                        </div>
+                    </label>`;
+            });
+        } else {
+            html += '<div style="text-align: center; color: #777; padding: 15px; font-size: 0.9em;">Chưa có vệ tinh kết nối.</div>';
+        }
+        listDiv.innerHTML = html;
+    };
 
-        // --- 1. Cập nhật Tab Micro ---
-        // ID trong HTML của tab Micro là "mic-zone-list"
-        renderCheckboxList("mic-zone-list", ""); 
-
-        // --- 2. Cập nhật Tab Nhạc (QUAN TRỌNG: Đã sửa thành music-target-list) ---
-        renderCheckboxList("music-target-list", "music-cb");
-
-        // --- 3. Cập nhật Tab Hẹn Giờ ---
-        // ID trong HTML của tab Hẹn giờ là "scenario-target-list"
-        renderCheckboxList("scenario-target-list", "scenario-cb");
-    }
+    // Cập nhật cho cả 3 Tab: Micro, Nhạc, Hẹn Giờ
+    renderCheckboxList("mic-zone-list", ""); 
+    renderCheckboxList("music-target-list", "music-cb");
+    renderCheckboxList("scenario-target-list", "scenario-cb");
+}
 // [MỚI] Hàm chọn tất cả/bỏ chọn cho Tab Hẹn Giờ
     function toggleAllScenarioTargets() {
         const checkboxes = document.querySelectorAll('.scenario-cb');
