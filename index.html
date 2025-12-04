@@ -27,7 +27,8 @@
     border: none;
     background: transparent;
     box-shadow: none;
-    margin: 0 15px 15px 15px; /* Căn lề cho đồng bộ */
+    margin: 0 0 15px 0; /* [SỬA] Bỏ margin trái phải (về 0) để khung rộng ra */
+    width: 100%;
 }
 .scenario-setup-details > summary {
     display: flex;
@@ -1635,14 +1636,15 @@
         color: #f1c40f;
     }
     .scenario-input-group input {
-        width: 100%;
-        padding: 10px;
-        border-radius: 6px;
-        border: 1px solid #7f8c8d;
-        background-color: #2c3e50;
-        color: #ecf0f1;
-        font-size: 1.1em;
-    }
+    width: 100%;
+    padding: 6px 10px; /* [SỬA] Giảm độ cao trên dưới từ 10px xuống 6px */
+    border-radius: 6px;
+    border: 1px solid #7f8c8d;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-size: 1em; /* [SỬA] Giảm cỡ chữ xuống 1em cho vừa vặn */
+    height: 38px; /* [THÊM] Cố định chiều cao chuẩn */
+}
     .scenario-helper-text {
         font-size: 0.8em;
         color: #7f8c8d;
@@ -1748,29 +1750,30 @@
     .mic-status { font-weight: bold; color: #bdc3c7; margin-bottom: 15px; font-size: 1.2em; text-transform: uppercase;}
     
     /* === [ĐÃ CHỈNH SỬA] CSS CHO MICROPHONE VÀ ZONE === */
-    .zone-selector {
-        width: 100%; background: #232526; padding: 5px; /* Giảm padding khung ngoài */
-        border-radius: 12px;
-        border: 1px solid #414345; margin-top: 10px;
-    }
-    .zone-item {
-        display: flex; align-items: center; 
-        padding: 6px 2px; /* Sát lề: Trên dưới 6px, Trái phải 2px */
-        border-bottom: 1px solid #414345;
-        cursor: pointer;
-    }
-    .zone-item:last-child { border-bottom: none; }
-    
-    .zone-checkbox { 
-        width: 18px; height: 18px; /* Checkbox bé lại một chút */
-        margin-right: 8px; margin-left: 2px; /* Căn chỉnh khoảng cách */
-        accent-color: #f1c40f; 
-    }
-    
-    /* Thêm đoạn này để chỉnh cỡ chữ tên thiết bị bé lại */
-    .zone-item div {
-        font-size: 0.9em; /* Cỡ chữ khoảng 90% so với bình thường */
-    }
+   .zone-selector {
+    width: 100%; 
+    background: #232526; 
+    padding: 5px 0; /* [SỬA] Bỏ padding trái phải để sát lề */
+    border-radius: 8px;
+    border: 1px solid #414345; 
+    margin-top: 10px;
+}
+.zone-item {
+    display: flex; 
+    align-items: center; 
+    justify-content: flex-start; /* [SỬA] Căn trái nội dung */
+    padding: 8px 10px; /* [SỬA] Tăng vùng bấm, căn lề trái 10px cho đẹp */
+    border-bottom: 1px solid #414345;
+    cursor: pointer;
+}
+.zone-checkbox { 
+    width: 18px; 
+    height: 18px;
+    margin-right: 12px; /* Tăng khoảng cách giữa checkbox và chữ */
+    margin-left: 0; /* [SỬA] Bỏ margin trái để sát lề */
+    accent-color: #f1c40f; 
+    flex-shrink: 0; /* Đảm bảo checkbox không bị méo */
+}
   </style>
 </head>
 <body>
