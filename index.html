@@ -1761,18 +1761,19 @@
 .zone-item {
     display: flex; 
     align-items: center; 
-    justify-content: flex-start; /* [SỬA] Căn trái nội dung */
-    padding: 8px 10px; /* [SỬA] Tăng vùng bấm, căn lề trái 10px cho đẹp */
+    justify-content: flex-start; 
+    padding: 8px 0px 8px 5px; /* SỬA: Giảm padding trái xuống 5px để sát lề */
     border-bottom: 1px solid #414345;
     cursor: pointer;
+    text-align: left; /* Đảm bảo chữ cũng căn trái */
 }
 .zone-checkbox { 
     width: 18px; 
     height: 18px;
-    margin-right: 12px; /* Tăng khoảng cách giữa checkbox và chữ */
-    margin-left: 0; /* [SỬA] Bỏ margin trái để sát lề */
+    margin-right: 4px; /* [SỬA] Giảm xuống 4px cho sát */
+    margin-left: 0;
     accent-color: #f1c40f; 
-    flex-shrink: 0; /* Đảm bảo checkbox không bị méo */
+    flex-shrink: 0;
 }
   </style>
 </head>
@@ -1843,7 +1844,7 @@
         Áp dụng cho các thiết bị
     </label>
     
-    <div class="zone-selector" style="padding: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px;">
+    <div class="zone-selector" style="padding: 0; max-height: 200px; overflow-y: auto; margin-top: 5px;">
         <div id="scenario-target-list">
             <div style="text-align: center; color: #777;">Đang tải danh sách...</div>
         </div>
