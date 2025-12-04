@@ -1750,30 +1750,45 @@
     .mic-status { font-weight: bold; color: #bdc3c7; margin-bottom: 15px; font-size: 1.2em; text-transform: uppercase;}
     
     /* === [ĐÃ CHỈNH SỬA] CSS CHO MICROPHONE VÀ ZONE === */
-   .zone-selector {
-    width: 100%; 
-    background: #232526; 
-    padding: 5px 0; /* [SỬA] Bỏ padding trái phải để sát lề */
+   /* === CSS CHUẨN CHO KHUNG CHỌN THIẾT BỊ (ZONE) === */
+.zone-selector {
+    width: 100%;
+    background: #232526;
+    /* QUAN TRỌNG: Padding = 0 để nội dung sát viền khung */
+    padding: 0; 
     border-radius: 8px;
-    border: 1px solid #414345; 
+    border: 1px solid #414345;
     margin-top: 10px;
+    /* Thêm thanh cuộn đẹp nếu danh sách dài */
+    overflow-y: auto; 
 }
+.zone-selector::-webkit-scrollbar { width: 6px; }
+.zone-selector::-webkit-scrollbar-track { background: #232526; }
+.zone-selector::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
 .zone-item {
-    display: flex; 
-    align-items: center; 
-    justify-content: flex-start; 
-    padding: 8px 0px 8px 5px; /* SỬA: Giảm padding trái xuống 5px để sát lề */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Đẩy nội dung sang trái */
+    /* Padding: Trên/Dưới 10px cho thoáng, Trái 5px để sát lề nhưng không dính viền */
+    padding: 10px 0px 10px 5px;
     border-bottom: 1px solid #414345;
     cursor: pointer;
-    text-align: left; /* Đảm bảo chữ cũng căn trái */
+    text-align: left;
+    transition: background 0.2s;
 }
-.zone-checkbox { 
-    width: 18px; 
+.zone-item:last-child { border-bottom: none; }
+.zone-item:hover { background-color: #34495e; }
+
+.zone-checkbox {
+    width: 18px;
     height: 18px;
-    margin-right: 4px; /* [SỬA] Giảm xuống 4px cho sát */
+    /* QUAN TRỌNG: Margin phải 4px -> Chữ nằm ngay cạnh checkbox */
+    margin-right: 4px; 
     margin-left: 0;
-    accent-color: #f1c40f; 
+    accent-color: #f1c40f;
     flex-shrink: 0;
+    cursor: pointer;
 }
   </style>
 </head>
@@ -2106,7 +2121,7 @@
             CHỌN LOA PHÁT NHẠC
         </label>
         
-        <div class="zone-selector" style="padding: 5px; max-height: 150px; overflow-y: auto; margin-top: 5px; border: 1px solid #414345; background: #2c3e50;">
+        <div class="zone-selector" style="padding: 0; max-height: 150px; overflow-y: auto; margin-top: 5px; border: 1px solid #414345; background: #232526;">
             <div id="music-target-list">
                 <div style="text-align: center; color: #777; font-size: 0.9em;">Đang tải danh sách...</div>
             </div>
