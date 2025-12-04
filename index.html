@@ -2098,12 +2098,21 @@
         <div id="tab-phat-nhac" class="main-tab-content">
             <div class="sohoi-container" style="margin-top: 15px;">
     <div style="background: #232526; border: 1px solid #f1c40f; border-radius: 8px; padding: 10px;">
-        <label for="music-target-select" style="color: #f1c40f; font-weight: bold; display: block; margin-bottom: 8px; text-align: center;">
+        <label style="color: #f1c40f; font-weight: bold; display: block; margin-bottom: 8px; text-align: center;">
             CHỌN LOA PHÁT NHẠC
         </label>
-        <select id="music-target-select" onchange="changeMusicTarget()" style="width: 100%; padding: 10px; background: #2c3e50; color: white; border: 1px solid #414345; border-radius: 5px; font-size: 1em;">
-            <option value="MASTER">Máy chủ (Master)</option>
-            </select>
+        
+        <div class="zone-selector" style="padding: 5px; max-height: 150px; overflow-y: auto; margin-top: 5px; border: 1px solid #414345; background: #2c3e50;">
+            <div id="music-target-list">
+                <div style="text-align: center; color: #777; font-size: 0.9em;">Đang tải danh sách...</div>
+            </div>
+        </div>
+
+        <div style="text-align: right; margin-top: 5px;">
+            <button type="button" onclick="toggleAllMusicTargets()" style="background: none; border: none; color: #3498db; cursor: pointer; font-size: 0.85em;">
+                Chọn tất cả / Bỏ chọn
+            </button>
+        </div>
     </div>
 </div>
             <div class="music-player-container" style="margin-top: 5px;">
@@ -4853,80 +4862,61 @@ function showNotification(msg, type="info") {
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ CHO TOÀN BỘ GIAO DIỆN ===
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ NÂNG CẤP CHECKBOX ĐA CHỌN) ===
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ CHỈNH STYLE CHỮ BÉ LẠI) ===
+    function updateMicZoneList(managedDevices) {// === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ ĐỒNG BỘ CHECKBOX CHO CẢ 3 TAB) ===
     function updateMicZoneList(managedDevices) {
-        // --- 1. Cập nhật Tab Micro (Zone Selector) ---
-        const micListDiv = document.getElementById("mic-zone-list");
-        if (micListDiv) {
-            if (!managedDevices || managedDevices.length === 0) {
-                micListDiv.innerHTML = '<div style="text-align: center; color: #777; padding: 10px; font-size: 0.9em;">Chưa có vệ tinh nào kết nối.</div>';
-            } else {
-                const currentChecked = Array.from(document.querySelectorAll('#mic-zone-list .zone-checkbox:checked')).map(cb => cb.value);
-                let html = '';
-                managedDevices.forEach(dev => {
-                    const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
-                    const statusColor = dev.online ? '#2ecc71' : '#e74c3c';
-                    html += `
-                        <label class="zone-item">
-                            <input type="checkbox" class="zone-checkbox" value="${dev.name}" ${isChecked}>
-                            <div style="flex-grow:1;">
-                                <div style="color: #ecf0f1; font-size: 0.95em;">${dev.name}</div>
-                                <div style="font-size:0.8em; color: ${statusColor}; margin-top: 2px;">
-                                    ${dev.online ? 'Online' : 'Offline'} • IP: ${dev.ip || 'N/A'}
-                                </div>
-                            </div>
-                        </label>`;
-                });
-                micListDiv.innerHTML = html;
-            }
-        }
+        // Hàm hỗ trợ vẽ HTML checkbox (Tái sử dụng code cho gọn)
+        const renderCheckboxList = (containerId, checkboxClass) => {
+            const listDiv = document.getElementById(containerId);
+            if (!listDiv) return;
 
-        // --- 2. Cập nhật Tab Nhạc (Giữ nguyên) ---
-        const musicSelect = document.getElementById('music-target-select');
-        if(musicSelect) {
-            const currentVal = musicSelect.value;
-            musicSelect.innerHTML = '<option value="MASTER">Máy chủ (Master)</option>';
-            if (managedDevices && managedDevices.length > 0) {
-                managedDevices.forEach(dev => {
-                    const option = document.createElement('option');
-                    option.value = dev.name;
-                    option.textContent = `${dev.name} ${dev.online ? '(Online)' : '(Offline)'}`;
-                    if(!dev.online) option.disabled = true; 
-                    musicSelect.appendChild(option);
-                });
-            }
-            if (Array.from(musicSelect.options).some(opt => opt.value === currentVal)) musicSelect.value = currentVal;
-        }
-
-        // --- 3. Cập nhật Tab Hẹn Giờ (CHECKBOX) ---
-        const scenarioListDiv = document.getElementById('scenario-target-list');
-        if(scenarioListDiv) {
-            const currentChecked = Array.from(document.querySelectorAll('#scenario-target-list .zone-checkbox:checked')).map(cb => cb.value);
+            // Lấy danh sách đang chọn hiện tại để bảo lưu trạng thái
+            const currentChecked = Array.from(document.querySelectorAll(`#${containerId} .zone-checkbox:checked`)).map(cb => cb.value);
             
             let html = '';
             
-            // Master (Bỏ font-weight:bold, chỉnh size)
+            // 1. Luôn thêm Master đầu tiên
             const masterChecked = currentChecked.includes('MASTER') ? 'checked' : '';
             html += `
                 <label class="zone-item">
-                    <input type="checkbox" class="zone-checkbox scenario-cb" value="MASTER" ${masterChecked}>
+                    <input type="checkbox" class="zone-checkbox ${checkboxClass}" value="MASTER" ${masterChecked}>
                     <div style="flex-grow:1; color: #f1c40f; font-size: 0.95em;">Máy chủ (Master)</div>
                 </label>`;
 
-            // Vệ tinh
+            // 2. Thêm các vệ tinh
             if (managedDevices && managedDevices.length > 0) {
                 managedDevices.forEach(dev => {
                     const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
+                    // Kiểm tra Online/Offline để hiển thị màu
+                    const statusColor = dev.online ? '#2ecc71' : '#e74c3c'; 
+                    const statusText = dev.online ? '(Online)' : '(Offline)';
+                    
                     html += `
                         <label class="zone-item">
-                            <input type="checkbox" class="zone-checkbox scenario-cb" value="${dev.name}" ${isChecked}>
-                            <div style="flex-grow:1; color: #ecf0f1; font-size: 0.95em;">${dev.name}</div>
+                            <input type="checkbox" class="zone-checkbox ${checkboxClass}" value="${dev.name}" ${isChecked}>
+                            <div style="flex-grow:1;">
+                                <div style="color: #ecf0f1; font-size: 0.95em;">${dev.name}</div>
+                                <div style="font-size:0.8em; color: ${statusColor}; margin-top: 2px;">
+                                    ${statusText} • IP: ${dev.ip || 'N/A'}
+                                </div>
+                            </div>
                         </label>`;
                 });
             } else {
                 html += '<div style="text-align: center; color: #777; padding: 5px; font-size: 0.9em;">Chưa có vệ tinh.</div>';
             }
-            scenarioListDiv.innerHTML = html;
-        }
+            listDiv.innerHTML = html;
+        };
+
+        // --- 1. Cập nhật Tab Micro ---
+        // Tab Micro dùng logic hơi khác (chỉ hiện vệ tinh, Master xử lý riêng hoặc gộp chung tùy ý)
+        // Ở đây tôi áp dụng logic chuẩn giống Hẹn giờ cho đồng bộ
+        renderCheckboxList("mic-zone-list", ""); 
+
+        // --- 2. Cập nhật Tab Nhạc (MỚI: Dùng Checkbox) ---
+        renderCheckboxList("music-target-list", "music-cb");
+
+        // --- 3. Cập nhật Tab Hẹn Giờ (Checkbox) ---
+        renderCheckboxList("scenario-target-list", "scenario-cb");
     }
 // [MỚI] Hàm chọn tất cả/bỏ chọn cho Tab Hẹn Giờ
     function toggleAllScenarioTargets() {
@@ -4996,6 +4986,55 @@ function showNotification(msg, type="info") {
         
         // Reset checkbox sau khi gửi nếu muốn (tùy chọn)
         // toggleAllScenarioTargets(); 
+    }
+// [MỚI] Hàm chọn tất cả cho Tab Nhạc
+    function toggleAllMusicTargets() {
+        const checkboxes = document.querySelectorAll('.music-cb');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => cb.checked = !allChecked);
+    }
+
+    // [CẬP NHẬT] Hàm điều khiển nhạc (Lấy danh sách từ Checkbox)
+    function handleMusicControl(command, value = null) {
+        if (!client || !client.connected) return showNotification("Chưa kết nối máy chủ!", 'error');
+        
+        // 1. Lấy danh sách các thiết bị được chọn
+        const checkboxes = document.querySelectorAll('.music-cb:checked');
+        const targetList = Array.from(checkboxes).map(cb => cb.value);
+
+        if (targetList.length === 0) {
+            return showNotification("Vui lòng chọn ít nhất 1 loa để phát!", "error");
+        }
+
+        // 2. Tạo payload
+        const payload = { 
+            command: command,
+            targets: targetList // Gửi mảng danh sách thiết bị
+        };
+        
+        if (value !== null) {
+             if (command === 'set_volume') {
+                payload.value = Math.round(parseInt(value) / 100 * 30);
+            } else {
+                payload.value = value;
+            }
+        }
+        
+        // 3. Gửi lệnh
+        client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+        
+        // Hiệu ứng phản hồi
+        if(command === 'play_pause' || command === 'prev' || command === 'next') {
+             showNotification(`Đã gửi lệnh ${command} tới ${targetList.length} thiết bị`, "info");
+        }
+    }
+    
+    // [CẬP NHẬT] Hàm thay đổi thiết bị (Chỉ dùng để tải Playlist của thiết bị ĐẦU TIÊN được chọn)
+    // Vì danh sách bài hát thì thường chỉ xem được của 1 máy tại 1 thời điểm
+    // Ta sẽ lấy thiết bị đầu tiên trong danh sách đã chọn để load playlist
+    function changeMusicTarget() {
+        // Hàm này có thể không cần dùng nữa nếu bạn không muốn auto-load playlist
+        // Hoặc bạn có thể thêm 1 nút "Tải danh sách nhạc từ thiết bị đã chọn"
     }
 </script>
 </body>
