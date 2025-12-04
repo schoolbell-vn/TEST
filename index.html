@@ -1764,14 +1764,16 @@
 }
 
 .zone-item {
-    display: flex !important; /* Bắt buộc dùng Flexbox */
-    align-items: center !important;
-    justify-content: flex-start !important; /* Bắt buộc căn trái */
-    padding: 10px 10px !important; /* Khoảng cách chuẩn */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* [SỬA] Giảm padding trên dưới xuống 4px cho gọn */
+    padding: 4px 0px 4px 5px; 
     border-bottom: 1px solid #414345;
     cursor: pointer;
-    width: 100%; /* Chiếm hết chiều ngang */
-    box-sizing: border-box;
+    text-align: left;
+    transition: background 0.2s;
+    min-height: 40px; /* Đảm bảo chiều cao tối thiểu để dễ bấm trên điện thoại */
 }
 
 .zone-item:last-child {
