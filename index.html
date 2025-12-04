@@ -4862,11 +4862,17 @@ function showNotification(msg, type="info") {
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ CHO TOÀN BỘ GIAO DIỆN ===
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ NÂNG CẤP CHECKBOX ĐA CHỌN) ===
     // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ CHỈNH STYLE CHỮ BÉ LẠI) ===
-    function updateMicZoneList(managedDevices) {// === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ ĐỒNG BỘ CHECKBOX CHO CẢ 3 TAB) ===
+    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ SỬA LỖI ID VÀ CÚ PHÁP) ===
+    function updateMicZoneList(managedDevices) {
         // Hàm hỗ trợ vẽ HTML checkbox (Tái sử dụng code cho gọn)
         const renderCheckboxList = (containerId, checkboxClass) => {
             const listDiv = document.getElementById(containerId);
-            if (!listDiv) return;
+            
+            // [QUAN TRỌNG] Kiểm tra xem khung chứa có tồn tại không
+            if (!listDiv) {
+                console.log("Không tìm thấy khung chứa có ID: " + containerId);
+                return;
+            }
 
             // Lấy danh sách đang chọn hiện tại để bảo lưu trạng thái
             const currentChecked = Array.from(document.querySelectorAll(`#${containerId} .zone-checkbox:checked`)).map(cb => cb.value);
@@ -4907,14 +4913,14 @@ function showNotification(msg, type="info") {
         };
 
         // --- 1. Cập nhật Tab Micro ---
-        // Tab Micro dùng logic hơi khác (chỉ hiện vệ tinh, Master xử lý riêng hoặc gộp chung tùy ý)
-        // Ở đây tôi áp dụng logic chuẩn giống Hẹn giờ cho đồng bộ
+        // ID trong HTML của tab Micro là "mic-zone-list"
         renderCheckboxList("mic-zone-list", ""); 
 
-        // --- 2. Cập nhật Tab Nhạc (MỚI: Dùng Checkbox) ---
+        // --- 2. Cập nhật Tab Nhạc (QUAN TRỌNG: Đã sửa thành music-target-list) ---
         renderCheckboxList("music-target-list", "music-cb");
 
-        // --- 3. Cập nhật Tab Hẹn Giờ (Checkbox) ---
+        // --- 3. Cập nhật Tab Hẹn Giờ ---
+        // ID trong HTML của tab Hẹn giờ là "scenario-target-list"
         renderCheckboxList("scenario-target-list", "scenario-cb");
     }
 // [MỚI] Hàm chọn tất cả/bỏ chọn cho Tab Hẹn Giờ
@@ -5038,4 +5044,3 @@ function showNotification(msg, type="info") {
 </script>
 </body>
 </html>
-
