@@ -5108,59 +5108,72 @@ function togglePass(checkboxId, inputId) {
         x.type = cb.checked ? "text" : "password";
     }
 }
-// --- BIẾN QUẢN LÝ ĐỒNG BỘ ---
-let totalSatellites = 0;
-let ackCount = 0;
+// --- BIẾN QUẢN LÝ ĐỒNG BỘ THÔNG MINH ---
+let targetDevicesSet = new Set(); // Danh sách cần đợi
+let repliedDevicesSet = new Set(); // Danh sách đã trả lời
 let syncTimer = null;
 
-// Hàm gọi khi bấm nút "Lưu và Gửi"
 function startSyncTracking() {
-    // 1. Đếm số lượng vệ tinh đang quản lý (từ danh sách thiết bị)
-    // Giả sử ông lưu danh sách managed satellites vào biến global 'managedDevicesList' 
-    // Nếu chưa có, ông có thể ước lượng hoặc lấy từ DOM
-    const devices = document.querySelectorAll('#managed-devices-list .device-item');
-    totalSatellites = devices.length; 
+    // 1. Lấy danh sách tên các thiết bị đang quản lý từ giao diện
+    targetDevicesSet.clear();
+    repliedDevicesSet.clear();
     
-    if (totalSatellites === 0) return; // Không có vệ tinh thì thôi
+    const deviceElements = document.querySelectorAll('#managed-devices-list .device-item .device-name');
+    deviceElements.forEach(el => {
+        targetDevicesSet.add(el.textContent.trim());
+    });
 
-    ackCount = 0;
-    
+    const total = targetDevicesSet.size;
+    if (total === 0) return; 
+
     // 2. Hiện thanh tiến độ
     const container = document.getElementById('sync-progress-bar-container');
     const text = document.getElementById('sync-count-text');
     const fill = document.getElementById('sync-progress-fill');
     
     container.style.display = 'block';
-    text.innerHTML = `Đang đồng bộ... <span style="color:#f1c40f">0/${totalSatellites}</span> thiết bị`;
-    fill.style.width = '0%';
-    fill.style.background = 'linear-gradient(90deg, #f1c40f, #f39c12)'; // Màu vàng (đang chạy)
+    // Liệt kê tên các thiết bị đang đợi
+    const waitingFor = Array.from(targetDevicesSet).join(', ');
+    text.innerHTML = `Đang gửi lệnh... <br><span style="font-size:0.8em; color:#bbb">Đợi: ${waitingFor}</span>`;
+    
+    fill.style.width = '5%'; // Nhích một tí cho đẹp
+    fill.style.background = 'linear-gradient(90deg, #f1c40f, #e67e22)';
 
-    // 3. Đặt timeout tự tắt sau 15 giây (phòng trường hợp vài máy bị lỗi không phản hồi)
     if (syncTimer) clearTimeout(syncTimer);
-    syncTimer = setTimeout(() => {
-        finishSync(false);
-    }, 15000);
+    syncTimer = setTimeout(() => { finishSync(false); }, 15000);
 }
 
-// Hàm xử lý khi nhận ACK (Gọi trong onMessage của MQTT hoặc WebSocket)
 function handleAckEvent(deviceName) {
     const container = document.getElementById('sync-progress-bar-container');
-    if (container.style.display === 'none') return; // Không đang trong quá trình đồng bộ thì bỏ qua
+    if (container.style.display === 'none') return;
 
-    ackCount++;
+    // Đánh dấu thiết bị này đã trả lời
+    repliedDevicesSet.add(deviceName);
     
-    // Cập nhật giao diện
-    const text = document.getElementById('sync-count-text');
-    const fill = document.getElementById('sync-progress-fill');
-    
-    let percent = (ackCount / totalSatellites) * 100;
+    // Tính toán lại
+    const total = targetDevicesSet.size;
+    const current = repliedDevicesSet.size;
+    let percent = (current / total) * 100;
     if (percent > 100) percent = 100;
 
-    text.innerHTML = `Đang đồng bộ... <span style="color:#f1c40f">${ackCount}/${totalSatellites}</span> thiết bị`;
+    const text = document.getElementById('sync-count-text');
+    const fill = document.getElementById('sync-progress-fill');
+
+    // Tìm những con chưa trả lời để bêu tên
+    let remaining = [];
+    targetDevicesSet.forEach(dev => {
+        if (!repliedDevicesSet.has(dev)) remaining.push(dev);
+    });
+
+    if (remaining.length > 0) {
+        text.innerHTML = `Đã nhận: ${current}/${total} <br><span style="font-size:0.8em; color:#f1c40f">Đang đợi: ${remaining.join(', ')}</span>`;
+    } else {
+        text.innerHTML = `Đã nhận đủ ${current}/${total}`;
+    }
+    
     fill.style.width = `${percent}%`;
 
-    // Nếu đã nhận đủ
-    if (ackCount >= totalSatellites) {
+    if (current >= total) {
         finishSync(true);
     }
 }
@@ -5170,18 +5183,22 @@ function finishSync(isSuccess) {
     const fill = document.getElementById('sync-progress-fill');
     
     if (isSuccess) {
-        text.innerHTML = `✅ HOÀN TẤT! ${ackCount}/${totalSatellites} thiết bị đã nhận lệnh.`;
-        fill.style.background = '#2ecc71'; // Màu xanh lá
+        text.innerHTML = `✅ HOÀN TẤT! Tất cả thiết bị đã cập nhật.`;
+        fill.style.background = '#2ecc71';
     } else {
-        text.innerHTML = `⚠️ KẾT THÚC. ${ackCount}/${totalSatellites} thiết bị phản hồi.`;
-        fill.style.background = '#e67e22'; // Màu cam
+        // Tìm lại những con chưa trả lời lần cuối
+        let remaining = [];
+        targetDevicesSet.forEach(dev => {
+            if (!repliedDevicesSet.has(dev)) remaining.push(dev);
+        });
+        text.innerHTML = `⚠️ KẾT THÚC. Thất bại: ${remaining.join(', ')}`;
+        fill.style.background = '#e74c3c'; // Màu đỏ
     }
 
-    // Ẩn sau 3 giây
     if (syncTimer) clearTimeout(syncTimer);
     setTimeout(() => {
         document.getElementById('sync-progress-bar-container').style.display = 'none';
-    }, 3000);
+    }, 5000); // Hiện lâu hơn chút để kịp đọc lỗi
 }
 // [MỚI] Hàm hiển thị mật khẩu cho tab Đổi Mật Khẩu (Hiện cả 3 ô cùng lúc)
 function toggleChangePassVisibility() {
