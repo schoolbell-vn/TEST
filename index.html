@@ -1789,9 +1789,43 @@
     cursor: pointer;
     flex-shrink: 0; /* Không bị co lại */
 }
+/* Thanh tiến độ đồng bộ nổi ở góc dưới hoặc trên */
+#sync-progress-bar-container {
+    position: fixed;
+    bottom: 80px; /* Nằm trên thanh Action Bar */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background: #2c3e50;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    border: 1px solid #f1c40f;
+    display: none; /* Mặc định ẩn */
+    z-index: 2000;
+    text-align: center;
+}
+#sync-progress-fill {
+    height: 10px;
+    background: linear-gradient(90deg, #f1c40f, #f39c12);
+    width: 0%;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+    margin-top: 8px;
+}
+#sync-count-text {
+    color: #fff; font-weight: bold; font-size: 0.9em;
+}
   </style>
 </head>
 <body>
+    <div id="sync-progress-bar-container">
+    <div id="sync-count-text">Đang đợi phản hồi... 0/0</div>
+    <div style="background: #444; border-radius: 5px; overflow: hidden; margin-top: 5px;">
+        <div id="sync-progress-fill"></div>
+    </div>
+</div>
     <div id="notification-area"></div>
 
   <div id="main">
@@ -2370,12 +2404,18 @@
 
         <div id="adv-tab-change-pass" class="adv-modal-tab-content">
             <h5>THAY ĐỔI MẬT KHẨU QUẢN TRỊ</h5>
-            <div class="actions-list" style="gap: 15px; padding-top: 10px;">
-                <input type="password" id="old-admin-password" class="modal-input" placeholder="Mật khẩu cũ..." autocomplete="current-password">
-                <input type="password" id="new-admin-password" class="modal-input" placeholder="Mật khẩu mới..." autocomplete="new-password">
-                <input type="password" id="confirm-admin-password" class="modal-input" placeholder="Xác nhận mật khẩu mới..." autocomplete="new-password">
-                <button class="action-btn" style="width: 100%; height: 40px; font-size: 0.9em;" onclick="handleChangePassword()">Lưu Thay Đổi</button>
-            </div>
+           <div class="actions-list" style="gap: 15px; padding-top: 10px;">
+    <input type="password" id="old-admin-password" class="modal-input" placeholder="Mật khẩu cũ..." autocomplete="current-password">
+    <input type="password" id="new-admin-password" class="modal-input" placeholder="Mật khẩu mới..." autocomplete="new-password">
+    <input type="password" id="confirm-admin-password" class="modal-input" placeholder="Xác nhận mật khẩu mới..." autocomplete="new-password">
+    
+    <label style="display: flex; align-items: center; color: #bdc3c7; cursor: pointer; font-size: 0.9em; justify-content: flex-end;">
+        <input type="checkbox" onclick="toggleChangePassVisibility()" style="width: 18px; height: 18px; margin-right: 8px;">
+        Hiển thị mật khẩu
+    </label>
+
+    <button class="action-btn" style="width: 100%; height: 40px; font-size: 0.9em;" onclick="handleChangePassword()">Lưu Thay Đổi</button>
+</div>
         </div>
         
         <div id="adv-tab-ota" class="adv-modal-tab-content">
@@ -2415,15 +2455,22 @@
   </div>
 
   <div class="modal-overlay" id="password-modal-overlay">
-      <div class="modal-content">
-          <h4 id="password-modal-title">Xác thực quyền Quản trị</h4>
-          <p id="password-modal-description" style="text-align: center; margin-top: -10px; margin-bottom: 20px; color: #bdc3c7; font-size: 0.9em;">Vui lòng nhập mật khẩu để tiếp tục.</p>
-          <input type="password" id="admin-password-input" class="modal-input" placeholder="Mật khẩu quản trị..." autocomplete="current-password">
-          <div class="modal-buttons">
-              <button class="modal-cancel-btn" onclick="closePasswordModal()">Hủy</button>
-              <button class="modal-confirm-btn" onclick="confirmAction()">Xác nhận</button>
-          </div>
-      </div>
+     <div class="modal-content">
+    <h4 id="password-modal-title">Xác thực quyền Quản trị</h4>
+    <p id="password-modal-description" style="text-align: center; margin-top: -10px; margin-bottom: 20px; color: #bdc3c7; font-size: 0.9em;">Vui lòng nhập mật khẩu để tiếp tục.</p>
+    
+    <input type="password" id="admin-password-input" class="modal-input" placeholder="Mật khẩu quản trị..." autocomplete="current-password">
+    
+    <label style="display: flex; align-items: center; color: #bdc3c7; cursor: pointer; font-size: 0.9em; margin-bottom: 15px; justify-content: center;">
+        <input type="checkbox" onclick="toggleAdminPassVisibility()" style="width: 18px; height: 18px; margin-right: 8px;">
+        Hiển thị mật khẩu
+    </label>
+
+    <div class="modal-buttons">
+        <button class="modal-cancel-btn" onclick="closePasswordModal()">Hủy</button>
+        <button class="modal-confirm-btn" onclick="confirmAction()">Xác nhận</button>
+    </div>
+</div>
   </div>
 
   <div class="modal-overlay" id="conflict-modal-overlay">
@@ -2953,6 +3000,7 @@
                 } catch (e) {
                     console.error("Lỗi parse JSON phản hồi lệnh:", e);
                 }
+                handleAckEvent(ackName);
             }
             
             if (topic === OTA_STATUS_TOPIC || topic === OTA_SATELLITE_STATUS_TOPIC) {
@@ -5050,6 +5098,111 @@ function updateMicZoneList(managedDevices) {
         // Hàm này có thể không cần dùng nữa nếu bạn không muốn auto-load playlist
         // Hoặc bạn có thể thêm 1 nút "Tải danh sách nhạc từ thiết bị đã chọn"
     }
+    // Hàm bật/tắt hiển thị mật khẩu chung cho toàn bộ hệ thống
+function togglePass(checkboxId, inputId) {
+    var x = document.getElementById(inputId);
+    var cb = document.getElementById(checkboxId);
+    if (x && cb) {
+        x.type = cb.checked ? "text" : "password";
+    }
+}
+// --- BIẾN QUẢN LÝ ĐỒNG BỘ ---
+let totalSatellites = 0;
+let ackCount = 0;
+let syncTimer = null;
+
+// Hàm gọi khi bấm nút "Lưu và Gửi"
+function startSyncTracking() {
+    // 1. Đếm số lượng vệ tinh đang quản lý (từ danh sách thiết bị)
+    // Giả sử ông lưu danh sách managed satellites vào biến global 'managedDevicesList' 
+    // Nếu chưa có, ông có thể ước lượng hoặc lấy từ DOM
+    const devices = document.querySelectorAll('#managed-devices-list .device-item');
+    totalSatellites = devices.length; 
+    
+    if (totalSatellites === 0) return; // Không có vệ tinh thì thôi
+
+    ackCount = 0;
+    
+    // 2. Hiện thanh tiến độ
+    const container = document.getElementById('sync-progress-bar-container');
+    const text = document.getElementById('sync-count-text');
+    const fill = document.getElementById('sync-progress-fill');
+    
+    container.style.display = 'block';
+    text.innerHTML = `Đang đồng bộ... <span style="color:#f1c40f">0/${totalSatellites}</span> thiết bị`;
+    fill.style.width = '0%';
+    fill.style.background = 'linear-gradient(90deg, #f1c40f, #f39c12)'; // Màu vàng (đang chạy)
+
+    // 3. Đặt timeout tự tắt sau 15 giây (phòng trường hợp vài máy bị lỗi không phản hồi)
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => {
+        finishSync(false);
+    }, 15000);
+}
+
+// Hàm xử lý khi nhận ACK (Gọi trong onMessage của MQTT hoặc WebSocket)
+function handleAckEvent(deviceName) {
+    const container = document.getElementById('sync-progress-bar-container');
+    if (container.style.display === 'none') return; // Không đang trong quá trình đồng bộ thì bỏ qua
+
+    ackCount++;
+    
+    // Cập nhật giao diện
+    const text = document.getElementById('sync-count-text');
+    const fill = document.getElementById('sync-progress-fill');
+    
+    let percent = (ackCount / totalSatellites) * 100;
+    if (percent > 100) percent = 100;
+
+    text.innerHTML = `Đang đồng bộ... <span style="color:#f1c40f">${ackCount}/${totalSatellites}</span> thiết bị`;
+    fill.style.width = `${percent}%`;
+
+    // Nếu đã nhận đủ
+    if (ackCount >= totalSatellites) {
+        finishSync(true);
+    }
+}
+
+function finishSync(isSuccess) {
+    const text = document.getElementById('sync-count-text');
+    const fill = document.getElementById('sync-progress-fill');
+    
+    if (isSuccess) {
+        text.innerHTML = `✅ HOÀN TẤT! ${ackCount}/${totalSatellites} thiết bị đã nhận lệnh.`;
+        fill.style.background = '#2ecc71'; // Màu xanh lá
+    } else {
+        text.innerHTML = `⚠️ KẾT THÚC. ${ackCount}/${totalSatellites} thiết bị phản hồi.`;
+        fill.style.background = '#e67e22'; // Màu cam
+    }
+
+    // Ẩn sau 3 giây
+    if (syncTimer) clearTimeout(syncTimer);
+    setTimeout(() => {
+        document.getElementById('sync-progress-bar-container').style.display = 'none';
+    }, 3000);
+}
+// [MỚI] Hàm hiển thị mật khẩu cho tab Đổi Mật Khẩu (Hiện cả 3 ô cùng lúc)
+function toggleChangePassVisibility() {
+    const ids = ['old-admin-password', 'new-admin-password', 'confirm-admin-password'];
+    ids.forEach(id => {
+        const x = document.getElementById(id);
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
+    });
+}
+
+// [MỚI] Hàm hiển thị mật khẩu cho Modal Xác Thực Reset/Restart
+function toggleAdminPassVisibility() {
+    const x = document.getElementById("admin-password-input");
+    if (x.type === "password") {
+        x.type = "text";
+    } else {
+        x.type = "password";
+    }
+}
 </script>
 </body>
 </html>
