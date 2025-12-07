@@ -1820,12 +1820,6 @@
   </style>
 </head>
 <body>
-    <div id="sync-progress-container">
-    <div id="sync-status-text">Đang đồng bộ... 0/0</div>
-    <div id="sync-progress-bar-bg">
-        <div id="sync-progress-bar-fill"></div>
-    </div>
-</div>
     <div id="sync-progress-bar-container">
     <div id="sync-count-text">Đang đợi phản hồi... 0/0</div>
     <div style="background: #444; border-radius: 5px; overflow: hidden; margin-top: 5px;">
@@ -3003,10 +2997,11 @@
                     const ack = JSON.parse(payloadString);
                     const message = `[${ack.name}] ${ack.message}`;
                     showNotification(message, ack.status || 'success');
+                    handleAckEvent(ack.name);
                 } catch (e) {
                     console.error("Lỗi parse JSON phản hồi lệnh:", e);
                 }
-                handleAckEvent(ack.name);
+                
             }
             
             if (topic === OTA_STATUS_TOPIC || topic === OTA_SATELLITE_STATUS_TOPIC) {
