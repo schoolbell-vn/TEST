@@ -5109,34 +5109,41 @@ function togglePass(checkboxId, inputId) {
     }
 }
 // --- BIẾN QUẢN LÝ ĐỒNG BỘ THÔNG MINH ---
+// --- BIẾN QUẢN LÝ ĐỒNG BỘ (ĐÃ NÂNG CẤP LỌC DẤU CÁCH) ---
 let targetDevicesSet = new Set(); // Danh sách cần đợi
 let repliedDevicesSet = new Set(); // Danh sách đã trả lời
 let syncTimer = null;
 
 function startSyncTracking() {
-    // 1. Lấy danh sách tên các thiết bị đang quản lý từ giao diện
     targetDevicesSet.clear();
     repliedDevicesSet.clear();
     
+    // Lấy danh sách tên từ giao diện
     const deviceElements = document.querySelectorAll('#managed-devices-list .device-item .device-name');
+    
     deviceElements.forEach(el => {
-        targetDevicesSet.add(el.textContent.trim());
+        // [QUAN TRỌNG] .trim() để cắt bỏ dấu cách thừa đầu đuôi
+        const cleanName = el.textContent.trim();
+        if(cleanName) {
+            targetDevicesSet.add(cleanName);
+            console.log("Them vao danh sach doi:", cleanName); // Debug
+        }
     });
 
     const total = targetDevicesSet.size;
     if (total === 0) return; 
 
-    // 2. Hiện thanh tiến độ
+    // Hiện thanh tiến độ
     const container = document.getElementById('sync-progress-bar-container');
     const text = document.getElementById('sync-count-text');
     const fill = document.getElementById('sync-progress-fill');
     
     container.style.display = 'block';
-    // Liệt kê tên các thiết bị đang đợi
+    
     const waitingFor = Array.from(targetDevicesSet).join(', ');
     text.innerHTML = `Đang gửi lệnh... <br><span style="font-size:0.8em; color:#bbb">Đợi: ${waitingFor}</span>`;
     
-    fill.style.width = '5%'; // Nhích một tí cho đẹp
+    fill.style.width = '5%';
     fill.style.background = 'linear-gradient(90deg, #f1c40f, #e67e22)';
 
     if (syncTimer) clearTimeout(syncTimer);
@@ -5147,33 +5154,44 @@ function handleAckEvent(deviceName) {
     const container = document.getElementById('sync-progress-bar-container');
     if (container.style.display === 'none') return;
 
-    // Đánh dấu thiết bị này đã trả lời
-    repliedDevicesSet.add(deviceName);
+    // [QUAN TRỌNG] Cũng phải trim tên nhận được từ vệ tinh
+    const cleanAckName = deviceName ? deviceName.trim() : "";
     
-    // Tính toán lại
+    console.log("Nhan ACK tu:", cleanAckName); // Debug xem nó nhận được gì
+
+    // Đánh dấu đã trả lời
+    repliedDevicesSet.add(cleanAckName);
+    
+    // Tính toán
     const total = targetDevicesSet.size;
-    const current = repliedDevicesSet.size;
-    let percent = (current / total) * 100;
+    
+    // Đếm số lượng trùng khớp thực sự
+    let matchCount = 0;
+    targetDevicesSet.forEach(target => {
+        if (repliedDevicesSet.has(target)) matchCount++;
+    });
+
+    let percent = (matchCount / total) * 100;
     if (percent > 100) percent = 100;
 
     const text = document.getElementById('sync-count-text');
     const fill = document.getElementById('sync-progress-fill');
 
-    // Tìm những con chưa trả lời để bêu tên
+    // Tìm những con chưa trả lời
     let remaining = [];
     targetDevicesSet.forEach(dev => {
         if (!repliedDevicesSet.has(dev)) remaining.push(dev);
     });
 
     if (remaining.length > 0) {
-        text.innerHTML = `Đã nhận: ${current}/${total} <br><span style="font-size:0.8em; color:#f1c40f">Đang đợi: ${remaining.join(', ')}</span>`;
+        text.innerHTML = `Đã nhận: ${matchCount}/${total} <br><span style="font-size:0.8em; color:#f1c40f">Đang đợi: ${remaining.join(', ')}</span>`;
     } else {
-        text.innerHTML = `Đã nhận đủ ${current}/${total}`;
+        text.innerHTML = `Đã nhận đủ ${matchCount}/${total}`;
     }
     
     fill.style.width = `${percent}%`;
 
-    if (current >= total) {
+    if (matchCount >= total) {
         finishSync(true);
     }
 }
@@ -5186,19 +5204,25 @@ function finishSync(isSuccess) {
         text.innerHTML = `✅ HOÀN TẤT! Tất cả thiết bị đã cập nhật.`;
         fill.style.background = '#2ecc71';
     } else {
-        // Tìm lại những con chưa trả lời lần cuối
+        // Tìm lại lần cuối
         let remaining = [];
         targetDevicesSet.forEach(dev => {
             if (!repliedDevicesSet.has(dev)) remaining.push(dev);
         });
-        text.innerHTML = `⚠️ KẾT THÚC. Thất bại: ${remaining.join(', ')}`;
-        fill.style.background = '#e74c3c'; // Màu đỏ
+        
+        if (remaining.length === 0) {
+             text.innerHTML = `✅ HOÀN TẤT! (Đã khớp)`;
+             fill.style.background = '#2ecc71';
+        } else {
+             text.innerHTML = `⚠️ KẾT THÚC. Chưa thấy: ${remaining.join(', ')}`;
+             fill.style.background = '#e74c3c';
+        }
     }
 
     if (syncTimer) clearTimeout(syncTimer);
     setTimeout(() => {
         document.getElementById('sync-progress-bar-container').style.display = 'none';
-    }, 5000); // Hiện lâu hơn chút để kịp đọc lỗi
+    }, 5000);
 }
 // [MỚI] Hàm hiển thị mật khẩu cho tab Đổi Mật Khẩu (Hiện cả 3 ô cùng lúc)
 function toggleChangePassVisibility() {
