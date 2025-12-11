@@ -3298,13 +3298,17 @@ function stopMusicTimer() {
     // Cập nhật thời gian
     if (status.total_time_s > 0) {
         audioTotalTime = status.total_time_s;
-        // Đồng bộ thời gian hiện tại từ Server (để tránh bị lệch)
-        audioCurrentTime = status.current_time_s || 0; 
+        
+        // Đồng bộ thời gian hiện tại từ Server
+        // Nếu chênh lệch quá 2 giây so với Timer của Web thì mới ép cập nhật (để tránh giật)
+        if (Math.abs(audioCurrentTime - (status.current_time_s || 0)) > 2) {
+             audioCurrentTime = status.current_time_s || 0; 
+        }
         
         document.getElementById('total-time').textContent = formatTime(audioTotalTime);
         document.getElementById('current-time').textContent = formatTime(audioCurrentTime);
         
-        // Cập nhật thanh trượt
+        // Cập nhật vị trí thanh trượt
         const percent = (audioCurrentTime / audioTotalTime) * 100;
         document.getElementById('music-progress-bar').value = percent;
     }
