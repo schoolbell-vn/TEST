@@ -3194,10 +3194,23 @@
                     const item = document.createElement('div');
                     item.className = 'playlist-item';
                     item.textContent = track;
-                    item.onclick = () => handleMusicControl('play_track', track);
-                    if (track === status.current_track) {
-                        item.classList.add('playing');
-                    }
+                    item.onclick = function() {
+                    // 1. Xóa highlight của các bài khác ngay lập tức
+                    document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('playing'));
+                    
+                    // 2. Highlight bài vừa chọn
+                    this.classList.add('playing');
+
+                    // 3. Cập nhật tên bài hát đang phát lên màn hình ngay
+                    document.getElementById('now-playing-title').textContent = track;
+
+                    // 4. Chuyển nút Play (tam giác) thành Pause (hai gạch) ngay lập tức
+                    document.getElementById('play-icon').style.display = 'none';
+                    document.getElementById('pause-icon').style.display = 'block';
+
+                    // 5. Gửi lệnh đi như bình thường
+                    handleMusicControl('play_track', track);
+                };
                     playlistContainer.appendChild(item);
 
                     const option = document.createElement('option');
@@ -3253,19 +3266,7 @@
         }
     }
 
-    function handleMusicControl(command, value = null) {
-        if (!client || !client.connected) return showNotification("Chưa kết nối máy chủ!", 'error');
-        const payload = { command: command };
-        if (value !== null) {
-             if (command === 'set_volume') {
-                payload.value = Math.round(parseInt(value) / 100 * 30);
-            } else {
-                payload.value = value;
-            }
-        }
-        client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-    }
-    
+   
     function togglePlayMode(mode) {
         handleMusicControl(`toggle_${mode}`);
     }
@@ -5069,43 +5070,64 @@ function updateMicZoneList(managedDevices) {
     }
 
     // [CẬP NHẬT] Hàm điều khiển nhạc (Lấy danh sách từ Checkbox)
-    function handleMusicControl(command, value = null) {
-        if (!client || !client.connected) return showNotification("Chưa kết nối máy chủ!", 'error');
+    // [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
+function handleMusicControl(command, value = null) {
+    // 1. [GIAO DIỆN] Cập nhật nút Play/Pause ngay lập tức (Optimistic UI)
+    if (command === 'play_pause') {
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
         
-        // 1. Lấy danh sách các thiết bị được chọn
-        const checkboxes = document.querySelectorAll('.music-cb:checked');
-        const targetList = Array.from(checkboxes).map(cb => cb.value);
-
-        if (targetList.length === 0) {
-            return showNotification("Vui lòng chọn ít nhất 1 loa để phát!", "error");
+        // Đảo trạng thái hiển thị icon
+        if (playIcon.style.display !== 'none') {
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'block';
+        } else {
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
         }
+    }
 
-        // 2. Tạo payload
-        const payload = { 
-            command: command,
-            targets: targetList // Gửi mảng danh sách thiết bị
-        };
-        
-        if (value !== null) {
-             if (command === 'set_volume') {
-                payload.value = Math.round(parseInt(value) / 100 * 30);
-            } else {
-                payload.value = value;
-            }
-        }
-        
-        // 3. Gửi lệnh
-        client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-        
-        // Hiệu ứng phản hồi
-        if(command === 'play_pause' || command === 'prev' || command === 'next') {
-             showNotification(`Đã gửi lệnh ${command} tới ${targetList.length} thiết bị`, "info");
+    // 2. Kiểm tra kết nối
+    if (!client || !client.connected) return showNotification("Chưa kết nối máy chủ!", 'error');
+    
+    // 3. Lấy danh sách các thiết bị được chọn (Checkbox)
+    const checkboxes = document.querySelectorAll('.music-cb:checked');
+    const targetList = Array.from(checkboxes).map(cb => cb.value);
+
+    // Nếu không chọn loa nào -> Báo lỗi
+    if (targetList.length === 0) {
+        // Riêng lệnh "refresh_playlist" (tải danh sách) có thể cho phép chạy mà không cần check kỹ
+        // Nhưng tốt nhất vẫn nên bắt người dùng chọn để biết tải từ máy nào
+        return showNotification("Vui lòng chọn ít nhất 1 loa (Vệ tinh) để thao tác!", "error");
+    }
+
+    // 4. Tạo gói tin (Payload)
+    const payload = { 
+        command: command,
+        targets: targetList // Gửi mảng danh sách thiết bị
+    };
+    
+    // Xử lý giá trị đặc biệt (nếu có)
+    if (value !== null) {
+         if (command === 'set_volume') {
+            // Chuyển đổi thang 0-100 (web) sang 0-30 (esp32 audio)
+            payload.value = Math.round(parseInt(value) / 100 * 30);
+        } else {
+            payload.value = value;
         }
     }
     
-    // [CẬP NHẬT] Hàm thay đổi thiết bị (Chỉ dùng để tải Playlist của thiết bị ĐẦU TIÊN được chọn)
-    // Vì danh sách bài hát thì thường chỉ xem được của 1 máy tại 1 thời điểm
-    // Ta sẽ lấy thiết bị đầu tiên trong danh sách đã chọn để load playlist
+    // 5. Gửi lệnh qua MQTT
+    client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+    
+    // 6. Thông báo nhỏ (Tùy chọn, để biết đã gửi)
+    if(command === 'prev' || command === 'next' || command === 'refresh_playlist') {
+         // Chỉ hiện thông báo với các lệnh không nhìn thấy ngay kết quả
+         // Play/Pause đã đổi icon nên không cần thông báo nữa cho đỡ rối
+         showNotification(`Đã gửi lệnh ${command}...`, "info");
+    }
+}
+    
     function changeMusicTarget() {
         // Hàm này có thể không cần dùng nữa nếu bạn không muốn auto-load playlist
         // Hoặc bạn có thể thêm 1 nút "Tải danh sách nhạc từ thiết bị đã chọn"
