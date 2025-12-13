@@ -5157,6 +5157,11 @@ function updateMicZoneList(managedDevices) {
     renderCheckboxList("mic-zone-list", ""); 
     renderCheckboxList("music-target-list", "music-cb");
     renderCheckboxList("scenario-target-list", "scenario-cb");
+    
+    const musicChecked = document.querySelectorAll('.music-cb:checked');
+    if (musicChecked.length === 0) {
+        toggleAllMusicTargets(); 
+    }
 }
 // [MỚI] Hàm chọn tất cả/bỏ chọn cho Tab Hẹn Giờ
     function toggleAllScenarioTargets() {
