@@ -2929,6 +2929,11 @@
     // [MỚI] TOPICS MQTT CHO ĐIỀU KHIỂN NHẠC
     const MUSIC_CONTROL_TOPIC = "esp32/bell/music/control";
     const MUSIC_STATUS_TOPIC = "esp32/bell/music/status";
+    // [THÊM MỚI] Topic dùng để lưu trữ danh sách lịch (như một Database online)
+    const MUSIC_STORAGE_TOPIC = "esp32/bell/music/schedule_storage"; 
+    
+    // Biến lưu danh sách lịch (không dùng LocalStorage nữa)
+    let sharedMusicSchedules = [];
     // --- TOPIC MỚI CHO MIC & NHẠC ---
     const MIC_CONTROL_TOPIC = "esp32/bell/mic/control";
 
@@ -2982,7 +2987,8 @@ function stopMusicTimer() {
                 COMMAND_ACK_TOPIC, 
                 OTA_STATUS_TOPIC,
                 OTA_SATELLITE_STATUS_TOPIC,
-                MUSIC_STATUS_TOPIC // [MỚI] Đăng ký nhận topic trạng thái nhạc
+                MUSIC_STATUS_TOPIC,
+                MUSIC_STORAGE_TOPIC // [MỚI] Đăng ký nhận topic trạng thái nhạc
             ];
             client.subscribe(topicsToSubscribe, {qos:1}, (err)=>{
                 if(err) {
@@ -3087,6 +3093,19 @@ function stopMusicTimer() {
                     updateMusicPlayerUI(musicStatus);
                 } catch (e) {
                     console.error("Lỗi parse JSON trạng thái nhạc:", e);
+                }
+            }
+            if (topic === MUSIC_STORAGE_TOPIC) {
+                try {
+                    // Cập nhật biến toàn cục
+                    sharedMusicSchedules = JSON.parse(payloadString);
+                    if (!Array.isArray(sharedMusicSchedules)) sharedMusicSchedules = [];
+                    
+                    // Vẽ lại bảng ngay lập tức
+                    renderMusicScheduleTable(); 
+                    console.log("Đã đồng bộ danh sách lịch từ Server:", sharedMusicSchedules);
+                } catch (e) {
+                    console.error("Lỗi đọc danh sách lịch từ MQTT:", e);
                 }
             }
         });
@@ -3381,96 +3400,90 @@ function stopMusicTimer() {
     }
 
    // --- BẮT ĐẦU HÀM MỚI ---
+// --- [BƯỚC 5] HÀM THÊM LỊCH (ĐÃ NÂNG CẤP ĐỒNG BỘ ĐÁM MÂY) ---
 function addMusicSchedule() {
-    // 1. Lấy dữ liệu từ Form
+    // 1. Lấy dữ liệu từ Form nhập liệu
     const timeInput = document.getElementById('schedule-music-time');
     const trackSelect = document.getElementById('schedule-music-track-select');
     const time = timeInput.value;
     const track = trackSelect.value;
     
-    // Lấy các ngày đã chọn
+    // Lấy các ngày đã tích chọn
     const selectedCheckboxes = document.querySelectorAll('input[name="music-day"]:checked');
     const selectedDays = Array.from(selectedCheckboxes).map(cb => cb.value);
-    
-    // Map tên ngày để hiển thị đẹp
-    const dayMap = {t2:"T2", t3:"T3", t4:"T4", t5:"T5", t6:"T6", t7:"T7", cn:"CN"};
-    const niceDays = selectedDays.map(d => dayMap[d] || d).join(', ');
 
-    // 2. Kiểm tra dữ liệu nhập
+    // 2. Kiểm tra lỗi nhập liệu
     if (!time) return showNotification("⚠️ Vui lòng chọn thời gian!", "error");
     if (!track) return showNotification("⚠️ Vui lòng chọn bài hát!", "error");
     if (selectedDays.length === 0) return showNotification("⚠️ Vui lòng chọn ít nhất 1 ngày!", "error");
 
     // 3. Kiểm tra xem đã chọn Loa nào chưa
-    const checkboxes = document.querySelectorAll('.music-cb:checked');
-    if (checkboxes.length === 0) {
+    const musicCheckboxes = document.querySelectorAll('.music-cb:checked');
+    if (musicCheckboxes.length === 0) {
         const container = document.querySelector('.sohoi-container');
         if(container) container.scrollIntoView({behavior: "smooth"});
         return showNotification("⚠️ Vui lòng tích chọn Loa/Vệ tinh ở danh sách bên trên trước!", "error");
     }
 
-    // --- [HIỆU ỨNG NÚT BẤM] ---
-    const btn = document.querySelector('button[onclick="addMusicSchedule()"]');
-    if(btn) {
-        const originalText = btn.innerText;
-        const originalColor = btn.style.backgroundColor;
-        
-        btn.innerText = "✅ Đã Thêm!";
-        btn.style.backgroundColor = "#27ae60"; 
-        btn.style.transform = "scale(0.98)";   
-        
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.style.backgroundColor = originalColor || "#ab47bc"; 
-            btn.style.transform = "scale(1)";
-        }, 1500);
-    }
-
-    // --- [CẬP NHẬT BẢNG NGAY LẬP TỨC] ---
-    const scheduleTableBody = document.querySelector('#music-schedule-table tbody');
-    
-    if (scheduleTableBody) {
-        if (scheduleTableBody.innerHTML.includes("Chưa có lịch")) {
-            scheduleTableBody.innerHTML = "";
-        }
-
-        const row = scheduleTableBody.insertRow();
-        // Hiệu ứng nháy (chỉ chạy nếu đã thêm CSS, nếu chưa thêm cũng không gây lỗi)
-        row.style.animation = "highlightRow 2s"; 
-        
-        const newIndex = scheduleTableBody.rows.length - 1;
-
-        row.innerHTML = `
-            <td style="font-weight:bold; color:#f1c40f;">${time}</td>
-            <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${track}">${track}</td>
-            <td style="font-size:0.85em; color:#bdc3c7;">${niceDays}</td>
-            <td>
-                <button class="delete-schedule-btn" onclick="deleteMusicSchedule(${newIndex})" style="background: #c0392b; color: #fff; border: none; cursor: pointer; padding: 5px 8px; border-radius: 4px;">
-                    Xóa
-                </button>
-            </td>
-        `;
-    }
-
-    // 4. Gửi lệnh đi cho ESP32 lưu
-    const schedule = { 
+    // 4. Tạo đối tượng lịch mới
+    const newSchedule = { 
         time: time, 
         track_name: track, 
         days: selectedDays 
     };
-    handleMusicControl('schedule_add', schedule);
+    
+    // 5. Thêm vào danh sách chung (Biến toàn cục)
+    sharedMusicSchedules.push(newSchedule);
+    
+    // 6. [QUAN TRỌNG NHẤT] Gửi danh sách mới lên MQTT với chế độ LƯU GIỮ (retain: true)
+    // Server sẽ giữ tin nhắn này lại, máy khác mở lên sẽ tải về được ngay
+    client.publish(MUSIC_STORAGE_TOPIC, JSON.stringify(sharedMusicSchedules), { qos: 1, retain: true });
 
-    // 5. Reset ô chọn ngày
+    // 7. Gửi lệnh thực thi xuống cho ESP32 (Vệ tinh) để nó biết mà làm
+    handleMusicControl('schedule_add', newSchedule);
+
+    // 8. Cập nhật giao diện bảng ngay lập tức
+    renderMusicScheduleTable();
+
+    // 9. Hiệu ứng nút bấm cho đẹp (Đổi màu xanh)
+    const btn = document.querySelector('button[onclick="addMusicSchedule()"]');
+    if(btn) {
+        const originalText = btn.innerText;
+        const originalColor = btn.style.backgroundColor;
+        btn.innerText = "✅ Đã Lưu & Đồng bộ!";
+        btn.style.backgroundColor = "#27ae60"; 
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.backgroundColor = originalColor || "#ab47bc"; 
+        }, 1500);
+    }
+
+    // 10. Reset các ô chọn ngày để nhập tiếp cho nhanh
     document.querySelectorAll('input[name="music-day"]').forEach(cb => cb.checked = false);
     
-    showNotification("Đã thêm vào danh sách và gửi lệnh xuống thiết bị!", "success");
+    showNotification("Đã lưu và đồng bộ lên đám mây!", "success");
 }
 // --- KẾT THÚC HÀM MỚI ---
-    function deleteMusicSchedule(index) {
-        if (confirm(`Bạn có chắc muốn xóa lịch phát này không?`)) {
-            handleMusicControl('schedule_remove', index);
-        }
+    // --- [BƯỚC 6] HÀM XÓA LỊCH (ĐÃ NÂNG CẤP ĐỒNG BỘ ĐÁM MÂY) ---
+function deleteMusicSchedule(index) {
+    if (confirm(`Bạn có chắc muốn xóa lịch phát này không? Mọi người đều sẽ thấy nó bị xóa.`)) {
+        
+        // 1. Gửi lệnh xóa cho ESP32 (Vệ tinh)
+        // Lưu ý: ESP32 xóa theo số thứ tự (index)
+        handleMusicControl('schedule_remove', index);
+        
+        // 2. Xóa khỏi danh sách chung trên Web
+        sharedMusicSchedules.splice(index, 1); 
+        
+        // 3. [QUAN TRỌNG] Gửi danh sách MỚI (đã xóa bớt) lên MQTT để cập nhật "Database"
+        client.publish(MUSIC_STORAGE_TOPIC, JSON.stringify(sharedMusicSchedules), { qos: 1, retain: true });
+        
+        // 4. Vẽ lại bảng
+        renderMusicScheduleTable();
+        
+        showNotification("Đã xóa và cập nhật đồng bộ.", "info");
     }
+}
 
     function formatTime(seconds) {
         if (isNaN(seconds) || seconds < 0) return "00:00";
@@ -5497,6 +5510,54 @@ function toggleAdminPassVisibility() {
     } else {
         x.type = "password";
     }
+}
+// --- [BƯỚC 4] HÀM VẼ BẢNG LỊCH PHÁT NHẠC (MỚI HOÀN TOÀN) ---
+function renderMusicScheduleTable() {
+    // 1. Tìm cái khung (tbody) của bảng để vẽ vào
+    const scheduleTableBody = document.querySelector('#music-schedule-table tbody');
+    
+    // Nếu không tìm thấy bảng thì thoát luôn (tránh lỗi)
+    if (!scheduleTableBody) return;
+    
+    // 2. Xóa sạch nội dung cũ trước khi vẽ mới
+    scheduleTableBody.innerHTML = ""; 
+
+    // 3. Nếu danh sách trống thì hiện thông báo
+    if (!sharedMusicSchedules || sharedMusicSchedules.length === 0) {
+        scheduleTableBody.innerHTML = '<tr><td colspan="4" style="color:#777; text-align:center; padding: 10px;">Chưa có lịch phát nhạc chung.</td></tr>';
+        return; 
+    }
+
+    // 4. Sắp xếp danh sách theo giờ tăng dần (07:00 -> 08:00...) cho dễ nhìn
+    sharedMusicSchedules.sort((a, b) => a.time.localeCompare(b.time));
+
+    // 5. Chuẩn bị bộ từ điển để đổi tên ngày (t2 -> T2)
+    const dayMap = {t2:"T2", t3:"T3", t4:"T4", t5:"T5", t6:"T6", t7:"T7", cn:"CN"};
+
+    // 6. Chạy vòng lặp qua từng lịch để vẽ từng dòng
+    sharedMusicSchedules.forEach((sch, index) => {
+        const row = scheduleTableBody.insertRow(); // Tạo dòng mới <tr>
+
+        // Xử lý hiển thị ngày cho đẹp
+        let niceDays = "";
+        if (Array.isArray(sch.days)) {
+            niceDays = sch.days.map(d => dayMap[d] || d).join(', ');
+        } else {
+            niceDays = sch.days; // Dự phòng nếu dữ liệu cũ không phải mảng
+        }
+
+        // Điền nội dung HTML vào dòng (Cột Giờ - Tên Bài - Ngày - Nút Xóa)
+        row.innerHTML = `
+            <td style="font-weight:bold; color:#f1c40f;">${sch.time}</td>
+            <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${sch.track_name}">${sch.track_name}</td>
+            <td style="font-size:0.85em; color:#bdc3c7;">${niceDays}</td>
+            <td>
+                <button class="delete-schedule-btn" onclick="deleteMusicSchedule(${index})" style="background: #c0392b; color: #fff; border: none; cursor: pointer; padding: 5px 8px; border-radius: 4px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </td>
+        `;
+    });
 }
 </script>
 </body>
