@@ -5253,6 +5253,7 @@ function updateMicZoneList(managedDevices) {
 
     // [CẬP NHẬT] Hàm điều khiển nhạc (Lấy danh sách từ Checkbox)
     // [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
+// [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
 function handleMusicControl(command, value = null) {
     if (!client || !client.connected) return showNotification("❌ Chưa kết nối máy chủ!", 'error');
 
@@ -5271,7 +5272,7 @@ function handleMusicControl(command, value = null) {
         return showNotification("⚠️ Vui lòng chọn Loa cần điều khiển ở danh sách trên!", "error");
     }
 
-    // --- LOGIC PLAY/PAUSE (GIỮ NGUYÊN) ---
+    // --- LOGIC PLAY/PAUSE ---
     if (command === 'play_pause') {
         if (selectedTrackToPlay !== "" && selectedTrackToPlay !== currentPlayingTrack) {
             command = 'play_track';
@@ -5316,7 +5317,7 @@ function handleMusicControl(command, value = null) {
         }
     }
     
-    console.log("Sending Music Command:", payload); // Debug xem gửi gì đi
+    console.log("Sending Music Command:", payload);
     client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
     
     if(command === 'refresh_playlist') {
@@ -5346,7 +5347,6 @@ function handleMusicControl(command, value = null) {
     if(command === 'refresh_playlist') {
          showNotification(`Đang tải danh sách...`, "info");
     }
-}
     
     function changeMusicTarget() {
         // Hàm này có thể không cần dùng nữa nếu bạn không muốn auto-load playlist
