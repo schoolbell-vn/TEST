@@ -3211,22 +3211,47 @@ function stopMusicTimer() {
     countdownEl.innerHTML = message;
 }
     // [THÊM MỚI] Hàm cập nhật danh sách bài hát cho các dropdown trong cài đặt
+    // [CẬP NHẬT] Hàm cập nhật danh sách bài hát (Fix lỗi mất file khi tải trang)
     function updateTrackSelectors(playlist) {
         const bellTypes = ['batdau', 'vaotiet', 'rachoi', 'duvao'];
         bellTypes.forEach(type => {
             const select = document.getElementById(`sohoi_${type}_track`);
             if (select) {
-                const currentVal = select.value;
+                // 1. Lấy giá trị hiện tại đang hiển thị
+                let valueToRestore = select.value;
+                
+                // 2. [QUAN TRỌNG] Nếu ô chọn đang trống (do load trang), hãy tìm trong dữ liệu gốc (allData)
+                // Code này giúp "cứu" lại tên bài hát dù danh sách tải chậm hơn cài đặt
+                if (!valueToRestore && window.allData && window.allData.sohoi && window.allData.sohoi[type]) {
+                    valueToRestore = window.allData.sohoi[type].track;
+                }
+
+                // 3. Làm mới danh sách option
                 select.innerHTML = '<option value="">-- Chọn file nhạc --</option>';
-                playlist.forEach(track => {
-                    const option = document.createElement('option');
-                    option.value = track;
-                    option.textContent = track;
-                    select.appendChild(option);
-                });
-                // Khôi phục giá trị đã chọn nếu còn tồn tại
-                if (playlist.includes(currentVal)) {
-                    select.value = currentVal;
+                if (playlist && Array.isArray(playlist)) {
+                    playlist.forEach(track => {
+                        const option = document.createElement('option');
+                        option.value = track;
+                        option.textContent = track;
+                        select.appendChild(option);
+                    });
+                }
+                
+                // 4. Khôi phục giá trị đã chọn
+                if (valueToRestore) {
+                    // Kiểm tra xem bài hát đã lưu có nằm trong danh sách thực tế không
+                    // (Dùng includes hoặc so sánh thủ công để chính xác hơn)
+                    const exists = Array.from(select.options).some(opt => opt.value === valueToRestore);
+                    if (exists) {
+                        select.value = valueToRestore;
+                    } else {
+                        // Tùy chọn: Nếu file đã lưu không còn trong thẻ nhớ, có thể thêm tạm vào để người dùng biết
+                        // const opt = document.createElement('option');
+                        // opt.value = valueToRestore;
+                        // opt.textContent = valueToRestore + " (Không tìm thấy)";
+                        // select.appendChild(opt);
+                        // select.value = valueToRestore;
+                    }
                 }
             }
         });
