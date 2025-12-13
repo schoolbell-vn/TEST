@@ -5252,6 +5252,7 @@ function updateMicZoneList(managedDevices) {
     // [CẬP NHẬT] Hàm điều khiển nhạc (Lấy danh sách từ Checkbox)
     // [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
 // [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
+// [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
 function handleMusicControl(command, value = null) {
     if (!client || !client.connected) return showNotification("❌ Chưa kết nối máy chủ!", 'error');
 
@@ -5270,9 +5271,10 @@ function handleMusicControl(command, value = null) {
         return showNotification("⚠️ Vui lòng chọn Loa cần điều khiển ở danh sách trên!", "error");
     }
 
-    // --- LOGIC PLAY/PAUSE ---
+    // --- LOGIC PLAY/PAUSE (Cập nhật giao diện ngay lập tức) ---
     if (command === 'play_pause') {
         if (selectedTrackToPlay !== "" && selectedTrackToPlay !== currentPlayingTrack) {
+            // Trường hợp 1: Đang chọn bài mới -> Phát bài mới ngay
             command = 'play_track';
             value = selectedTrackToPlay;
             currentPlayingTrack = selectedTrackToPlay;
@@ -5284,14 +5286,17 @@ function handleMusicControl(command, value = null) {
             document.getElementById('now-playing-title').style.color = "#f1c40f";
             selectedTrackToPlay = ""; 
         } else {
+            // Trường hợp 2: Đang nghe bài cũ -> Toggle Play/Pause
             const playIcon = document.getElementById('play-icon');
             const pauseIcon = document.getElementById('pause-icon');
             if (playIcon.style.display !== 'none') { 
+                // Đang Pause -> Chuyển sang Play
                 playIcon.style.display = 'none';
                 pauseIcon.style.display = 'block';
                 isMusicPlaying = true;
                 startMusicTimer();
             } else { 
+                // Đang Play -> Chuyển sang Pause
                 playIcon.style.display = 'block';
                 pauseIcon.style.display = 'none';
                 isMusicPlaying = false;
@@ -5301,6 +5306,7 @@ function handleMusicControl(command, value = null) {
     }
     // -------------------------------------
 
+    // Tạo gói tin lệnh
     const payload = { 
         command: command,
         targets: targetList // Gửi danh sách thiết bị nhận lệnh
@@ -5309,42 +5315,23 @@ function handleMusicControl(command, value = null) {
     // Gán giá trị đi kèm (nếu có)
     if (value !== null) {
          if (command === 'set_volume') {
+            // Quy đổi volume từ thang 100 (Web) về thang 30 (ESP32)
             payload.value = Math.round(parseInt(value) / 100 * 30);
         } else {
-            payload.value = value; // Với schedule_add, value chính là object {time, track, days}
+            payload.value = value; // Với các lệnh khác như schedule_add
         }
     }
     
     console.log("Sending Music Command:", payload);
+    
+    // Gửi lệnh lên Server MQTT
     client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
     
+    // Hiện thông báo nếu là lệnh tải danh sách
     if(command === 'refresh_playlist') {
          showNotification(`🔄 Đang tải danh sách bài hát...`, "info");
     }
 }
-    // ---------------------------------------------
-
-    // Tạo Payload gửi đi
-    const payload = { 
-        command: command,
-        targets: targetList
-    };
-    
-    if (value !== null) {
-         if (command === 'set_volume') {
-            payload.value = Math.round(parseInt(value) / 100 * 30);
-        } else {
-            payload.value = value;
-        }
-    }
-    
-    // Gửi lệnh
-    client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-    
-    // Thông báo
-    if(command === 'refresh_playlist') {
-         showNotification(`Đang tải danh sách...`, "info");
-    }
     
     function changeMusicTarget() {
         // Hàm này có thể không cần dùng nữa nếu bạn không muốn auto-load playlist
