@@ -2934,6 +2934,7 @@
     
     // Biến lưu danh sách lịch (không dùng LocalStorage nữa)
     let sharedMusicSchedules = [];
+    let hasInitialPlaylistLoaded = false;
     // --- TOPIC MỚI CHO MIC & NHẠC ---
     const MIC_CONTROL_TOPIC = "esp32/bell/mic/control";
 
@@ -5157,10 +5158,19 @@ function updateMicZoneList(managedDevices) {
     renderCheckboxList("mic-zone-list", ""); 
     renderCheckboxList("music-target-list", "music-cb");
     renderCheckboxList("scenario-target-list", "scenario-cb");
-    
+
     const musicChecked = document.querySelectorAll('.music-cb:checked');
     if (musicChecked.length === 0) {
         toggleAllMusicTargets(); 
+    }
+    if (!hasInitialPlaylistLoaded) {
+        hasInitialPlaylistLoaded = true; // Đánh dấu đã chạy
+        
+        // Đợi 1.5 giây cho mọi thứ ổn định rồi mới gửi lệnh
+        setTimeout(() => {
+            console.log(">>> Auto-loading playlist...");
+            handleMusicControl('refresh_playlist');
+        }, 1500);
     }
 }
 // [MỚI] Hàm chọn tất cả/bỏ chọn cho Tab Hẹn Giờ
