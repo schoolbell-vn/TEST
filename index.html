@@ -2212,18 +2212,22 @@
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12v5.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-4.05l2.71 2.7c.59.59 1.54.59 2.12 0 .59-.58.59-1.54 0-2.12L16.95 12l2.88-2.87c.59-.58.59-1.54 0-2.12-.58-.59-1.53-.59-2.12 0L15 9.55V5.5c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5zm0 0L9.12 9.13c-.58-.59-1.53-.59-2.12 0-.59.58-.59 1.54 0 2.12L9.88 12l-2.88 2.88c-.59.58-.59-1.54 0 2.12.58.59 1.54.59 2.12 0L12 13.5v4c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-11c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5z"></path></svg>
                           </button>
                       </div>
-                      <div class="extra-controls">
-                          <button class="control-btn" id="shuffle-btn" onclick="togglePlayMode('shuffle')">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"></path></svg>
-                          </button>
-                           <div class="progress-container" style="flex-grow: 1; margin: 0 10px;">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
-                              <input type="range" id="volume-slider" value="50" min="0" max="100">
-                          </div>
-                          <button class="control-btn" id="repeat-btn" onclick="togglePlayMode('repeat')">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"></path></svg>
-                          </button>
-                      </div>
+                      <div class="extra-controls" style="justify-content: center; gap: 15px;">
+    <button class="control-btn" id="mode-single-btn" onclick="setPlayMode(0)" title="Phát 1 bài rồi dừng">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"></path></svg>
+        <span style="font-size: 0.6em; display: block;">1 Bài</span>
+    </button>
+
+    <button class="control-btn" id="mode-all-btn" onclick="setPlayMode(1)" title="Phát tất cả lần lượt">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 17h-1.559l-9.7-10.368A1.996 1.996 0 0 0 4.282 6H2v2h2.282l9.7 10.368A1.996 1.996 0 0 0 15.441 19H17v3l5-4-5-4v3zM2.282 18H2v-2h2.282a1.996 1.996 0 0 1 1.459-.632l1.622-1.734 1.472 1.375-1.622 1.734A1.996 1.996 0 0 0 5.718 18zM18.559 9H17V5l5 4-5 4V9h-1.559a1.996 1.996 0 0 0-1.459.632l-1.622 1.734-1.472-1.375 1.622-1.734A1.996 1.996 0 0 1 15.441 5z"></path></svg>
+        <span style="font-size: 0.6em; display: block;">Toàn bộ</span>
+    </button>
+
+    <button class="control-btn" id="mode-shuffle-btn" onclick="setPlayMode(2)" title="Phát ngẫu nhiên">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"></path></svg>
+        <span style="font-size: 0.6em; display: block;">Ngẫu nhiên</span>
+    </button>
+</div>
                       <hr style="margin: 20px 0; background: #414345; height: 1px; opacity: 0.5;">
                       <details style="border-color: #ab47bc;">
                            <summary style="background: #2c3e50; color: #ab47bc; text-align: center; display: flex; align-items: center; justify-content: center;" id="summary-music-schedule">
@@ -4964,6 +4968,40 @@ function toggleHoliday(dateString) {
         
         wrapper.innerHTML = listHTML;
     }
+    // [MỚI] Hàm gửi lệnh chế độ phát
+function setPlayMode(mode) {
+    // mode: 0 = 1 Bài, 1 = Toàn bộ, 2 = Ngẫu nhiên
+    if (!client || !client.connected) return showNotification("❌ Chưa kết nối máy chủ!", 'error');
+
+    // Cập nhật giao diện (Highlight nút đang chọn)
+    document.getElementById('mode-single-btn').style.color = mode === 0 ? '#f1c40f' : '#ecf0f1';
+    document.getElementById('mode-all-btn').style.color = mode === 1 ? '#f1c40f' : '#ecf0f1';
+    document.getElementById('mode-shuffle-btn').style.color = mode === 2 ? '#f1c40f' : '#ecf0f1';
+
+    // Gửi lệnh xuống Vệ tinh
+    const checkboxes = document.querySelectorAll('.music-cb:checked');
+    const targetList = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (targetList.length === 0) {
+        return showNotification("⚠️ Chọn loa trước khi chọn chế độ!", "error");
+    }
+
+    const payload = {
+        command: "set_play_mode",
+        value: mode
+    };
+    
+    // Gửi cho các thiết bị được chọn
+    targetList.forEach(targetName => {
+        if (targetName !== "MASTER") {
+            const topic = `esp32/bell/satellite/${targetName}/control`;
+            client.publish(topic, JSON.stringify(payload));
+        }
+    });
+    
+    const modeNames = ["Phát 1 bài", "Phát toàn bộ", "Phát ngẫu nhiên"];
+    showNotification(`Đã chuyển chế độ: ${modeNames[mode]}`, "success");
+}
 
   </script>
   
@@ -5559,4 +5597,3 @@ function renderMusicScheduleTable() {
 </script>
 </body>
 </html>
-
