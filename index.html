@@ -5341,7 +5341,7 @@ function handleMusicControl(command, value = null) {
     if (value !== null) {
          if (command === 'set_volume') {
             // Quy đổi volume từ thang 100 (Web) về thang 30 (ESP32)
-            payload.value = Math.round(parseInt(value) / 100 * 30);
+            payload.value = Math.round(parseInt(value) / 100 * 10);
         } else {
             payload.value = value; // Với các lệnh khác như schedule_add
         }
@@ -5559,3 +5559,4 @@ function renderMusicScheduleTable() {
 </script>
 </body>
 </html>
+
