@@ -2200,25 +2200,18 @@
                               <span id="total-time">00:00</span>
                           </div>
                       </div>
-                      <div class="music-controls" style="flex-direction: column; gap: 10px;">
-    <div id="now-playing-container" style="display: none; background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 8px; border: 1px solid #f1c40f; text-align: center; width: 100%; margin-bottom: 5px;">
-        <div style="font-size: 0.8em; color: #bdc3c7; text-transform: uppercase;">Đang phát:</div>
-        <div id="now-playing-text" style="font-size: 1.1em; font-weight: bold; color: #f1c40f; animation: blink 2s infinite;">---</div>
-    </div>
-
-    <div style="display: flex; gap: 20px; align-items: center;">
-        <button class="control-btn" id="prev-btn" onclick="handleMusicControl('prev')">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12V6.5c0-.83-.67-1.5-1.5-1.5S9 5.67 9 6.5v4.05l-2.71-2.7c-.59-.59-1.54-.59-2.12 0-.59.58-.59 1.54 0 2.12L7.05 12l-2.88 2.87c-.59.58-.59 1.54 0 2.12.58.59 1.53.59 2.12 0L9 14.45V18.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5zM12 12l2.88 2.87c.58.59 1.53.59 2.12 0 .59-.58.59-1.54 0-2.12L14.12 12l2.88-2.88c.59-.58.59-1.54 0-2.12-.58-.59-1.54-.59-2.12 0L12 10.5V6.5c0-.83-.67-1.5-1.5-1.5S9 5.67 9 6.5v11c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V12z"></path></svg>
-        </button>
-        <button class="control-btn" id="play-pause-btn" onclick="handleMusicControl('play_pause')">
-            <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 6v12l10-6z"></path></svg>
-            <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 18h4V6H6v12zm8-12v12h4V6h-4z"></path></svg>
-        </button>
-        <button class="control-btn" id="next-btn" onclick="handleMusicControl('next')">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12v5.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-4.05l2.71 2.7c.59.59 1.54.59 2.12 0 .59-.58.59-1.54 0-2.12L16.95 12l2.88-2.87c.59-.58.59-1.54 0-2.12-.58-.59-1.53-.59-2.12 0L15 9.55V5.5c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5zm0 0L9.12 9.13c-.58-.59-1.53-.59-2.12 0-.59.58-.59 1.54 0 2.12L9.88 12l-2.88 2.88c-.59.58-.59-1.54 0 2.12.58.59 1.54.59 2.12 0L12 13.5v4c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-11c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5z"></path></svg>
-        </button>
-    </div>
-</div>
+                      <div class="music-controls">
+                          <button class="control-btn" id="prev-btn" onclick="handleMusicControl('prev')">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12V6.5c0-.83-.67-1.5-1.5-1.5S9 5.67 9 6.5v4.05l-2.71-2.7c-.59-.59-1.54-.59-2.12 0-.59.58-.59 1.54 0 2.12L7.05 12l-2.88 2.87c-.59.58-.59 1.54 0 2.12.58.59 1.53.59 2.12 0L9 14.45V18.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5zM12 12l2.88 2.87c.58.59 1.53.59 2.12 0 .59-.58.59-1.54 0-2.12L14.12 12l2.88-2.88c.59-.58.59-1.54 0-2.12-.58-.59-1.54-.59-2.12 0L12 10.5V6.5c0-.83-.67-1.5-1.5-1.5S9 5.67 9 6.5v11c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V12z"></path></svg>
+                          </button>
+                          <button class="control-btn" id="play-pause-btn" onclick="handleMusicControl('play_pause')">
+                              <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 6v12l10-6z"></path></svg>
+                              <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 18h4V6H6v12zm8-12v12h4V6h-4z"></path></svg>
+                          </button>
+                          <button class="control-btn" id="next-btn" onclick="handleMusicControl('next')">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12v5.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-4.05l2.71 2.7c.59.59 1.54.59 2.12 0 .59-.58.59-1.54 0-2.12L16.95 12l2.88-2.87c.59-.58.59-1.54 0-2.12-.58-.59-1.53-.59-2.12 0L15 9.55V5.5c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5zm0 0L9.12 9.13c-.58-.59-1.53-.59-2.12 0-.59.58-.59 1.54 0 2.12L9.88 12l-2.88 2.88c-.59.58-.59-1.54 0 2.12.58.59 1.54.59 2.12 0L12 13.5v4c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-11c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5z"></path></svg>
+                          </button>
+                      </div>
                       <div class="extra-controls">
                           <button class="control-btn" id="shuffle-btn" onclick="togglePlayMode('shuffle')">
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"></path></svg>
@@ -5562,19 +5555,6 @@ function renderMusicScheduleTable() {
             </td>
         `;
     });
-}
-// [THÊM MỚI] Hàm gửi lệnh chế độ phát nhạc
-function setPlayMode(mode) {
-    // mode: 0 = 1 Bài (Mặc định), 1 = Ngẫu nhiên, 2 = Toàn bộ
-    // Hàm này tận dụng cơ chế đa điểm của handleMusicControl
-    handleMusicControl("set_play_mode", mode);
-    
-    let modeName = "";
-    if(mode === 1) modeName = "Ngẫu nhiên";
-    else if(mode === 2) modeName = "Toàn bộ danh sách";
-    else modeName = "Chế độ 1 bài";
-    
-    showNotification(`Đã gửi lệnh phát: ${modeName}`, "success");
 }
 </script>
 </body>
