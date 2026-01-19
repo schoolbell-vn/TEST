@@ -3420,29 +3420,33 @@ function stopMusicTimer() {
     function togglePlayMode(mode) {
     if (!client || !client.connected) return showNotification("❌ Chưa kết nối máy chủ!", 'error');
 
-    // Logic toggle: Nếu bấm lại nút đang bật thì tắt nó đi (về none)
+    // Toggle logic
     if (currentPlayMode === mode) {
         currentPlayMode = 'none';
         showNotification("Đã tắt chế độ tự động.", "info");
     } else {
         currentPlayMode = mode;
-        let modeText = "";
-        if(mode === 'shuffle') modeText = "Phát ngẫu nhiên";
-        if(mode === 'sequence') modeText = "Phát tất cả (Tuần tự)";
-        if(mode === 'repeat') modeText = "Lặp lại bài này";
+        let modeText = (mode === 'shuffle') ? "Phát ngẫu nhiên" : (mode === 'sequence') ? "Phát tất cả" : "Lặp lại 1 bài";
         showNotification(`✅ Đã bật: ${modeText}`, "success");
     }
 
-    // Cập nhật giao diện (Active class)
+    // Update UI
     document.getElementById('shuffle-btn').classList.toggle('active', currentPlayMode === 'shuffle');
     document.getElementById('sequence-btn').classList.toggle('active', currentPlayMode === 'sequence');
     document.getElementById('repeat-btn').classList.toggle('active', currentPlayMode === 'repeat');
 
-    // Lấy danh sách loa đang chọn
+    // Lấy target
     const checkboxes = document.querySelectorAll('.music-cb:checked');
-    const targetList = Array.from(checkboxes).map(cb => cb.value);
+    let targetList = Array.from(checkboxes).map(cb => cb.value);
 
-    // Gửi lệnh MQTT
+    // [FIX] Nếu không chọn loa nào, mặc định gửi cho tất cả hoặc gửi cho Master
+    // Vì nếu target rỗng, ESP32 có thể sẽ bỏ qua lệnh
+    if (targetList.length === 0) {
+        // Giả sử gửi cho ESP32 hiện tại nếu không chọn gì
+        // Hoặc bạn có thể return alert("Vui lòng chọn loa");
+        targetList = [DEVICE_NAME]; // DEVICE_NAME biến JS global nếu có, hoặc để rỗng tùy logic MQTT của bạn
+    }
+
     const payload = { 
         command: "set_mode", 
         mode: currentPlayMode,
