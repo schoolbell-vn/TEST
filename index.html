@@ -3419,15 +3419,24 @@ function stopMusicTimer() {
         // Thay đoạn cập nhật nút Shuffle/Repeat cũ bằng đoạn này:
 
         // Reset style các nút
-        document.getElementById('shuffle-btn').classList.remove('active-mode');
-        document.getElementById('play-all-btn').classList.remove('active-mode');
-        document.getElementById('repeat-btn').classList.remove('active-mode');
+        // --- Đảm bảo đoạn này nằm ở CUỐI hàm updateMusicPlayerUI ---
 
-        // Status.mode trả về từ ESP32 (bạn cần thêm biến mode vào json broadcastMusicStatus bên dưới)
-        // Giả sử: 1=Sequence, 2=Shuffle, 3=Repeat
-        if (status.play_mode === 1) document.getElementById('play-all-btn').classList.add('active-mode');
-        if (status.play_mode === 2) document.getElementById('shuffle-btn').classList.add('active-mode');
-        if (status.play_mode === 3) document.getElementById('repeat-btn').classList.add('active-mode');
+    // 1. Xóa trạng thái active cũ của cả 3 nút
+        document.getElementById('shuffle-btn').classList.remove('active');
+        document.getElementById('play-all-btn').classList.remove('active');
+        document.getElementById('repeat-btn').classList.remove('active');
+
+        // 2. Kiểm tra dữ liệu từ ESP32 để bật màu nút tương ứng
+        // Lưu ý: ESP32 phải gửi đúng play_mode (1, 2 hoặc 3)
+        if (status.play_mode == 1) {
+            document.getElementById('play-all-btn').classList.add('active');
+        } 
+        else if (status.play_mode == 2) {
+            document.getElementById('shuffle-btn').classList.add('active');
+        } 
+        else if (status.play_mode == 3) {
+            document.getElementById('repeat-btn').classList.add('active');
+        }
     }
 
    
