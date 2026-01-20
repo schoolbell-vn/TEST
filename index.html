@@ -2228,7 +2228,12 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: #bdc3c7;">
                                     <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path>
                                 </svg>
-                                <input type="range" id="volume-slider" value="50" min="0" max="100" style="margin-left: 10px;">
+                               <div style="display: flex; align-items: center; flex-grow: 1;">
+                                <input type="range" id="volume-slider" value="10" min="0" max="21" step="1" 
+                                    style="margin-left: 10px; flex-grow: 1;" 
+                                    oninput="document.getElementById('vol-display').innerText = this.value + '/21'">
+                                <span id="vol-display" style="color: #f1c40f; font-weight: bold; margin-left: 10px; min-width: 40px;">10/21</span>
+                            </div>
                             </div>
                         </div>
 
