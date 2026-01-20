@@ -2213,25 +2213,17 @@
                           </button>
                       </div>
                       <div class="extra-controls">
-                            <button class="control-btn" id="shuffle-btn" onclick="togglePlayMode('shuffle')" title="Phát ngẫu nhiên">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"></path></svg>
-                            </button>
-        
-                            <button class="control-btn" id="sequence-btn" onclick="togglePlayMode('sequence')" title="Phát tất cả từ trên xuống">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"></path>
-                            </svg>
-                            </button>
-
-                            <div class="progress-container" style="flex-grow: 1; margin: 0 10px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
-                            <input type="range" id="volume-slider" value="50" min="0" max="100">
-                            </div>
-
-                            <button class="control-btn" id="repeat-btn" onclick="togglePlayMode('repeat')" title="Lặp lại 1 bài">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"></path></svg>
-                                </button>
-                    </div>
+                          <button class="control-btn" id="shuffle-btn" onclick="togglePlayMode('shuffle')">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"></path></svg>
+                          </button>
+                           <div class="progress-container" style="flex-grow: 1; margin: 0 10px;">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
+                              <input type="range" id="volume-slider" value="50" min="0" max="100">
+                          </div>
+                          <button class="control-btn" id="repeat-btn" onclick="togglePlayMode('repeat')">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"></path></svg>
+                          </button>
+                      </div>
                       <hr style="margin: 20px 0; background: #414345; height: 1px; opacity: 0.5;">
                       <details style="border-color: #ab47bc;">
                            <summary style="background: #2c3e50; color: #ab47bc; text-align: center; display: flex; align-items: center; justify-content: center;" id="summary-music-schedule">
@@ -2584,7 +2576,7 @@
             actionBar.style.display = 'none';
         }
     }
-    let currentPlayMode = 'none';
+    
     // =======================================================
     // === [BẮT ĐẦU] JS MỚI CHO HẸN GIỜ & CẢNH BÁO XUNG ĐỘT ===
     // =======================================================
@@ -3395,66 +3387,13 @@ function stopMusicTimer() {
         }
         document.getElementById('shuffle-btn').classList.toggle('active', status.shuffle_mode || false);
         document.getElementById('repeat-btn').classList.toggle('active', status.repeat_mode || false);
-        // Reset UI buttons
-        document.getElementById('shuffle-btn').classList.remove('active');
-        document.getElementById('sequence-btn').classList.remove('active');
-        document.getElementById('repeat-btn').classList.remove('active');
-
-        // Cập nhật theo status từ ESP32 gửi về (giả sử ESP32 gửi về play_mode: 0, 1, 2, 3)
-        // Bạn cần cập nhật thêm trong hàm broadcastMusicStatus ở file INO để gửi biến playMode này đi
-        if (status.play_mode === 2) {
-            document.getElementById('shuffle-btn').classList.add('active');
-            currentPlayMode = 'shuffle';
-        } else if (status.play_mode === 3) {
-            document.getElementById('sequence-btn').classList.add('active');
-            currentPlayMode = 'sequence';
-        } else if (status.play_mode === 1) {
-            document.getElementById('repeat-btn').classList.add('active');
-            currentPlayMode = 'repeat';
-        } else {
-            currentPlayMode = 'none';
-        }   
+           
     }
 
    
     function togglePlayMode(mode) {
-    if (!client || !client.connected) return showNotification("❌ Chưa kết nối máy chủ!", 'error');
-
-    // Toggle logic
-    if (currentPlayMode === mode) {
-        currentPlayMode = 'none';
-        showNotification("Đã tắt chế độ tự động.", "info");
-    } else {
-        currentPlayMode = mode;
-        let modeText = (mode === 'shuffle') ? "Phát ngẫu nhiên" : (mode === 'sequence') ? "Phát tất cả" : "Lặp lại 1 bài";
-        showNotification(`✅ Đã bật: ${modeText}`, "success");
+        handleMusicControl(`toggle_${mode}`);
     }
-
-    // Update UI
-    document.getElementById('shuffle-btn').classList.toggle('active', currentPlayMode === 'shuffle');
-    document.getElementById('sequence-btn').classList.toggle('active', currentPlayMode === 'sequence');
-    document.getElementById('repeat-btn').classList.toggle('active', currentPlayMode === 'repeat');
-
-    // Lấy target
-    const checkboxes = document.querySelectorAll('.music-cb:checked');
-    let targetList = Array.from(checkboxes).map(cb => cb.value);
-
-    // [FIX] Nếu không chọn loa nào, mặc định gửi cho tất cả hoặc gửi cho Master
-    // Vì nếu target rỗng, ESP32 có thể sẽ bỏ qua lệnh
-    if (targetList.length === 0) {
-        // Giả sử gửi cho ESP32 hiện tại nếu không chọn gì
-        // Hoặc bạn có thể return alert("Vui lòng chọn loa");
-        targetList = [DEVICE_NAME]; // DEVICE_NAME biến JS global nếu có, hoặc để rỗng tùy logic MQTT của bạn
-    }
-
-    const payload = { 
-        command: "set_mode", 
-        mode: currentPlayMode,
-        targets: targetList
-    };
-    
-    client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-}
 
    // --- BẮT ĐẦU HÀM MỚI ---
 // --- [BƯỚC 5] HÀM THÊM LỊCH (ĐÃ NÂNG CẤP ĐỒNG BỘ ĐÁM MÂY) ---
