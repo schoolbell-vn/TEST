@@ -27,8 +27,7 @@
     border: none;
     background: transparent;
     box-shadow: none;
-    margin: 0 0 15px 0; /* [SỬA] Bỏ margin trái phải (về 0) để khung rộng ra */
-    width: 100%;
+    margin: 0 15px 15px 15px; /* Căn lề cho đồng bộ */
 }
 .scenario-setup-details > summary {
     display: flex;
@@ -1636,15 +1635,14 @@
         color: #f1c40f;
     }
     .scenario-input-group input {
-    width: 100%;
-    padding: 6px 10px; /* [SỬA] Giảm độ cao trên dưới từ 10px xuống 6px */
-    border-radius: 6px;
-    border: 1px solid #7f8c8d;
-    background-color: #2c3e50;
-    color: #ecf0f1;
-    font-size: 1em; /* [SỬA] Giảm cỡ chữ xuống 1em cho vừa vặn */
-    height: 38px; /* [THÊM] Cố định chiều cao chuẩn */
-}
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #7f8c8d;
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        font-size: 1.1em;
+    }
     .scenario-helper-text {
         font-size: 0.8em;
         color: #7f8c8d;
@@ -1749,97 +1747,20 @@
     .mic-icon { width: 60px; height: 60px; fill: white; pointer-events: none; }
     .mic-status { font-weight: bold; color: #bdc3c7; margin-bottom: 15px; font-size: 1.2em; text-transform: uppercase;}
     
-    /* === [ĐÃ CHỈNH SỬA] CSS CHO MICROPHONE VÀ ZONE === */
-   /* === CSS CHUẨN CHO KHUNG CHỌN THIẾT BỊ (ZONE) === */
-/* === FIX CỨNG GIAO DIỆN DANH SÁCH THIẾT BỊ === */
-.zone-selector {
-    width: 100%;
-    background: #232526;
-    padding: 0 !important; /* Ép sát viền */
-    border: 1px solid #414345;
-    border-radius: 8px;
-    margin-top: 5px;
-    overflow-y: auto;
-    text-align: left !important; /* Ép toàn bộ nội dung căn trái */
-}
-
-.zone-item {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    /* [SỬA] Giảm padding trên dưới xuống 4px cho gọn */
-    padding: 4px 0px 4px 5px; 
-    border-bottom: 1px solid #414345;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.2s;
-    min-height: 40px; /* Đảm bảo chiều cao tối thiểu để dễ bấm trên điện thoại */
-}
-
-.zone-item:last-child {
-    border-bottom: none;
-}
-
-.zone-checkbox {
-    width: 20px !important;
-    height: 20px !important;
-    margin-right: 10px !important; /* Cách chữ ra 10px */
-    margin-left: 0 !important;
-    accent-color: #f1c40f;
-    cursor: pointer;
-    flex-shrink: 0; /* Không bị co lại */
-}
-/* Thanh tiến độ đồng bộ nổi ở góc dưới hoặc trên */
-#sync-progress-bar-container {
-    position: fixed;
-    bottom: 80px; /* Nằm trên thanh Action Bar */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 400px;
-    background: #2c3e50;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-    border: 1px solid #f1c40f;
-    display: none; /* Mặc định ẩn */
-    z-index: 2000;
-    text-align: center;
-}
-#sync-progress-fill {
-    height: 10px;
-    background: linear-gradient(90deg, #f1c40f, #f39c12);
-    width: 0%;
-    border-radius: 5px;
-    transition: width 0.3s ease;
-    margin-top: 8px;
-}
-#sync-count-text {
-    color: #fff; font-weight: bold; font-size: 0.9em;
-}
-@keyframes highlightRow {
-    0% { background-color: #f1c40f; }
-    100% { background-color: transparent; }
-}
-.control-btn.active-mode {
-    color: #f1c40f; /* Màu vàng khi được chọn */
-    transform: scale(1.1);
-}
-.control-btn.active {
-    color: #f1c40f !important; /* Màu Vàng sáng */
-    text-shadow: 0 0 10px rgba(241, 196, 15, 0.6); /* Hiệu ứng phát sáng */
-    transform: scale(1.2); /* Phóng to nhẹ */
-    transition: all 0.3s ease;
-}
+    .zone-selector {
+        width: 100%; background: #232526; padding: 15px; border-radius: 12px;
+        border: 1px solid #414345; margin-top: 10px;
+    }
+    .zone-item {
+        display: flex; align-items: center; padding: 10px;
+        border-bottom: 1px solid #414345;
+        cursor: pointer;
+    }
+    .zone-item:last-child { border-bottom: none; }
+    .zone-checkbox { width: 22px; height: 22px; margin-right: 12px; accent-color: #f1c40f; }
   </style>
 </head>
 <body>
-    <div id="sync-progress-bar-container">
-    <div id="sync-count-text">Đang đợi phản hồi... 0/0</div>
-    <div style="background: #444; border-radius: 5px; overflow: hidden; margin-top: 5px;">
-        <div id="sync-progress-fill"></div>
-    </div>
-</div>
     <div id="notification-area"></div>
 
   <div id="main">
@@ -1900,24 +1821,6 @@
         </summary>
         
         <div class="details-content" style="padding-top: 20px; display: flex; flex-direction: column; gap: 15px;">
-           <div class="scenario-input-group">
-    <label>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.486 2 3.407 3.585 0 6l1.414 1.414C4.195 5.53 7.855 4 12 4s7.805 1.53 10.586 3.414L24 6C20.593 3.585 16.514 2 12 2zm0 4c-3.145 0-6.195 1.229-8.485 3.414L5.414 11.31C7.21 9.898 9.51 9 12 9s4.79 0.898 6.586 2.31l1.899-1.898C18.195 7.229 15.145 6 12 6zm0 5c-1.854 0-3.58.718-4.828 1.968L9.07 14.864C9.945 14.18 10.94 13.8 12 13.8s2.055 0.38 2.93 1.064l1.898-1.898C15.58 11.718 13.854 11 12 11zm0 4.2c-0.828 0-1.5 0.672-1.5 1.5s0.672 1.5 1.5 1.5 1.5-0.672 1.5-1.5-0.672-1.5-1.5-1.5z"></path></svg>
-        Áp dụng cho các thiết bị
-    </label>
-    
-    <div class="zone-selector" style="padding: 0; max-height: 200px; overflow-y: auto; margin-top: 5px;">
-        <div id="scenario-target-list">
-            <div style="text-align: center; color: #777;">Đang tải danh sách...</div>
-        </div>
-    </div>
-    
-    <div style="text-align: right; margin-top: 5px;">
-        <button type="button" onclick="toggleAllScenarioTargets()" style="background: none; border: none; color: #3498db; cursor: pointer; font-size: 0.85em; font-weight: bold;">
-            Chọn tất cả / Bỏ chọn
-        </button>
-    </div>
-</div>
             <div class="scenario-input-group">
                 <label for="scenario-start-time">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z"></path></svg>
@@ -2162,25 +2065,6 @@
         </div>
 
         <div id="tab-phat-nhac" class="main-tab-content">
-            <div class="sohoi-container" style="margin-top: 15px;">
-    <div style="background: #232526; border: 1px solid #f1c40f; border-radius: 8px; padding: 10px;">
-        <label style="color: #f1c40f; font-weight: bold; display: block; margin-bottom: 8px; text-align: center;">
-            CHỌN LOA PHÁT NHẠC
-        </label>
-        
-        <div class="zone-selector" style="padding: 0; max-height: 150px; overflow-y: auto; margin-top: 5px; border: 1px solid #414345; background: #232526;">
-            <div id="music-target-list">
-                <div style="text-align: center; color: #777; font-size: 0.9em;">Đang tải danh sách...</div>
-            </div>
-        </div>
-
-        <div style="text-align: right; margin-top: 5px;">
-            <button type="button" onclick="toggleAllMusicTargets()" style="background: none; border: none; color: #3498db; cursor: pointer; font-size: 0.85em;">
-                Chọn tất cả / Bỏ chọn
-            </button>
-        </div>
-    </div>
-</div>
             <div class="music-player-container" style="margin-top: 5px;">
               <details open>
                   <summary>
@@ -2191,12 +2075,6 @@
                     </summary>
                   <div class="details-content music-player-content">
                       <h5 id="title-music-playlist">DANH SÁCH PHÁT</h5>
-                        <div style="text-align: center; margin-bottom: 10px;">
-                            <button class="modern-btn test-button" onclick="handleMusicControl('refresh_playlist')" style="width: auto; display: inline-flex; padding: 5px 15px; font-size: 0.8em; height: 35px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
-                                Tải danh sách từ thẻ nhớ
-                            </button>
-                        </div>
                       <div id="music-playlist-container">
                           <p class="list-placeholder">Đang chờ danh sách nhạc từ thiết bị...</p>
                       </div>
@@ -2210,55 +2088,30 @@
                               <span id="total-time">00:00</span>
                           </div>
                       </div>
-                        <div class="music-controls">
-                            <button class="control-btn" id="prev-btn" onclick="handleMusicControl('prev')">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12V6.5c0-.83-.67-1.5-1.5-1.5S9 5.67 9 6.5v4.05l-2.71-2.7c-.59-.59-1.54-.59-2.12 0-.59.58-.59 1.54 0 2.12L7.05 12l-2.88 2.87c-.59.58-.59 1.54 0 2.12.58.59 1.53.59 2.12 0L9 14.45V18.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5zM12 12l2.88 2.87c.58.59 1.53.59 2.12 0 .59-.58.59-1.54 0-2.12L14.12 12l2.88-2.88c.59-.58.59-1.54 0-2.12-.58-.59-1.54-.59-2.12 0L12 10.5V6.5c0-.83-.67-1.5-1.5-1.5S9 5.67 9 6.5v11c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V12z"></path></svg>
-                            </button>
-                            <button class="control-btn" id="play-pause-btn" onclick="handleMusicControl('play_pause')">
-                                <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 6v12l10-6z"></path></svg>
-                                <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 18h4V6H6v12zm8-12v12h4V6h-4z"></path></svg>
-                            </button>
-                            <button class="control-btn" id="next-btn" onclick="handleMusicControl('next')">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12v5.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-4.05l2.71 2.7c.59.59 1.54.59 2.12 0 .59-.58.59-1.54 0-2.12L16.95 12l2.88-2.87c.59-.58.59-1.54 0-2.12-.58-.59-1.53-.59-2.12 0L15 9.55V5.5c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5zm0 0L9.12 9.13c-.58-.59-1.53-.59-2.12 0-.59.58-.59 1.54 0 2.12L9.88 12l-2.88 2.88c-.59.58-.59-1.54 0 2.12.58.59 1.54.59 2.12 0L12 13.5v4c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-11c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5z"></path></svg>
-                            </button>
-                        </div>
-
-                        <div class="volume-section" style="margin-top: 15px; margin-bottom: 15px;">
-                            <div class="progress-container">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: #bdc3c7;">
-                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path>
-                                </svg>
-                               <div style="display: flex; align-items: center; flex-grow: 1;">
-                                <input type="range" id="volume-slider" value="10" min="0" max="21" step="1" 
-                                    style="margin-left: 10px; flex-grow: 1;" 
-                                    oninput="document.getElementById('vol-display').innerText = this.value + '/21'">
-                                <span id="vol-display" style="color: #f1c40f; font-weight: bold; margin-left: 10px; min-width: 40px;">10/21</span>
-                            </div>
-                            </div>
-                        </div>
-
-                        <div class="play-mode-controls" style="display: flex; justify-content: center; gap: 30px; margin-bottom: 10px;">
-                            
-                            <button class="control-btn" id="shuffle-btn" onclick="handleMusicControl('play_mode', 'shuffle')" title="Phát ngẫu nhiên">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"></path>
-                                </svg>
-                            </button>
-                            
-                            <button class="control-btn" id="play-all-btn" onclick="handleMusicControl('play_mode', 'play_all')" title="Phát danh sách tuần tự">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M4 10h12v2H4zm0-4h12v2H4zm0 8h8v2H4zm10 0v6l5-3z"></path>
-                                </svg>
-                            </button>
-
-                            <button class="control-btn" id="repeat-btn" onclick="handleMusicControl('play_mode', 'repeat')" title="Lặp lại bài hiện tại">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"></path>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <hr style="margin: 20px 0; background: #414345; height: 1px; opacity: 0.5;">
+                      <div class="music-controls">
+                          <button class="control-btn" id="prev-btn" onclick="handleMusicControl('prev')">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12V6.5c0-.83-.67-1.5-1.5-1.5S9 5.67 9 6.5v4.05l-2.71-2.7c-.59-.59-1.54-.59-2.12 0-.59.58-.59 1.54 0 2.12L7.05 12l-2.88 2.87c-.59.58-.59 1.54 0 2.12.58.59 1.53.59 2.12 0L9 14.45V18.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5zM12 12l2.88 2.87c.58.59 1.53.59 2.12 0 .59-.58.59-1.54 0-2.12L14.12 12l2.88-2.88c.59-.58.59-1.54 0-2.12-.58-.59-1.54-.59-2.12 0L12 10.5V6.5c0-.83-.67-1.5-1.5-1.5S9 5.67 9 6.5v11c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V12z"></path></svg>
+                          </button>
+                          <button class="control-btn" id="play-pause-btn" onclick="handleMusicControl('play_pause')">
+                              <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 6v12l10-6z"></path></svg>
+                              <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 18h4V6H6v12zm8-12v12h4V6h-4z"></path></svg>
+                          </button>
+                          <button class="control-btn" id="next-btn" onclick="handleMusicControl('next')">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12v5.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-4.05l2.71 2.7c.59.59 1.54.59 2.12 0 .59-.58.59-1.54 0-2.12L16.95 12l2.88-2.87c.59-.58.59-1.54 0-2.12-.58-.59-1.53-.59-2.12 0L15 9.55V5.5c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5zm0 0L9.12 9.13c-.58-.59-1.53-.59-2.12 0-.59.58-.59 1.54 0 2.12L9.88 12l-2.88 2.88c-.59.58-.59-1.54 0 2.12.58.59 1.54.59 2.12 0L12 13.5v4c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-11c0-.83-.67-1.5-1.5-1.5S12 4.67 12 5.5v6.5z"></path></svg>
+                          </button>
+                      </div>
+                      <div class="extra-controls">
+                          <button class="control-btn" id="shuffle-btn" onclick="togglePlayMode('shuffle')">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"></path></svg>
+                          </button>
+                           <div class="progress-container" style="flex-grow: 1; margin: 0 10px;">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
+                              <input type="range" id="volume-slider" value="50" min="0" max="100">
+                          </div>
+                          <button class="control-btn" id="repeat-btn" onclick="togglePlayMode('repeat')">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"></path></svg>
+                          </button>
+                      </div>
                       <hr style="margin: 20px 0; background: #414345; height: 1px; opacity: 0.5;">
                       <details style="border-color: #ab47bc;">
                            <summary style="background: #2c3e50; color: #ab47bc; text-align: center; display: flex; align-items: center; justify-content: center;" id="summary-music-schedule">
@@ -2315,14 +2168,6 @@
                         <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
                     </svg>
                 </div>
-                <div style="width: 80%; max-width: 250px; margin: 15px 0; background: #2c3e50; padding: 10px; border-radius: 10px;">
-    <label style="color: #bdc3c7; font-size: 0.8em; display: block; text-align: center; margin-bottom: 5px;">Độ nhạy Micro (Gain)</label>
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <span style="color:#7f8c8d; font-size: 0.8em;">Nhỏ</span>
-        <input type="range" id="mic-gain-slider" min="0" max="64" value="32" style="flex-grow: 1; height: 5px;" onchange="updateMicGain(this.value)">
-        <span style="color:#7f8c8d; font-size: 0.8em;">To</span>
-    </div>
-</div>
                 <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 20px;">Nhấn và Giữ nút để nói</p>
 
                 <div class="zone-selector">
@@ -2395,8 +2240,27 @@
         </div>
 
         <div id="adv-tab-reset-wifi" class="adv-modal-tab-content">
-            <div id="reset-wifi-actions-list" class="actions-list">
+            <h5>CÀI ĐẶT WIFI DỰ PHÒNG</h5>
+            <div class="actions-list">
+                <div class="control-group">
+                    <input type="text" id="backup-ssid-0" class="modal-input" placeholder="Tên WiFi 1..." style="margin-bottom: 5px;">
+                    <input type="password" id="backup-pass-0" class="modal-input" placeholder="Mật khẩu 1..." style="margin-bottom: 15px;">
                 </div>
+                <div class="control-group">
+                    <input type="text" id="backup-ssid-1" class="modal-input" placeholder="Tên WiFi 2..." style="margin-bottom: 5px;">
+                    <input type="password" id="backup-pass-1" class="modal-input" placeholder="Mật khẩu 2..." style="margin-bottom: 15px;">
+                </div>
+                <div class="control-group">
+                    <input type="text" id="backup-ssid-2" class="modal-input" placeholder="Tên WiFi 3..." style="margin-bottom: 5px;">
+                    <input type="password" id="backup-pass-2" class="modal-input" placeholder="Mật khẩu 3..." style="margin-bottom: 15px;">
+                </div>
+                <button class="action-btn" style="background-color: #3498db; width: 100%; height: 40px; margin-bottom: 15px;" onclick="saveBackupWifi()">LƯU WIFI DỰ PHÒNG</button>
+            </div>
+            
+            <hr style="margin: 10px 0; background: #414345; height: 1px; opacity: 0.5;">
+            
+            <h5>RESET WIFI VỆ TINH</h5>
+            <div id="reset-wifi-actions-list" class="actions-list"></div>
         </div>
 
         <div id="adv-tab-reset-esp" class="adv-modal-tab-content">
@@ -2449,18 +2313,12 @@
 
         <div id="adv-tab-change-pass" class="adv-modal-tab-content">
             <h5>THAY ĐỔI MẬT KHẨU QUẢN TRỊ</h5>
-           <div class="actions-list" style="gap: 15px; padding-top: 10px;">
-    <input type="password" id="old-admin-password" class="modal-input" placeholder="Mật khẩu cũ..." autocomplete="current-password">
-    <input type="password" id="new-admin-password" class="modal-input" placeholder="Mật khẩu mới..." autocomplete="new-password">
-    <input type="password" id="confirm-admin-password" class="modal-input" placeholder="Xác nhận mật khẩu mới..." autocomplete="new-password">
-    
-    <label style="display: flex; align-items: center; color: #bdc3c7; cursor: pointer; font-size: 0.9em; justify-content: flex-end;">
-        <input type="checkbox" onclick="toggleChangePassVisibility()" style="width: 18px; height: 18px; margin-right: 8px;">
-        Hiển thị mật khẩu
-    </label>
-
-    <button class="action-btn" style="width: 100%; height: 40px; font-size: 0.9em;" onclick="handleChangePassword()">Lưu Thay Đổi</button>
-</div>
+            <div class="actions-list" style="gap: 15px; padding-top: 10px;">
+                <input type="password" id="old-admin-password" class="modal-input" placeholder="Mật khẩu cũ..." autocomplete="current-password">
+                <input type="password" id="new-admin-password" class="modal-input" placeholder="Mật khẩu mới..." autocomplete="new-password">
+                <input type="password" id="confirm-admin-password" class="modal-input" placeholder="Xác nhận mật khẩu mới..." autocomplete="new-password">
+                <button class="action-btn" style="width: 100%; height: 40px; font-size: 0.9em;" onclick="handleChangePassword()">Lưu Thay Đổi</button>
+            </div>
         </div>
         
         <div id="adv-tab-ota" class="adv-modal-tab-content">
@@ -2500,22 +2358,15 @@
   </div>
 
   <div class="modal-overlay" id="password-modal-overlay">
-     <div class="modal-content">
-    <h4 id="password-modal-title">Xác thực quyền Quản trị</h4>
-    <p id="password-modal-description" style="text-align: center; margin-top: -10px; margin-bottom: 20px; color: #bdc3c7; font-size: 0.9em;">Vui lòng nhập mật khẩu để tiếp tục.</p>
-    
-    <input type="password" id="admin-password-input" class="modal-input" placeholder="Mật khẩu quản trị..." autocomplete="current-password">
-    
-    <label style="display: flex; align-items: center; color: #bdc3c7; cursor: pointer; font-size: 0.9em; margin-bottom: 15px; justify-content: center;">
-        <input type="checkbox" onclick="toggleAdminPassVisibility()" style="width: 18px; height: 18px; margin-right: 8px;">
-        Hiển thị mật khẩu
-    </label>
-
-    <div class="modal-buttons">
-        <button class="modal-cancel-btn" onclick="closePasswordModal()">Hủy</button>
-        <button class="modal-confirm-btn" onclick="confirmAction()">Xác nhận</button>
-    </div>
-</div>
+      <div class="modal-content">
+          <h4 id="password-modal-title">Xác thực quyền Quản trị</h4>
+          <p id="password-modal-description" style="text-align: center; margin-top: -10px; margin-bottom: 20px; color: #bdc3c7; font-size: 0.9em;">Vui lòng nhập mật khẩu để tiếp tục.</p>
+          <input type="password" id="admin-password-input" class="modal-input" placeholder="Mật khẩu quản trị..." autocomplete="current-password">
+          <div class="modal-buttons">
+              <button class="modal-cancel-btn" onclick="closePasswordModal()">Hủy</button>
+              <button class="modal-confirm-btn" onclick="confirmAction()">Xác nhận</button>
+          </div>
+      </div>
   </div>
 
   <div class="modal-overlay" id="conflict-modal-overlay">
@@ -2840,7 +2691,6 @@
     }
 
     // [CHỈNH SỬA THEO YÊU CẦU] Hàm mới dùng để gửi lệnh (trước đây là addScenario)
-    // [CẬP NHẬT] Hàm gửi kịch bản (Đã thêm target)
     async function sendScenario() {
         if (!client || !client.connected) {
             return showNotification("Chưa kết nối máy chủ!", 'error');
@@ -2850,9 +2700,6 @@
             showNotification("Vui lòng nhấn 'Xem Trước Kịch Bản' trước khi gửi lệnh.", "error");
             return;
         }
-
-        // Lấy thiết bị đích từ dropdown
-        const targetDevice = document.getElementById('scenario-target-select').value;
 
         const { scenario, days } = previewedScenarioData;
 
@@ -2875,18 +2722,23 @@
             userPriority = userChoice;
         }
 
-        // Payload thêm trường targets (dạng mảng để mở rộng sau này)
+        // Đây là payload của MỘT kịch bản
         const payload = {
             scenario: scenario,
             priority: userPriority,
-            days: days,
-            targets: [targetDevice] // <--- MỚI THÊM
+            days: days
         };
 
+        // === [SỬA LỖI QUAN TRỌNG] ===
+        // Chúng ta gửi MỘT kịch bản đến topic "ADD" (THÊM)
         const SCENARIO_ADD_TOPIC = "esp32/bell/scenario/add"; 
         client.publish(SCENARIO_ADD_TOPIC, JSON.stringify(payload), { qos: 1 });
+        // ==============================
 
-        showNotification(`Đã gửi kịch bản cho: ${targetDevice === 'ALL' ? 'Toàn hệ thống' : targetDevice}`, "success");
+        showNotification("Đã gửi lệnh THÊM kịch bản mới!", "success");
+        
+        // Không cần tự cập nhật localStorage, vì ESP32 sẽ gửi lại danh sách mới
+        // và hàm _load() sẽ xử lý (XÓA CÁC DÒNG LIÊN QUAN ĐẾN localStorage TỪ HÀM CŨ)
         
         document.getElementById('scenario-preview-table-container').innerHTML = '';
         previewedScenarioData = null;
@@ -2964,47 +2816,8 @@
     // [MỚI] TOPICS MQTT CHO ĐIỀU KHIỂN NHẠC
     const MUSIC_CONTROL_TOPIC = "esp32/bell/music/control";
     const MUSIC_STATUS_TOPIC = "esp32/bell/music/status";
-    // [THÊM MỚI] Topic dùng để lưu trữ danh sách lịch (như một Database online)
-    const MUSIC_STORAGE_TOPIC = "esp32/bell/music/schedule_storage"; 
-    
-    // Biến lưu danh sách lịch (không dùng LocalStorage nữa)
-    let sharedMusicSchedules = [];
-    let hasInitialPlaylistLoaded = false;
     // --- TOPIC MỚI CHO MIC & NHẠC ---
     const MIC_CONTROL_TOPIC = "esp32/bell/mic/control";
-
-
-    // --- [BIẾN MỚI] QUẢN LÝ NHẠC VÀ TIẾN TRÌNH ---
-        let selectedTrackToPlay = ""; // Lưu tên bài hát bạn vừa nhấn chọn
-        let currentPlayingTrack = ""; // Lưu tên bài hát hệ thống đang thực sự phát
-        let musicTimer = null;        // Bộ đếm thời gian
-        let audioCurrentTime = 0;     // Thời gian hiện tại (giây)
-        let audioTotalTime = 0;       // Tổng thời gian (giây)
-        let isMusicPlaying = false;   // Trạng thái đang phát hay dừng
-
-// Hàm tự động chạy thanh tiến trình (Giả lập để mượt mà)
-function startMusicTimer() {
-    if (musicTimer) clearInterval(musicTimer);
-    
-    musicTimer = setInterval(() => {
-        if (isMusicPlaying && audioTotalTime > 0) {
-            audioCurrentTime++; // Tăng thêm 1 giây
-            
-            // Nếu vượt quá tổng thời gian thì dừng
-            if (audioCurrentTime > audioTotalTime) audioCurrentTime = audioTotalTime;
-
-            // Cập nhật giao diện ngay lập tức
-            const percent = (audioCurrentTime / audioTotalTime) * 100;
-            document.getElementById('music-progress-bar').value = percent;
-            document.getElementById('current-time').textContent = formatTime(audioCurrentTime);
-        }
-    }, 1000); // Chạy mỗi 1 giây
-}
-
-function stopMusicTimer() {
-    if (musicTimer) clearInterval(musicTimer);
-    musicTimer = null;
-}
   
     function connectToMqtt(){
         console.log("Đang kết nối đến MQTT broker...");
@@ -3023,8 +2836,7 @@ function stopMusicTimer() {
                 COMMAND_ACK_TOPIC, 
                 OTA_STATUS_TOPIC,
                 OTA_SATELLITE_STATUS_TOPIC,
-                MUSIC_STATUS_TOPIC,
-                MUSIC_STORAGE_TOPIC // [MỚI] Đăng ký nhận topic trạng thái nhạc
+                MUSIC_STATUS_TOPIC // [MỚI] Đăng ký nhận topic trạng thái nhạc
             ];
             client.subscribe(topicsToSubscribe, {qos:1}, (err)=>{
                 if(err) {
@@ -3082,11 +2894,9 @@ function stopMusicTimer() {
                     const ack = JSON.parse(payloadString);
                     const message = `[${ack.name}] ${ack.message}`;
                     showNotification(message, ack.status || 'success');
-                    handleAckEvent(ack.name);
                 } catch (e) {
                     console.error("Lỗi parse JSON phản hồi lệnh:", e);
                 }
-                
             }
             
             if (topic === OTA_STATUS_TOPIC || topic === OTA_SATELLITE_STATUS_TOPIC) {
@@ -3129,19 +2939,6 @@ function stopMusicTimer() {
                     updateMusicPlayerUI(musicStatus);
                 } catch (e) {
                     console.error("Lỗi parse JSON trạng thái nhạc:", e);
-                }
-            }
-            if (topic === MUSIC_STORAGE_TOPIC) {
-                try {
-                    // Cập nhật biến toàn cục
-                    sharedMusicSchedules = JSON.parse(payloadString);
-                    if (!Array.isArray(sharedMusicSchedules)) sharedMusicSchedules = [];
-                    
-                    // Vẽ lại bảng ngay lập tức
-                    renderMusicScheduleTable(); 
-                    console.log("Đã đồng bộ danh sách lịch từ Server:", sharedMusicSchedules);
-                } catch (e) {
-                    console.error("Lỗi đọc danh sách lịch từ MQTT:", e);
                 }
             }
         });
@@ -3246,294 +3043,136 @@ function stopMusicTimer() {
     countdownEl.innerHTML = message;
 }
     // [THÊM MỚI] Hàm cập nhật danh sách bài hát cho các dropdown trong cài đặt
-    // [CẬP NHẬT] Hàm cập nhật danh sách bài hát (Fix lỗi mất file khi tải trang)
     function updateTrackSelectors(playlist) {
         const bellTypes = ['batdau', 'vaotiet', 'rachoi', 'duvao'];
         bellTypes.forEach(type => {
             const select = document.getElementById(`sohoi_${type}_track`);
             if (select) {
-                // 1. Lấy giá trị hiện tại đang hiển thị
-                let valueToRestore = select.value;
-                
-                // 2. [QUAN TRỌNG] Nếu ô chọn đang trống (do load trang), hãy tìm trong dữ liệu gốc (allData)
-                // Code này giúp "cứu" lại tên bài hát dù danh sách tải chậm hơn cài đặt
-                if (!valueToRestore && window.allData && window.allData.sohoi && window.allData.sohoi[type]) {
-                    valueToRestore = window.allData.sohoi[type].track;
-                }
-
-                // 3. Làm mới danh sách option
+                const currentVal = select.value;
                 select.innerHTML = '<option value="">-- Chọn file nhạc --</option>';
-                if (playlist && Array.isArray(playlist)) {
-                    playlist.forEach(track => {
-                        const option = document.createElement('option');
-                        option.value = track;
-                        option.textContent = track;
-                        select.appendChild(option);
-                    });
-                }
-                
-                // 4. Khôi phục giá trị đã chọn
-                if (valueToRestore) {
-                    // Kiểm tra xem bài hát đã lưu có nằm trong danh sách thực tế không
-                    // (Dùng includes hoặc so sánh thủ công để chính xác hơn)
-                    const exists = Array.from(select.options).some(opt => opt.value === valueToRestore);
-                    if (exists) {
-                        select.value = valueToRestore;
-                    } else {
-                        // Tùy chọn: Nếu file đã lưu không còn trong thẻ nhớ, có thể thêm tạm vào để người dùng biết
-                        // const opt = document.createElement('option');
-                        // opt.value = valueToRestore;
-                        // opt.textContent = valueToRestore + " (Không tìm thấy)";
-                        // select.appendChild(opt);
-                        // select.value = valueToRestore;
-                    }
+                playlist.forEach(track => {
+                    const option = document.createElement('option');
+                    option.value = track;
+                    option.textContent = track;
+                    select.appendChild(option);
+                });
+                // Khôi phục giá trị đã chọn nếu còn tồn tại
+                if (playlist.includes(currentVal)) {
+                    select.value = currentVal;
                 }
             }
         });
     }
 
     // [CẬP NHẬT] CÁC HÀM ĐIỀU KHIỂN VÀ CẬP NHẬT GIAO DIỆN NHẠC
-    // [HÀM CHUẨN ĐẦY ĐỦ] Cập nhật giao diện phát nhạc từ dữ liệu ESP32 gửi về
     function updateMusicPlayerUI(status) {
-        // 1. Cập nhật tiêu đề để biết đang xem dữ liệu của máy nào
-        const titleEl = document.getElementById('title-music-playlist');
-        if (status.device) {
-            titleEl.innerHTML = `DANH SÁCH PHÁT <span style="color: #f1c40f; font-size: 0.8em;">(Nguồn: ${status.device})</span>`;
-        }
-
-        // 2. Cập nhật Danh sách bài hát (Playlist) & Dropdown chọn bài
+        // Cập nhật danh sách phát (playlist)
         const playlistContainer = document.getElementById('music-playlist-container');
-        const trackSelect = document.getElementById('schedule-music-track-select'); // Dropdown hẹn giờ
-
-        // Chỉ vẽ lại playlist nếu có dữ liệu playlist gửi kèm
+        const trackSelect = document.getElementById('schedule-music-track-select');
         if (status.playlist && Array.isArray(status.playlist)) {
-            playlistContainer.innerHTML = ''; // Xóa danh sách cũ
-            
-            // Cập nhật Dropdown chọn bài cho phần Hẹn giờ
+            playlistContainer.innerHTML = '';
             trackSelect.innerHTML = '<option value="">-- Chọn bài hát --</option>';
-
-            if (status.playlist.length === 0) {
-                playlistContainer.innerHTML = '<p class="list-placeholder">Không tìm thấy file nhạc.</p>';
+            if(status.playlist.length === 0) {
+                 playlistContainer.innerHTML = '<p class="list-placeholder">Không tìm thấy file nhạc nào trên thẻ nhớ.</p>';
             } else {
                 status.playlist.forEach(track => {
-                    // A. Thêm vào danh sách hiển thị
                     const item = document.createElement('div');
                     item.className = 'playlist-item';
                     item.textContent = track;
-
-                    // Logic tô màu (Highlight)
+                    item.onclick = () => handleMusicControl('play_track', track);
                     if (track === status.current_track) {
-                        // Bài đang thực sự phát -> Màu Tím (class .playing)
                         item.classList.add('playing');
-                        currentPlayingTrack = track; 
-                    } else if (track === selectedTrackToPlay) {
-                        // Bài người dùng vừa bấm chọn (chưa phát) -> Màu Xanh Dương
-                        item.style.backgroundColor = "#3498db";
-                        item.style.color = "#fff";
-                        item.style.fontWeight = "bold";
                     }
-
-                    // Sự kiện Click chọn bài
-                    item.onclick = function() {
-                        // Reset màu các bài khác
-                        document.querySelectorAll('.playlist-item').forEach(el => {
-                            el.classList.remove('playing');
-                            el.style.backgroundColor = "";
-                            el.style.color = "";
-                        });
-
-                        // Lưu bài vừa chọn
-                        selectedTrackToPlay = track;
-
-                        // Tô màu bài vừa chọn
-                        this.style.backgroundColor = "#3498db";
-                        this.style.color = "#fff";
-                        this.style.fontWeight = "bold";
-
-                        // Cập nhật text hiển thị "Đã chọn..."
-                        document.getElementById('now-playing-title').textContent = "Đã chọn: " + track;
-                        document.getElementById('now-playing-title').style.color = "#3498db";
-
-                        // Đổi nút về hình Tam Giác (Play) để chờ bấm
-                        document.getElementById('play-icon').style.display = 'block';
-                        document.getElementById('pause-icon').style.display = 'none';
-                    };
-
                     playlistContainer.appendChild(item);
 
-                    // B. Thêm vào Dropdown Hẹn giờ
                     const option = document.createElement('option');
                     option.value = track;
                     option.textContent = track;
                     trackSelect.appendChild(option);
                 });
             }
-            // Gọi hàm cập nhật các dropdown khác trong phần Cài đặt chuông
+
+            // [THÊM MỚI] Gọi hàm cập nhật các dropdown trong cài đặt
             updateTrackSelectors(status.playlist);
         }
 
-        // 3. Cập nhật trạng thái bài hát đang phát (Play/Pause/Time)
-        if (status.current_track) {
-            currentPlayingTrack = status.current_track;
-            // Nếu người dùng chưa chọn bài nào bằng tay, hiển thị bài hệ thống đang phát
-            if (selectedTrackToPlay === "") {
-                document.getElementById('now-playing-title').textContent = currentPlayingTrack;
-                document.getElementById('now-playing-title').style.color = "#f1c40f";
-            }
-        }
+        // Cập nhật thông tin bài hát đang phát
+        document.getElementById('now-playing-title').textContent = status.current_track || 'Chưa có bài hát nào được chọn';
 
-        // Cập nhật thời gian và thanh tiến trình
-        if (status.total_time_s > 0) {
-            audioTotalTime = status.total_time_s;
-            
-            // Đồng bộ thời gian (chỉ update nếu lệch quá 2 giây để tránh giật thanh trượt)
-            if (Math.abs(audioCurrentTime - (status.current_time_s || 0)) > 2) {
-                audioCurrentTime = status.current_time_s || 0;
-            }
-
-            document.getElementById('total-time').textContent = formatTime(audioTotalTime);
-            document.getElementById('current-time').textContent = formatTime(audioCurrentTime);
-            
-            // Tính % thanh trượt
-            const percent = (audioCurrentTime / audioTotalTime) * 100;
-            document.getElementById('music-progress-bar').value = percent;
-        }
-
-        // Xử lý nút Play/Pause và Timer
+        // Cập nhật nút Play/Pause
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
         if (status.status === 'playing') {
-            isMusicPlaying = true;
-            startMusicTimer(); // Chạy bộ đếm giây trên web
-            document.getElementById('play-icon').style.display = 'none';
-            document.getElementById('pause-icon').style.display = 'block';
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'block';
         } else {
-            isMusicPlaying = false;
-            stopMusicTimer(); // Dừng bộ đếm
-            // Chỉ hiện nút Play nếu không phải đang chọn bài mới
-            if (selectedTrackToPlay === "" || selectedTrackToPlay === currentPlayingTrack) {
-                document.getElementById('play-icon').style.display = 'block';
-                document.getElementById('pause-icon').style.display = 'none';
-            }
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
         }
 
-        // 4. Cập nhật Volume và Chế độ (Lặp/Ngẫu nhiên)
-        if (status.volume !== undefined) {
-            // Quy đổi từ thang 0-30 (ESP32) sang 0-100 (Web)
-            document.getElementById('volume-slider').value = Math.round(status.volume / 30 * 100);
-        }
-       // Tìm đến hàm updateMusicPlayerUI trong script
-        // Thay đoạn cập nhật nút Shuffle/Repeat cũ bằng đoạn này:
+        // Cập nhật thanh tiến trình và thời gian
+        document.getElementById('music-progress-bar').value = status.progress || 0;
+        document.getElementById('current-time').textContent = formatTime(status.current_time_s || 0);
+        document.getElementById('total-time').textContent = formatTime(status.total_time_s || 0);
 
-        // Reset style các nút
-        // --- Đảm bảo đoạn này nằm ở CUỐI hàm updateMusicPlayerUI ---
+        // Cập nhật thanh âm lượng
+        document.getElementById('volume-slider').value = status.volume === undefined ? 50 : Math.round(status.volume / 30 * 100);
 
-    // 1. Xóa trạng thái active cũ của cả 3 nút
-        document.getElementById('shuffle-btn').classList.remove('active');
-        document.getElementById('play-all-btn').classList.remove('active');
-        document.getElementById('repeat-btn').classList.remove('active');
-
-        // 2. Kiểm tra dữ liệu từ ESP32 để bật màu nút tương ứng
-        // Lưu ý: ESP32 phải gửi đúng play_mode (1, 2 hoặc 3)
-        if (status.play_mode == 1) {
-            document.getElementById('play-all-btn').classList.add('active');
-        } 
-        else if (status.play_mode == 2) {
-            document.getElementById('shuffle-btn').classList.add('active');
-        } 
-        else if (status.play_mode == 3) {
-            document.getElementById('repeat-btn').classList.add('active');
+        // Cập nhật các chế độ phát
+        document.getElementById('shuffle-btn').classList.toggle('active', status.shuffle_mode || false);
+        document.getElementById('repeat-btn').classList.toggle('active', status.repeat_mode || false);
+        
+        // Cập nhật bảng hẹn giờ
+        const scheduleTableBody = document.querySelector('#music-schedule-table tbody');
+        scheduleTableBody.innerHTML = '';
+        if (status.schedules && Array.isArray(status.schedules)) {
+            status.schedules.forEach((sch, index) => {
+                const row = scheduleTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${sch.time}</td>
+                    <td>${sch.track_name}</td>
+                    <td>${sch.days.join(', ')}</td>
+                    <td><button class="delete-schedule-btn" onclick="deleteMusicSchedule(${index})">Xóa</button></td>
+                `;
+            });
         }
     }
 
-   
+    function handleMusicControl(command, value = null) {
+        if (!client || !client.connected) return showNotification("Chưa kết nối máy chủ!", 'error');
+        const payload = { command: command };
+        if (value !== null) {
+             if (command === 'set_volume') {
+                payload.value = Math.round(parseInt(value) / 100 * 30);
+            } else {
+                payload.value = value;
+            }
+        }
+        client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+    }
+    
     function togglePlayMode(mode) {
         handleMusicControl(`toggle_${mode}`);
     }
 
-   // --- BẮT ĐẦU HÀM MỚI ---
-// --- [BƯỚC 5] HÀM THÊM LỊCH (ĐÃ NÂNG CẤP ĐỒNG BỘ ĐÁM MÂY) ---
-function addMusicSchedule() {
-    // 1. Lấy dữ liệu từ Form nhập liệu
-    const timeInput = document.getElementById('schedule-music-time');
-    const trackSelect = document.getElementById('schedule-music-track-select');
-    const time = timeInput.value;
-    const track = trackSelect.value;
-    
-    // Lấy các ngày đã tích chọn
-    const selectedCheckboxes = document.querySelectorAll('input[name="music-day"]:checked');
-    const selectedDays = Array.from(selectedCheckboxes).map(cb => cb.value);
+    function addMusicSchedule() {
+        const time = document.getElementById('schedule-music-time').value;
+        const track = document.getElementById('schedule-music-track-select').value;
+        const selectedDays = Array.from(document.querySelectorAll('input[name="music-day"]:checked')).map(cb => cb.value);
 
-    // 2. Kiểm tra lỗi nhập liệu
-    if (!time) return showNotification("⚠️ Vui lòng chọn thời gian!", "error");
-    if (!track) return showNotification("⚠️ Vui lòng chọn bài hát!", "error");
-    if (selectedDays.length === 0) return showNotification("⚠️ Vui lòng chọn ít nhất 1 ngày!", "error");
+        if (!time || !track || selectedDays.length === 0) {
+            return showNotification("Vui lòng điền đầy đủ thông tin hẹn giờ!", "error");
+        }
 
-    // 3. Kiểm tra xem đã chọn Loa nào chưa
-    const musicCheckboxes = document.querySelectorAll('.music-cb:checked');
-    if (musicCheckboxes.length === 0) {
-        const container = document.querySelector('.sohoi-container');
-        if(container) container.scrollIntoView({behavior: "smooth"});
-        return showNotification("⚠️ Vui lòng tích chọn Loa/Vệ tinh ở danh sách bên trên trước!", "error");
+        const schedule = { time: time, track_name: track, days: selectedDays };
+        handleMusicControl('schedule_add', schedule);
     }
 
-    // 4. Tạo đối tượng lịch mới
-    const newSchedule = { 
-        time: time, 
-        track_name: track, 
-        days: selectedDays 
-    };
-    
-    // 5. Thêm vào danh sách chung (Biến toàn cục)
-    sharedMusicSchedules.push(newSchedule);
-    
-    // 6. [QUAN TRỌNG NHẤT] Gửi danh sách mới lên MQTT với chế độ LƯU GIỮ (retain: true)
-    // Server sẽ giữ tin nhắn này lại, máy khác mở lên sẽ tải về được ngay
-    client.publish(MUSIC_STORAGE_TOPIC, JSON.stringify(sharedMusicSchedules), { qos: 1, retain: true });
-
-    // 7. Gửi lệnh thực thi xuống cho ESP32 (Vệ tinh) để nó biết mà làm
-    handleMusicControl('schedule_add', newSchedule);
-
-    // 8. Cập nhật giao diện bảng ngay lập tức
-    renderMusicScheduleTable();
-
-    // 9. Hiệu ứng nút bấm cho đẹp (Đổi màu xanh)
-    const btn = document.querySelector('button[onclick="addMusicSchedule()"]');
-    if(btn) {
-        const originalText = btn.innerText;
-        const originalColor = btn.style.backgroundColor;
-        btn.innerText = "✅ Đã Lưu & Đồng bộ!";
-        btn.style.backgroundColor = "#27ae60"; 
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.style.backgroundColor = originalColor || "#ab47bc"; 
-        }, 1500);
+    function deleteMusicSchedule(index) {
+        if (confirm(`Bạn có chắc muốn xóa lịch phát này không?`)) {
+            handleMusicControl('schedule_remove', index);
+        }
     }
-
-    // 10. Reset các ô chọn ngày để nhập tiếp cho nhanh
-    document.querySelectorAll('input[name="music-day"]').forEach(cb => cb.checked = false);
-    
-    showNotification("Đã lưu và đồng bộ lên đám mây!", "success");
-}
-// --- KẾT THÚC HÀM MỚI ---
-    // --- [BƯỚC 6] HÀM XÓA LỊCH (ĐÃ NÂNG CẤP ĐỒNG BỘ ĐÁM MÂY) ---
-function deleteMusicSchedule(index) {
-    if (confirm(`Bạn có chắc muốn xóa lịch phát này không? Mọi người đều sẽ thấy nó bị xóa.`)) {
-        
-        // 1. Gửi lệnh xóa cho ESP32 (Vệ tinh)
-        // Lưu ý: ESP32 xóa theo số thứ tự (index)
-        handleMusicControl('schedule_remove', index);
-        
-        // 2. Xóa khỏi danh sách chung trên Web
-        sharedMusicSchedules.splice(index, 1); 
-        
-        // 3. [QUAN TRỌNG] Gửi danh sách MỚI (đã xóa bớt) lên MQTT để cập nhật "Database"
-        client.publish(MUSIC_STORAGE_TOPIC, JSON.stringify(sharedMusicSchedules), { qos: 1, retain: true });
-        
-        // 4. Vẽ lại bảng
-        renderMusicScheduleTable();
-        
-        showNotification("Đã xóa và cập nhật đồng bộ.", "info");
-    }
-}
 
     function formatTime(seconds) {
         if (isNaN(seconds) || seconds < 0) return "00:00";
@@ -3641,7 +3280,11 @@ function saveAutoRestartConfig() {
         // --- [PHẦN 1] CẬP NHẬT CÁC Ô NHẬP LIỆU AUTO RESET ---
         // Lưu ý: Chỉ cập nhật nếu web chưa có dữ liệu hoặc user đang xem Master
         // Code này sẽ điền dữ liệu Master gửi về vào ô input
+        if (info.backup_ssid0 !== undefined) document.getElementById('backup-ssid-0').value = info.backup_ssid0;
+        if (info.backup_ssid1 !== undefined) document.getElementById('backup-ssid-1').value = info.backup_ssid1;
+        if (info.backup_ssid2 !== undefined) document.getElementById('backup-ssid-2').value = info.backup_ssid2;
         if (info.restart_days !== undefined) {
+        
             const dayInput = document.getElementById('auto-restart-days-input');
             if (dayInput) {
                 dayInput.value = info.restart_days;
@@ -3700,6 +3343,22 @@ function saveAutoRestartConfig() {
             showNotification("Chưa kết nối đến máy chủ!", 'error');
         }
     }
+    function saveBackupWifi() {
+    if (!client || !client.connected) {
+        return showNotification("Chưa kết nối máy chủ!", "error");
+    }
+    const payload = {
+        command: "SAVE_BACKUP_WIFI",
+        ssid0: document.getElementById('backup-ssid-0').value,
+        pass0: document.getElementById('backup-pass-0').value,
+        ssid1: document.getElementById('backup-ssid-1').value,
+        pass1: document.getElementById('backup-pass-1').value,
+        ssid2: document.getElementById('backup-ssid-2').value,
+        pass2: document.getElementById('backup-pass-2').value
+    };
+    client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+    showNotification("Đang gửi lệnh lưu WiFi dự phòng...", "info");
+}
 
     function openPasswordModal(deviceName, action) {
         targetDevice = deviceName;
@@ -3992,7 +3651,6 @@ function loadHolidayData(holidays) {
     }
 }
     function publishUpdate() {
-    startSyncTracking(); // <--- THÊM DÒNG NÀY
     if (!client || !client.connected) return showNotification("Chưa kết nối máy chủ!", 'error');
     try {
         const scheduleData = gatherDataFromForm();
@@ -4861,28 +4519,20 @@ function loadHolidayData(holidays) {
 
     // File: index full.html
 
-// === [ĐOẠN CODE ĐÃ SỬA LẠI CHO ĐÚNG] ===
-
-// Hàm tải dữ liệu ngày nghỉ (Được tách ra ngoài)
-function loadHolidayData(data) {
+function toggleHoliday(dateString) {
+    function loadHolidayData(data) {
     if (data) {
         holidayData = data; // Cập nhật biến toàn cục với dữ liệu từ thiết bị
         // Vẽ lại giao diện lịch với dữ liệu mới
         generateCalendar(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth());
     }
 }
-
-// Hàm xử lý khi bấm vào một ngày trên lịch
-function toggleHoliday(dateString) {
     const cell = document.querySelector(`.calendar-day[data-date="${dateString}"]`);
-    
     if (holidayData[dateString]) {
-        // Nếu đã là ngày nghỉ -> Xóa
         delete holidayData[dateString];
         if(cell) cell.classList.remove('holiday');
     } else {
-        // Nếu chưa là ngày nghỉ -> Thêm vào
-        holidayData[dateString] = true; 
+        holidayData[dateString] = true; // Giá trị có thể là true hoặc một object rỗng
         if(cell) cell.classList.add('holiday');
     }
 
@@ -4950,74 +4600,72 @@ function toggleHoliday(dateString) {
         document.querySelector('.sticky-action-bar').style.display = 'flex';
     };
 
-// [CẬP NHẬT] Hàm hiển thị kịch bản (Đã thêm hiển thị thiết bị áp dụng)
-    function renderSavedScenario(savedData) {
-        const wrapper = document.getElementById('saved-scenario-table-wrapper');
-        const placeholder = document.getElementById('saved-scenario-placeholder');
+function renderSavedScenario(savedData) {
+    const wrapper = document.getElementById('saved-scenario-table-wrapper');
+    const priorityDiv = document.getElementById('saved-scenario-priority');
+    const placeholder = document.getElementById('saved-scenario-placeholder');
+    const daysDisplayContainer = document.getElementById('saved-scenario-days-display');
 
-        wrapper.innerHTML = '';
+    // Xóa nội dung cũ
+    wrapper.innerHTML = '';
+    priorityDiv.innerHTML = '';
+    daysDisplayContainer.innerHTML = '';
 
-        if (!savedData || !Array.isArray(savedData)) {
-            wrapper.style.display = 'none';
-            placeholder.style.display = 'block';
-            return; 
-        }
-        
-        wrapper.style.display = 'block';
-        placeholder.style.display = 'none';
-
-        if (savedData.length === 0) {
-            wrapper.innerHTML = '<p class="list-placeholder" style="display: block; padding: 10px;">Không có kịch bản nào được lưu.</p>';
-            return;
-        }
-        
-        let listHTML = '';
-        const dayNameMap = {t2: 'T2', t3: 'T3', t4: 'T4', t5: 'T5', t6: 'T6', t7: 'T7', cn: 'CN'};
-
-        savedData.forEach((scenarioDoc, index) => {
-            const events = scenarioDoc.scenario || [];
-            const days = scenarioDoc.days || [];
-            const priority = scenarioDoc.priority || 'none';
-            
-            // Xử lý hiển thị targets (MỚI)
-            let targets = scenarioDoc.targets || ['ALL'];
-            let targetDisplay = '';
-            if (targets.includes('ALL')) {
-                targetDisplay = '<span style="color: #e67e22; font-weight: bold;">Toàn hệ thống</span>';
-            } else {
-                targetDisplay = `<span style="color: #3498db; font-weight: bold;">${targets.join(', ')}</span>`;
-            }
-            
-            const eventTimes = events.map(e => e.time).join(', ');
-            
-            let priorityText = 'Không ưu tiên';
-            if (priority === 'scenario') priorityText = '<span style="color: #2ecc71;">Ưu tiên Kịch Bản</span>';
-            if (priority === 'schedule') priorityText = '<span style="color: #3498db;">Ưu tiên Lịch Học</span>';
-
-            listHTML += `
-                <div class="scenario-item" style="border: 1px solid #414345; border-radius: 8px; margin-bottom: 10px; background: #232526;">
-                    <div class="scenario-item-header" style="background: #34495e; padding: 8px 12px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: bold; color: #f1c40f;">KỊCH BẢN #${index + 1}</span>
-                        <span style="font-size: 0.8em; color: #bdc3c7;">(${events.length} mốc)</span>
-                    </div>
-                    <div class="scenario-item-body" style="padding: 12px; font-size: 0.9em; line-height: 1.6;">
-                        <div style="margin-bottom: 5px; border-bottom: 1px solid #444; padding-bottom: 5px;">
-                            <strong>Áp dụng cho:</strong> ${targetDisplay}
-                        </div>
-                        <div style="margin-bottom: 5px;"><strong>Ngày:</strong> ${days.map(d => dayNameMap[d] || d).join(', ') || 'Chưa chọn'}</div>
-                        <div style="margin-bottom: 5px; color: #f1c40f;"><strong>Giờ hẹn:</strong> ${eventTimes}</div>
-                        <div style="margin-bottom: 10px;"><strong>Ưu tiên:</strong> ${priorityText}</div>
-                        
-                        <button class="device-action-btn remove-btn" style="width: 100%; font-size: 0.8em;" onclick="deleteSingleScenario(${index})">
-                            Xóa Kịch bản này
-                        </button>
-                    </div>
-                </div>
-            `;
-        });
-        
-        wrapper.innerHTML = listHTML;
+    // 1. Kiểm tra xem dữ liệu có phải là một mảng HỢP LỆ không
+    if (!savedData || !Array.isArray(savedData)) {
+        wrapper.style.display = 'none';
+        placeholder.style.display = 'block';
+        return; 
     }
+    
+    // 2. Nếu là mảng HỢP LỆ (kể cả rỗng), ẩn placeholder
+    wrapper.style.display = 'block';
+    placeholder.style.display = 'none';
+
+    // 3. Bây giờ mới kiểm tra xem mảng có rỗng không
+    if (savedData.length === 0) {
+        wrapper.innerHTML = '<p class="list-placeholder" style="display: block; padding: 10px;">Không có kịch bản nào được lưu.</p>';
+        return;
+    }
+    
+    // 4. Nếu mảng không rỗng, lặp và hiển thị
+    let listHTML = '';
+    const dayNameMap = {t2: 'T2', t3: 'T3', t4: 'T4', t5: 'T5', t6: 'T6', t7: 'T7', cn: 'CN'};
+
+    savedData.forEach((scenarioDoc, index) => {
+        const events = scenarioDoc.scenario || [];
+        const days = scenarioDoc.days || [];
+        const priority = scenarioDoc.priority || 'none';
+        
+        // [SỬA ĐỔI 1] Lấy danh sách giờ hẹn
+        const eventTimes = events.map(e => e.time).join(', ');
+        
+        let priorityText = 'Không ưu tiên';
+        if (priority === 'scenario') priorityText = '<span style="color: #2ecc71;">Ưu tiên Kịch Bản</span>';
+        if (priority === 'schedule') priorityText = '<span style="color: #3498db;">Ưu tiên Lịch Học</span>';
+
+        listHTML += `
+            <div class="scenario-item" style="border: 1px solid #414345; border-radius: 8px; margin-bottom: 10px; background: #232526;">
+                <div class="scenario-item-header" style="background: #34495e; padding: 8px 12px; border-radius: 8px 8px 0 0; font-weight: bold; color: #f1c40f;">
+                    KỊCH BẢN #${index + 1} (${events.length} sự kiện)
+                </div>
+                <div class="scenario-item-body" style="padding: 12px; font-size: 0.9em; line-height: 1.6;">
+                    <div style="margin-bottom: 5px;"><strong>Áp dụng:</strong> ${days.map(d => dayNameMap[d] || d).join(', ') || 'Không có'}</div>
+                    
+                    <div style="margin-bottom: 5px; color: #f1c40f;"><strong>Giờ hẹn:</strong> ${eventTimes}</div>
+                    
+                    <div style="margin-bottom: 10px;"><strong>Ưu tiên:</strong> ${priorityText}</div>
+                    
+                    <button class="device-action-btn remove-btn" style="width: 100%; font-size: 0.8em;" onclick="deleteSingleScenario(${index})">
+                        Xóa Kịch bản này
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    wrapper.innerHTML = listHTML;
+}
 
   </script>
   
@@ -5135,481 +4783,38 @@ function showNotification(msg, type="info") {
 
     // Hàm cập nhật danh sách vệ tinh vào Tab Micro (Gọi hàm này khi nhận được MQTT MANAGE_STATUS)
     // Bạn cần tìm chỗ xử lý `client.on("message", ...)` và gọi hàm này khi có data vệ tinh
-    // ==========================================================
-    // === [CODE MỚI] LOGIC ĐIỀU KHIỂN NHẠC VÀ MIC NÂNG CAO ===
-    // ==========================================================
-
-    // Biến lưu thiết bị đang chọn để chỉnh nhạc
-    let currentMusicTarget = "MASTER";
-
-    // 1. Hàm xử lý khi bạn chọn thiết bị phát nhạc khác
-    function changeMusicTarget() {
-        const select = document.getElementById('music-target-select');
-        currentMusicTarget = select.value;
-        
-        showNotification(`Đang chuyển sang điều khiển: ${currentMusicTarget}`, 'info');
-        
-        // Xóa danh sách nhạc cũ để chờ tải mới
-        document.getElementById('music-playlist-container').innerHTML = '<p class="list-placeholder" style="padding:10px;">Đang tải danh sách bài hát...</p>';
-        document.getElementById('now-playing-title').textContent = "Đang đồng bộ...";
-
-        // Gửi lệnh MQTT yêu cầu lấy danh sách nhạc mới
-        if (client && client.connected) {
-            // Nếu chọn Master thì gửi topic cũ, nếu chọn Vệ tinh thì gửi topic vệ tinh
-            // Lưu ý: Phần xử lý topic này cần khớp với Code Arduino
-            const payload = { command: "get_status" }; 
-            
-            // Tạm thời ta gửi lệnh refresh, Arduino cần xử lý logic định tuyến dựa trên target
-            // Ở đây ta gửi vào topic điều khiển nhạc chung, kèm theo target
-            const musicPayload = { 
-                command: "refresh_playlist",
-                target: currentMusicTarget 
-            };
-            
-            client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(musicPayload), { qos: 1 });
-        }
-    }
-
-    // 2. Hàm gửi độ nhạy Mic (Gain)
-    function updateMicGain(val) {
-        // Gửi lệnh set gain
-        if(client && client.connected) {
-             // Topic điều khiển mic (cần khai báo trong Arduino)
-            client.publish("esp32/bell/mic/control", JSON.stringify({
-                command: "set_gain",
-                value: parseInt(val)
-            }), {qos: 0});
-        }
-    }
-
-    // 3. Hàm cập nhật danh sách Vệ tinh (Đã nâng cấp để cập nhật cả Tab Nhạc)
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ CHO TOÀN BỘ GIAO DIỆN ===
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ NÂNG CẤP CHECKBOX ĐA CHỌN) ===
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ CHỈNH STYLE CHỮ BÉ LẠI) ===
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ SỬA LỖI ID VÀ CÚ PHÁP) ===
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ CHỈNH SỬA GIAO DIỆN CHUẨN) ===
-function updateMicZoneList(managedDevices) {
-    // Hàm hỗ trợ vẽ HTML checkbox
-    const renderCheckboxList = (containerId, checkboxClass) => {
-        const listDiv = document.getElementById(containerId);
-        
+    function updateMicZoneList(managedDevices) {
+        const listDiv = document.getElementById("mic-zone-list");
         if (!listDiv) return;
-
-        // Lưu trạng thái checkbox đang chọn
-        const currentChecked = Array.from(document.querySelectorAll(`#${containerId} .zone-checkbox:checked`)).map(cb => cb.value);
         
-        let html = '';
-        
-        // 1. Luôn thêm Master (Máy chủ)
-        const masterChecked = currentChecked.includes('MASTER') ? 'checked' : '';
-        // Lưu ý: Tôi đã bỏ các thẻ div thừa, chỉ giữ cấu trúc đơn giản để CSS dễ căn chỉnh
-        html += `
-            <label class="zone-item">
-                <input type="checkbox" class="zone-checkbox ${checkboxClass}" value="MASTER" ${masterChecked}>
-                <div style="color: #f1c40f; font-weight: bold; font-size: 0.95em;">Máy chủ (Master)</div>
-            </label>`;
-
-        // 2. Thêm các vệ tinh
-        if (managedDevices && managedDevices.length > 0) {
-            managedDevices.forEach(dev => {
-                const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
-                const statusColor = dev.online ? '#2ecc71' : '#e74c3c'; 
-                const statusText = dev.online ? 'Online' : 'Offline';
-                
-                html += `
-                    <label class="zone-item">
-                        <input type="checkbox" class="zone-checkbox ${checkboxClass}" value="${dev.name}" ${isChecked}>
-                        <div style="flex-grow: 1;">
-                            <div style="color: #ecf0f1; font-weight: 500;">${dev.name}</div>
-                            <div style="font-size: 0.8em; color: ${statusColor}; margin-top: 2px;">
-                                ● ${statusText} (IP: ${dev.ip || 'N/A'})
-                            </div>
-                        </div>
-                    </label>`;
-            });
-        } else {
-            html += '<div style="text-align: center; color: #777; padding: 15px; font-size: 0.9em;">Chưa có vệ tinh kết nối.</div>';
-        }
-        listDiv.innerHTML = html;
-    };
-
-    // Cập nhật cho cả 3 Tab: Micro, Nhạc, Hẹn Giờ
-    renderCheckboxList("mic-zone-list", ""); 
-    renderCheckboxList("music-target-list", "music-cb");
-    renderCheckboxList("scenario-target-list", "scenario-cb");
-
-    const musicChecked = document.querySelectorAll('.music-cb:checked');
-    if (musicChecked.length === 0) {
-        toggleAllMusicTargets(); 
-    }
-    if (!hasInitialPlaylistLoaded) {
-        hasInitialPlaylistLoaded = true; // Đánh dấu đã chạy
-        
-        // Đợi 1.5 giây cho mọi thứ ổn định rồi mới gửi lệnh
-        setTimeout(() => {
-            console.log(">>> Auto-loading playlist...");
-            handleMusicControl('refresh_playlist');
-        }, 1500);
-    }
-}
-// [MỚI] Hàm chọn tất cả/bỏ chọn cho Tab Hẹn Giờ
-    function toggleAllScenarioTargets() {
-        const checkboxes = document.querySelectorAll('.scenario-cb');
-        // Kiểm tra xem có phải tất cả đang được chọn không
-        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-        // Đảo ngược trạng thái
-        checkboxes.forEach(cb => cb.checked = !allChecked);
-    }
-
-    // [CẬP NHẬT] Hàm gửi kịch bản (Lấy dữ liệu từ danh sách Checkbox)
-    async function sendScenario() {
-        if (!client || !client.connected) {
-            return showNotification("Chưa kết nối máy chủ!", 'error');
-        }
-
-        if (!previewedScenarioData) {
-            showNotification("Vui lòng nhấn 'Xem Trước Kịch Bản' trước khi gửi lệnh.", "error");
+        if (!managedDevices || managedDevices.length === 0) {
+            listDiv.innerHTML = '<div style="text-align: center; color: #777; padding: 10px;">Chưa có vệ tinh nào kết nối.</div>';
             return;
         }
 
-        // --- THAY ĐỔI: Lấy danh sách từ Checkbox thay vì Select ---
-        const checkboxes = document.querySelectorAll('.scenario-cb:checked');
-        const targetList = Array.from(checkboxes).map(cb => cb.value);
-
-        // Nếu không chọn ai -> Báo lỗi
-        if (targetList.length === 0) {
-            return showNotification("Vui lòng chọn ít nhất một thiết bị!", "error");
-        }
+        // Giữ lại trạng thái đã tick chọn cũ
+        const currentChecked = Array.from(document.querySelectorAll('.zone-checkbox:checked')).map(cb => cb.value);
         
-        // Kiểm tra xem có chọn HẾT không -> Nếu hết thì gán là ALL để tiết kiệm, hoặc gửi cả list cũng được
-        // Ở đây ta gửi cả list cho chính xác
-        // ----------------------------------------------------------
-
-        const { scenario, days } = previewedScenarioData;
-
-        if (days.length === 0) {
-            return showNotification("Vui lòng chọn ngày áp dụng!", "error");
-        }
-
-        let userPriority = 'none'; 
-        const conflict = await checkForConflicts(scenario, days);
-
-        if (conflict.conflicting) {
-            const userChoice = await openConflictModal(conflict.message);
-            if (userChoice === 'cancel') {
-                showNotification("Đã hủy gửi lệnh.", "info");
-                return;
-            }
-            userPriority = userChoice;
-        }
-
-        const payload = {
-            scenario: scenario,
-            priority: userPriority,
-            days: days,
-            targets: targetList // Gửi mảng danh sách tên thiết bị: ["MASTER", "VeTinh-1", ...]
-        };
-
-        const SCENARIO_ADD_TOPIC = "esp32/bell/scenario/add"; 
-        client.publish(SCENARIO_ADD_TOPIC, JSON.stringify(payload), { qos: 1 });
-
-        showNotification(`Đã gửi kịch bản cho ${targetList.length} thiết bị!`, "success");
-        
-        document.getElementById('scenario-preview-table-container').innerHTML = '';
-        previewedScenarioData = null;
-        
-        // Reset checkbox sau khi gửi nếu muốn (tùy chọn)
-        // toggleAllScenarioTargets(); 
-    }
-// [MỚI] Hàm chọn tất cả cho Tab Nhạc
-    function toggleAllMusicTargets() {
-        const checkboxes = document.querySelectorAll('.music-cb');
-        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-        checkboxes.forEach(cb => cb.checked = !allChecked);
-    }
-
-    // [CẬP NHẬT] Hàm điều khiển nhạc (Lấy danh sách từ Checkbox)
-    // [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
-// [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
-// [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
-function handleMusicControl(command, value = null) {
-    if (!client || !client.connected) return showNotification("❌ Chưa kết nối máy chủ!", 'error');
-
-    // Lấy danh sách loa đang được chọn
-    const checkboxes = document.querySelectorAll('.music-cb:checked');
-    const targetList = Array.from(checkboxes).map(cb => cb.value);
-
-    // Bắt buộc phải chọn loa mới gửi được lệnh
-    if (targetList.length === 0) {
-        // Highlight khung chọn loa để người dùng thấy
-        const zoneBox = document.querySelector('#tab-phat-nhac .sohoi-container > div');
-        if(zoneBox) {
-            zoneBox.style.boxShadow = "0 0 10px #e74c3c";
-            setTimeout(() => zoneBox.style.boxShadow = "none", 1000);
-        }
-        return showNotification("⚠️ Vui lòng chọn Loa cần điều khiển ở danh sách trên!", "error");
-    }
-
-    // --- LOGIC PLAY/PAUSE (Cập nhật giao diện ngay lập tức) ---
-    if (command === 'play_pause') {
-        if (selectedTrackToPlay !== "" && selectedTrackToPlay !== currentPlayingTrack) {
-            // Trường hợp 1: Đang chọn bài mới -> Phát bài mới ngay
-            command = 'play_track';
-            value = selectedTrackToPlay;
-            currentPlayingTrack = selectedTrackToPlay;
-            audioCurrentTime = 0;
-            isMusicPlaying = true;
-            startMusicTimer();
-            document.getElementById('play-icon').style.display = 'none';
-            document.getElementById('pause-icon').style.display = 'block';
-            document.getElementById('now-playing-title').style.color = "#f1c40f";
-            selectedTrackToPlay = ""; 
-        } else {
-            // Trường hợp 2: Đang nghe bài cũ -> Toggle Play/Pause
-            const playIcon = document.getElementById('play-icon');
-            const pauseIcon = document.getElementById('pause-icon');
-            if (playIcon.style.display !== 'none') { 
-                // Đang Pause -> Chuyển sang Play
-                playIcon.style.display = 'none';
-                pauseIcon.style.display = 'block';
-                isMusicPlaying = true;
-                startMusicTimer();
-            } else { 
-                // Đang Play -> Chuyển sang Pause
-                playIcon.style.display = 'block';
-                pauseIcon.style.display = 'none';
-                isMusicPlaying = false;
-                stopMusicTimer();
-            }
-        }
-    }
-    // -------------------------------------
-
-    // Tạo gói tin lệnh
-    const payload = { 
-        command: command,
-        targets: targetList // Gửi danh sách thiết bị nhận lệnh
-    };
-    
-    // Gán giá trị đi kèm (nếu có)
-    if (value !== null) {
-         if (command === 'set_volume') {
-            // Quy đổi volume từ thang 100 (Web) về thang 30 (ESP32)
-            payload.value = Math.round(parseInt(value) / 100 * 10);
-        } else {
-            payload.value = value; // Với các lệnh khác như schedule_add
-        }
-    }
-    
-    console.log("Sending Music Command:", payload);
-    
-    // Gửi lệnh lên Server MQTT
-    client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-    
-    // Hiện thông báo nếu là lệnh tải danh sách
-    if(command === 'refresh_playlist') {
-         showNotification(`🔄 Đang tải danh sách bài hát...`, "info");
-    }
-}
-    
-    function changeMusicTarget() {
-        // Hàm này có thể không cần dùng nữa nếu bạn không muốn auto-load playlist
-        // Hoặc bạn có thể thêm 1 nút "Tải danh sách nhạc từ thiết bị đã chọn"
-    }
-    // Hàm bật/tắt hiển thị mật khẩu chung cho toàn bộ hệ thống
-function togglePass(checkboxId, inputId) {
-    var x = document.getElementById(inputId);
-    var cb = document.getElementById(checkboxId);
-    if (x && cb) {
-        x.type = cb.checked ? "text" : "password";
-    }
-}
-// --- BIẾN QUẢN LÝ ĐỒNG BỘ THÔNG MINH ---
-// --- BIẾN QUẢN LÝ ĐỒNG BỘ (ĐÃ NÂNG CẤP LỌC DẤU CÁCH) ---
-let targetDevicesSet = new Set(); // Danh sách cần đợi
-let repliedDevicesSet = new Set(); // Danh sách đã trả lời
-let syncTimer = null;
-
-function startSyncTracking() {
-    targetDevicesSet.clear();
-    repliedDevicesSet.clear();
-    
-    // Lấy danh sách tên từ giao diện
-    const deviceElements = document.querySelectorAll('#managed-devices-list .device-item .device-name');
-    
-    deviceElements.forEach(el => {
-        // [QUAN TRỌNG] .trim() để cắt bỏ dấu cách thừa đầu đuôi
-        const cleanName = el.textContent.trim();
-        if(cleanName) {
-            targetDevicesSet.add(cleanName);
-            console.log("Them vao danh sach doi:", cleanName); // Debug
-        }
-    });
-
-    const total = targetDevicesSet.size;
-    if (total === 0) return; 
-
-    // Hiện thanh tiến độ
-    const container = document.getElementById('sync-progress-bar-container');
-    const text = document.getElementById('sync-count-text');
-    const fill = document.getElementById('sync-progress-fill');
-    
-    container.style.display = 'block';
-    
-    const waitingFor = Array.from(targetDevicesSet).join(', ');
-    text.innerHTML = `Đang gửi lệnh... <br><span style="font-size:0.8em; color:#bbb">Đợi: ${waitingFor}</span>`;
-    
-    fill.style.width = '5%';
-    fill.style.background = 'linear-gradient(90deg, #f1c40f, #e67e22)';
-
-    if (syncTimer) clearTimeout(syncTimer);
-    syncTimer = setTimeout(() => { finishSync(false); }, 15000);
-}
-
-function handleAckEvent(deviceName) {
-    const container = document.getElementById('sync-progress-bar-container');
-    if (container.style.display === 'none') return;
-
-    // [QUAN TRỌNG] Cũng phải trim tên nhận được từ vệ tinh
-    const cleanAckName = deviceName ? deviceName.trim() : "";
-    
-    console.log("Nhan ACK tu:", cleanAckName); // Debug xem nó nhận được gì
-
-    // Đánh dấu đã trả lời
-    repliedDevicesSet.add(cleanAckName);
-    
-    // Tính toán
-    const total = targetDevicesSet.size;
-    
-    // Đếm số lượng trùng khớp thực sự
-    let matchCount = 0;
-    targetDevicesSet.forEach(target => {
-        if (repliedDevicesSet.has(target)) matchCount++;
-    });
-
-    let percent = (matchCount / total) * 100;
-    if (percent > 100) percent = 100;
-
-    const text = document.getElementById('sync-count-text');
-    const fill = document.getElementById('sync-progress-fill');
-
-    // Tìm những con chưa trả lời
-    let remaining = [];
-    targetDevicesSet.forEach(dev => {
-        if (!repliedDevicesSet.has(dev)) remaining.push(dev);
-    });
-
-    if (remaining.length > 0) {
-        text.innerHTML = `Đã nhận: ${matchCount}/${total} <br><span style="font-size:0.8em; color:#f1c40f">Đang đợi: ${remaining.join(', ')}</span>`;
-    } else {
-        text.innerHTML = `Đã nhận đủ ${matchCount}/${total}`;
-    }
-    
-    fill.style.width = `${percent}%`;
-
-    if (matchCount >= total) {
-        finishSync(true);
-    }
-}
-
-function finishSync(isSuccess) {
-    const text = document.getElementById('sync-count-text');
-    const fill = document.getElementById('sync-progress-fill');
-    
-    if (isSuccess) {
-        text.innerHTML = `✅ HOÀN TẤT! Tất cả thiết bị đã cập nhật.`;
-        fill.style.background = '#2ecc71';
-    } else {
-        // Tìm lại lần cuối
-        let remaining = [];
-        targetDevicesSet.forEach(dev => {
-            if (!repliedDevicesSet.has(dev)) remaining.push(dev);
+        let html = '';
+        managedDevices.forEach(dev => {
+            const isChecked = currentChecked.includes(dev.name) ? 'checked' : '';
+            const statusColor = dev.online ? '#2ecc71' : '#e74c3c'; // Xanh hoặc Đỏ
+            
+            html += `
+                <label class="zone-item">
+                    <input type="checkbox" class="zone-checkbox" value="${dev.name}" ${isChecked}>
+                    <div style="flex-grow:1;">
+                        <div style="font-weight:bold; color: #ecf0f1;">${dev.name}</div>
+                        <div style="font-size:0.8em; color: ${statusColor};">
+                            ${dev.online ? 'Online' : 'Offline'} • IP: ${dev.ip || 'N/A'}
+                        </div>
+                    </div>
+                </label>
+            `;
         });
-        
-        if (remaining.length === 0) {
-             text.innerHTML = `✅ HOÀN TẤT! (Đã khớp)`;
-             fill.style.background = '#2ecc71';
-        } else {
-             text.innerHTML = `⚠️ KẾT THÚC. Chưa thấy: ${remaining.join(', ')}`;
-             fill.style.background = '#e74c3c';
-        }
+        listDiv.innerHTML = html;
     }
-
-    if (syncTimer) clearTimeout(syncTimer);
-    setTimeout(() => {
-        document.getElementById('sync-progress-bar-container').style.display = 'none';
-    }, 5000);
-}
-// [MỚI] Hàm hiển thị mật khẩu cho tab Đổi Mật Khẩu (Hiện cả 3 ô cùng lúc)
-function toggleChangePassVisibility() {
-    const ids = ['old-admin-password', 'new-admin-password', 'confirm-admin-password'];
-    ids.forEach(id => {
-        const x = document.getElementById(id);
-        if (x.type === "password") {
-            x.type = "text";
-        } else {
-            x.type = "password";
-        }
-    });
-}
-
-// [MỚI] Hàm hiển thị mật khẩu cho Modal Xác Thực Reset/Restart
-function toggleAdminPassVisibility() {
-    const x = document.getElementById("admin-password-input");
-    if (x.type === "password") {
-        x.type = "text";
-    } else {
-        x.type = "password";
-    }
-}
-// --- [BƯỚC 4] HÀM VẼ BẢNG LỊCH PHÁT NHẠC (MỚI HOÀN TOÀN) ---
-function renderMusicScheduleTable() {
-    // 1. Tìm cái khung (tbody) của bảng để vẽ vào
-    const scheduleTableBody = document.querySelector('#music-schedule-table tbody');
-    
-    // Nếu không tìm thấy bảng thì thoát luôn (tránh lỗi)
-    if (!scheduleTableBody) return;
-    
-    // 2. Xóa sạch nội dung cũ trước khi vẽ mới
-    scheduleTableBody.innerHTML = ""; 
-
-    // 3. Nếu danh sách trống thì hiện thông báo
-    if (!sharedMusicSchedules || sharedMusicSchedules.length === 0) {
-        scheduleTableBody.innerHTML = '<tr><td colspan="4" style="color:#777; text-align:center; padding: 10px;">Chưa có lịch phát nhạc chung.</td></tr>';
-        return; 
-    }
-
-    // 4. Sắp xếp danh sách theo giờ tăng dần (07:00 -> 08:00...) cho dễ nhìn
-    sharedMusicSchedules.sort((a, b) => a.time.localeCompare(b.time));
-
-    // 5. Chuẩn bị bộ từ điển để đổi tên ngày (t2 -> T2)
-    const dayMap = {t2:"T2", t3:"T3", t4:"T4", t5:"T5", t6:"T6", t7:"T7", cn:"CN"};
-
-    // 6. Chạy vòng lặp qua từng lịch để vẽ từng dòng
-    sharedMusicSchedules.forEach((sch, index) => {
-        const row = scheduleTableBody.insertRow(); // Tạo dòng mới <tr>
-
-        // Xử lý hiển thị ngày cho đẹp
-        let niceDays = "";
-        if (Array.isArray(sch.days)) {
-            niceDays = sch.days.map(d => dayMap[d] || d).join(', ');
-        } else {
-            niceDays = sch.days; // Dự phòng nếu dữ liệu cũ không phải mảng
-        }
-
-        // Điền nội dung HTML vào dòng (Cột Giờ - Tên Bài - Ngày - Nút Xóa)
-        row.innerHTML = `
-            <td style="font-weight:bold; color:#f1c40f;">${sch.time}</td>
-            <td style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${sch.track_name}">${sch.track_name}</td>
-            <td style="font-size:0.85em; color:#bdc3c7;">${niceDays}</td>
-            <td>
-                <button class="delete-schedule-btn" onclick="deleteMusicSchedule(${index})" style="background: #c0392b; color: #fff; border: none; cursor: pointer; padding: 5px 8px; border-radius: 4px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </td>
-        `;
-    });
-}
 </script>
+
 </body>
 </html>
