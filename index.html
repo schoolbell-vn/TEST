@@ -668,127 +668,39 @@
 
     /* --- GIAO DIỆN LƯỚI "THÔNG MINH" CHO CÀI ĐẶT --- */
 /* --- GIAO DIỆN LƯỚI "THÔNG MINH" CHO CÀI ĐẶT --- */
-.settings-grid-container {
-    /* [SỬA ĐỔI] Giới hạn chiều cao và thêm thanh cuộn tự động */
-    max-height: 380px; 
-    overflow-y: auto;
-    padding-right: 5px; /* Thêm khoảng đệm nhỏ để thanh cuộn không quá sát */
-    padding-bottom: 30px; /* THÊM DÒNG NÀY: Tạo khoảng đệm ở cuối vùng cuộn */
+/* --- GIAO DIỆN LƯỚI "THÔNG MINH" CHO CÀI ĐẶT --- */
+    .settings-grid-container {
+        max-height: 380px; 
+        overflow-y: auto;
+        padding-right: 5px;
+        padding-bottom: 30px; 
+        opacity: 1;
+        transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+    }
+    .settings-grid-container::-webkit-scrollbar { width: 8px; }
+    .settings-grid-container::-webkit-scrollbar-track { background: #2c3e50; border-radius: 4px; }
+    .settings-grid-container::-webkit-scrollbar-thumb { background-color: #f1c40f; border-radius: 4px; border: 2px solid #2c3e50; }
+    .settings-grid-container.hidden { max-height: 0; opacity: 0; }
     
-    /* Giữ nguyên các thuộc tính cũ */
-    opacity: 1;
-    transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
-}
-/* [THÊM MỚI] Tùy chỉnh giao diện thanh cuộn cho đồng bộ */
-.settings-grid-container::-webkit-scrollbar {
-    width: 8px;
-}
-.settings-grid-container::-webkit-scrollbar-track {
-    background: #2c3e50;
-    border-radius: 4px;
-}
-.settings-grid-container::-webkit-scrollbar-thumb {
-    background-color: #f1c40f;
-    border-radius: 4px;
-    border: 2px solid #2c3e50;
-}
-    .settings-grid-container.hidden {
-        max-height: 0;
-        opacity: 0;
-    }
-    .settings-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        padding: 8px 0;
-    }
-    .setting-item {
-        background: #232526;
-        border: 1px solid #414345;
-        border-radius: 8px;
-        padding: 8px;
-        display: flex;
-        align-items: center;
-        transition: all 0.2s ease-in-out;
-    }
-    .setting-item:hover {
-        border-color: #f1c40f;
-        transform: translateY(-1px);
-    }
-    .setting-item.full-width {
-        grid-column: 1 / -1;
-    }
-    .setting-item-icon {
-        flex-shrink: 0;
-        margin-right: 10px;
-        color: #f1c40f;
-    }
-    .setting-item-icon svg {
-        width: 22px;
-        height: 22px;
-    }
-    .input-wrapper {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-    }
-    .input-wrapper label {
-        font-size: 0.8em;
-        font-weight: 600;
-        color: #bdc3c7;
-        margin-bottom: 4px;
-    }
-    .unit-input {
-        display: flex;
-        align-items: center;
-    }
-    .unit-input input {
-        width: 100%;
-        margin-right: 8px;
-    }
-    .unit-input span {
-        font-size: 0.9em;
-        color: #bdc3c7;
-    }
-    .setting-item input[type="time"] {
-        width: 100%;
-        padding: 8px;
-        font-size: 0.9em;
-    }
-    /* [MỚI] CSS cho Hướng dẫn nhỏ */
-    .input-helper-text {
-        font-size: 0.75em;
-        color: #7f8c8d;
-        font-style: italic;
-        margin-top: 4px;
-        text-align: right;
-    }
-    .copy-button-container {
-        padding: 5px 5px 15px 5px;
-    }
-    .copy-button {
-        padding: 8px 12px;
-        font-size: 0.8em;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.18s;
-        font-weight: 700;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        text-shadow: 0 1px 2px #00000044;
-        width: 100%;
-    }
-    .copy-button:active {
-        transform: scale(0.96);
-        filter: brightness(0.95);
-    }
-    .copy-button.sang {
-        background: linear-gradient(90deg, #16a085 0%, #43e97b 100%);
-    }
-    .copy-button.chieu {
-        background: linear-gradient(90deg, #2980b9 0%, #6dd5fa 100%);
-    }
+    .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 0; }
+    .setting-item { background: #232526; border: 1px solid #414345; border-radius: 8px; padding: 8px; display: flex; align-items: center; transition: all 0.2s ease-in-out; }
+    .setting-item:hover { border-color: #f1c40f; transform: translateY(-1px); }
+    .setting-item.full-width { grid-column: 1 / -1; }
+    .setting-item-icon { flex-shrink: 0; margin-right: 10px; color: #f1c40f; }
+    .setting-item-icon svg { width: 22px; height: 22px; }
+    .input-wrapper { flex-grow: 1; display: flex; flex-direction: column; }
+    .input-wrapper label { font-size: 0.8em; font-weight: 600; color: #bdc3c7; margin-bottom: 4px; }
+    .unit-input { display: flex; align-items: center; }
+    .unit-input input { width: 100%; margin-right: 8px; }
+    .unit-input span { font-size: 0.9em; color: #bdc3c7; }
+    .setting-item input[type="time"] { width: 100%; padding: 8px; font-size: 0.9em; }
+    
+    .input-helper-text { font-size: 0.75em; color: #7f8c8d; font-style: italic; margin-top: 4px; text-align: right; }
+    .copy-button-container { padding: 5px 5px 15px 5px; }
+    .copy-button { padding: 8px 12px; font-size: 0.8em; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: all 0.18s; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.2); text-shadow: 0 1px 2px #00000044; width: 100%; }
+    .copy-button:active { transform: scale(0.96); filter: brightness(0.95); }
+    .copy-button.sang { background: linear-gradient(90deg, #16a085 0%, #43e97b 100%); }
+    .copy-button.chieu { background: linear-gradient(90deg, #2980b9 0%, #6dd5fa 100%); }
 
     /* === Giao diện cho Modal Chung === */
     .modal-overlay {
@@ -2360,8 +2272,25 @@
         </div>
 
         <div id="adv-tab-reset-wifi" class="adv-modal-tab-content">
-            <div id="reset-wifi-actions-list" class="actions-list">
+            <h5>CÀI ĐẶT WIFI DỰ PHÒNG</h5>
+            <div class="actions-list">
+                <div class="control-group">
+                    <input type="text" id="backup-ssid-0" class="modal-input" placeholder="Tên WiFi 1..." style="margin-bottom: 5px;">
+                    <input type="password" id="backup-pass-0" class="modal-input" placeholder="Mật khẩu 1..." style="margin-bottom: 15px;">
                 </div>
+                <div class="control-group">
+                    <input type="text" id="backup-ssid-1" class="modal-input" placeholder="Tên WiFi 2..." style="margin-bottom: 5px;">
+                    <input type="password" id="backup-pass-1" class="modal-input" placeholder="Mật khẩu 2..." style="margin-bottom: 15px;">
+                </div>
+                <div class="control-group">
+                    <input type="text" id="backup-ssid-2" class="modal-input" placeholder="Tên WiFi 3..." style="margin-bottom: 5px;">
+                    <input type="password" id="backup-pass-2" class="modal-input" placeholder="Mật khẩu 3..." style="margin-bottom: 15px;">
+                </div>
+                <button class="action-btn" style="background-color: #3498db; width: 100%; height: 40px; margin-bottom: 15px;" onclick="saveBackupWifi()">LƯU WIFI DỰ PHÒNG</button>
+            </div>
+            <hr style="margin: 10px 0; background: #414345; height: 1px; opacity: 0.5;">
+            <h5>RESET WIFI VỆ TINH</h5>
+            <div id="reset-wifi-actions-list" class="actions-list"></div>
         </div>
 
         <div id="adv-tab-reset-esp" class="adv-modal-tab-content">
@@ -4035,7 +3964,6 @@ function loadHolidayData(holidays) {
     const createDayContent = (e, t, o) => {
         const isMondayMorning = (e === 't2_sang');
         
-        // Icons
         const d = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586z"></path></svg></div>`;
         const r = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2zm-1 15H6V7h12v12z"></path></svg></div>`;
         const l = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 2H6c-1.206 0-3 .799-3 3v14c0 2.201 1.794 3 3 3h15v-2H6.012C5.55 19.988 5 19.806 5 19s.55-.988 1.012-1H21V4c0-1.103-.897-2-2-2zm0 13H6V5h13v10z"></path></svg></div>`;
@@ -4043,18 +3971,17 @@ function loadHolidayData(holidays) {
         const m = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"></path><path d="M14 12V8h-4v4H8l4 4 4-4h-2z"></path></svg></div>`;
         const p = `<div class="setting-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h2v2H4zm0 5h2v2H4zm0 5h2v2H4zm16-8V6H8v2h12zm0 5H8v2h12zm0 5H8v2h12z"></path></svg></div>`;
         
-        // [NÂNG CẤP] Tạo HTML cho khu vực sự kiện đặc biệt, bao gồm cả ô nhập thời gian chuẩn bị
         const specialEventInput = isMondayMorning 
             ? `<div class="setting-item full-width">${r}<div class="input-wrapper"><label for="chaoco_${e}">TG Chào cờ</label><div class="unit-input"><input id="chaoco_${e}" type="number" value="40"><span>phút</span></div></div></div>`
             : `<div class="setting-item full-width">${r}<div class="input-wrapper"><label for="chunhiem_${e}">TG Sinh hoạt</label><div class="unit-input"><input id="chunhiem_${e}" type="number" value="15"><span>phút</span></div></div></div>`;
         const prepareAfterSpecialInput = `<div class="setting-item full-width">${m}<div class="input-wrapper"><label for="prepare_after_special_${e}">TG chuẩn bị sau SH/CC</label><div class="unit-input"><input id="prepare_after_special_${e}" type="number" value="2"><span>phút</span></div></div></div>`;
         const u = specialEventInput + prepareAfterSpecialInput;
 
-        let g = ""; // Copy button HTML
+        let g = ""; 
         if (!isMondayMorning) {
             if (o === 'sang') {
                 g = `<div class="copy-button-container"><button class="copy-button sang" onclick="copyMorningSchedule('${e}')">Sao chép đến T3-CN (Sáng)</button></div>`;
-            } else { // 'chieu'
+            } else { 
                 g = `<div class="copy-button-container"><button class="copy-button chieu" onclick="copyAfternoonSchedule('${e}')">Sao chép đến các ngày Chiều</button></div>`;
             }
         }
@@ -5556,6 +5483,107 @@ function renderMusicScheduleTable() {
         `;
     });
 }
+// Hàm copy lịch học
+    function copyAfternoonSchedule(sourceDayId) {
+        const sourceDayName = sourceDayId.split('_')[0].toUpperCase();
+        if (!confirm(`Bạn có chắc muốn sao chép lịch của ${sourceDayName} (chiều) đến TẤT CẢ các ngày còn lại của buổi chiều không?`)) return;
+
+        const sourceData = gatherDataFromForm().lich.chieu[sourceDayId.replace('_chieu', '')];
+
+        const sourceId = sourceDayId.replace('_chieu', '');
+        days.filter(d => d.id !== sourceId).forEach(day => {
+            const targetDayId = `${day.id}_chieu`;
+            document.getElementById(`enable_${targetDayId}`).checked = sourceData.enabled;
+            document.getElementById(`gio_${targetDayId}`).value = sourceData.gio;
+            document.getElementById(`has_special_${targetDayId}`).checked = sourceData.has_special_event;
+            document.getElementById(`chunhiem_${targetDayId}`).value = sourceData.chunhiem;
+            document.getElementById(`prepare_after_special_${targetDayId}`).value = sourceData.prepare_after_special;
+            document.getElementById(`has_duvao_${targetDayId}`).checked = sourceData.has_duvao_bell;
+            document.getElementById(`tiethoc_${targetDayId}`).value = sourceData.tiethoc;
+            document.getElementById(`rachoi_${targetDayId}`).value = sourceData.rachoi;
+            document.getElementById(`duvaotiet_${targetDayId}`).value = sourceData.duvaotiet;
+            document.getElementById(`sotiet_${targetDayId}`).value = sourceData.sotiet;
+            
+            toggleSpecialEvent(targetDayId);
+            toggleDuVao(targetDayId);
+            toggleScheduleActivation(targetDayId);
+            updatePreviewTable(targetDayId);
+        });
+        showNotification('Sao chép thành công! Hãy nhấn "Lưu và gửi cập nhật" để áp dụng.', "success");
+    }
+
+    function copyMorningSchedule(sourceDayId) {
+        const sourceDayName = sourceDayId.split('_')[0].toUpperCase();
+        if (!confirm(`Bạn có chắc muốn sao chép lịch của ${sourceDayName} (sáng) đến các ngày còn lại (T3-CN) không?`)) return;
+
+        const sourceData = gatherDataFromForm().lich.sang[sourceDayId.replace('_sang', '')];
+        
+        const sourceId = sourceDayId.replace('_sang', '');
+        const targetDays = ["t3", "t4", "t5", "t6", "t7", "cn"].filter(id => id !== sourceId);
+        
+        targetDays.forEach(dayId => {
+            const targetDayId = `${dayId}_sang`;
+            document.getElementById(`enable_${targetDayId}`).checked = sourceData.enabled;
+            document.getElementById(`gio_${targetDayId}`).value = sourceData.gio;
+            document.getElementById(`has_special_${targetDayId}`).checked = sourceData.has_special_event;
+            document.getElementById(`chunhiem_${targetDayId}`).value = sourceData.chunhiem;
+            document.getElementById(`prepare_after_special_${targetDayId}`).value = sourceData.prepare_after_special;
+            document.getElementById(`has_duvao_${targetDayId}`).checked = sourceData.has_duvao_bell;
+            document.getElementById(`tiethoc_${targetDayId}`).value = sourceData.tiethoc;
+            document.getElementById(`rachoi_${targetDayId}`).value = sourceData.rachoi;
+            document.getElementById(`duvaotiet_${targetDayId}`).value = sourceData.duvaotiet;
+            document.getElementById(`sotiet_${targetDayId}`).value = sourceData.sotiet;
+
+            toggleSpecialEvent(targetDayId);
+            toggleDuVao(targetDayId);
+            toggleScheduleActivation(targetDayId);
+            updatePreviewTable(targetDayId);
+        });
+        showNotification('Sao chép thành công! Hãy nhấn "Lưu và gửi cập nhật" để áp dụng.',"success");
+    }
+
+    // Khôi phục Hàm lưu cấu hình WiFi Dự phòng
+    function saveBackupWifi() {
+        if (!client || !client.connected) return showNotification("Chưa kết nối máy chủ!", "error");
+        const payload = { 
+            command: "SAVE_BACKUP_WIFI", 
+            ssid0: document.getElementById('backup-ssid-0').value, 
+            pass0: document.getElementById('backup-pass-0').value, 
+            ssid1: document.getElementById('backup-ssid-1').value, 
+            pass1: document.getElementById('backup-pass-1').value, 
+            ssid2: document.getElementById('backup-ssid-2').value, 
+            pass2: document.getElementById('backup-pass-2').value 
+        };
+        client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+        showNotification("Đang gửi lệnh lưu WiFi dự phòng...", "info");
+    }
+
+    // Sửa lại hàm renderSystemInfo để map WiFi Backup vào UI
+    function renderSystemInfo(info) {
+        // Cập nhật giá trị cho WiFi dự phòng
+        if (info.backup_ssid0 !== undefined) document.getElementById('backup-ssid-0').value = info.backup_ssid0;
+        if (info.backup_ssid1 !== undefined) document.getElementById('backup-ssid-1').value = info.backup_ssid1;
+        if (info.backup_ssid2 !== undefined) document.getElementById('backup-ssid-2').value = info.backup_ssid2;
+        
+        if (info.restart_days !== undefined) document.getElementById('auto-restart-days-input').value = info.restart_days;
+        if (info.restart_hour !== undefined && info.restart_minute !== undefined) {
+            document.getElementById('auto-restart-time-input').value = `${String(info.restart_hour).padStart(2, '0')}:${String(info.restart_minute).padStart(2, '0')}`;
+        }
+
+        const listDiv = document.getElementById('system-info-actions-list');
+        if (!listDiv) return;
+        listDiv.innerHTML = ''; 
+
+        const createItem = (title, value, valueClass = '') => `<div class="action-item"><div class="action-text"><div class="title">${title}</div><div class="description ${valueClass}">${value}</div></div></div>`;
+        listDiv.innerHTML += createItem('Tên WiFi (SSID)', info.ssid || 'N/A');
+        listDiv.innerHTML += createItem('Địa chỉ IP', info.ip || 'N/A');
+        listDiv.innerHTML += createItem('Module RTC', info.rtc ? 'Đã kết nối' : 'Không tìm thấy', info.rtc ? 'description connected' : 'description disconnected');
+        listDiv.innerHTML += createItem('Màn hình LCD', info.lcd ? 'Đã kết nối' : 'Không tìm thấy', info.lcd ? 'description connected' : 'description disconnected');
+        listDiv.innerHTML += createItem('Module MP3', info.mp3 ? 'Đã kết nối' : 'Không tìm thấy', info.mp3 ? 'description connected' : 'description disconnected');
+        listDiv.innerHTML += createItem('Bộ nhớ Flash', `${info.flash_usage || 'N/A'} % (${info.running_partition || ''})`);
+        listDiv.innerHTML += createItem('RAM trong (SRAM)', `${info.sram_usage_percent || 'N/A'} % (Còn trống ${info.sram_free_kb || 'N/A'} KB)`);
+        listDiv.innerHTML += createItem('RAM ngoài (PSRAM)', `${info.psram_usage_percent || 'N/A'} % (Còn trống ${info.psram_free_mb || 'N/A'} MB)`);
+    }
 </script>
 </body>
 </html>
