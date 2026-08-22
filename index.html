@@ -3440,22 +3440,23 @@ function deleteMusicSchedule(index) {
     
     function openAdvancedSettingsModal() {
         document.getElementById('advanced-settings-modal').classList.add('visible');
-        if (document.getElementById('adv-tab-system').classList.contains('active')) {
-            requestSystemInfo();
-        }
+        // Mở bảng cài đặt lên là tự động hỏi ESP32 lấy thông tin luôn cho chắc chắn
+        requestSystemInfo();
     }
-    function closeAdvancedSettingsModal() {
-        document.getElementById('advanced-settings-modal').classList.remove('visible');
+
+    function closeAdvancedSettingsModal() { 
+        document.getElementById('advanced-settings-modal').classList.remove('visible'); 
     }
+
     function switchAdvTab(evt, tabName) {
         document.querySelectorAll('.adv-modal-tab').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.adv-modal-tab-content').forEach(content => content.classList.remove('active'));
-        evt.currentTarget.classList.add('active');
+        evt.currentTarget.classList.add('active'); 
         document.getElementById(tabName).classList.add('active');
         
-        // [SỬA ĐỔI] Lấy thông tin hệ thống khi vào tab 'Hệ thống' HOẶC tab 'Reset ESP'
-        if (tabName === 'adv-tab-system' || tabName === 'adv-tab-reset-esp') {
-            requestSystemInfo(); // Gửi lệnh lấy dữ liệu từ ESP
+        // ---> SỬA Ở ĐÂY: Thêm 'adv-tab-reset-wifi' vào danh sách cần hỏi dữ liệu
+        if (tabName === 'adv-tab-system' || tabName === 'adv-tab-reset-esp' || tabName === 'adv-tab-reset-wifi') {
+            requestSystemInfo(); 
         }
     }
     // [MỚI] Hàm gửi lệnh lưu cấu hình Auto Restart
