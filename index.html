@@ -2472,6 +2472,7 @@
         </div>
         <div class="modal-buttons">
             <button class="modal-cancel-btn" onclick="closeInterfaceSettingsModal()"><span id="interface-btn-close">Đóng</span></button>
+            <button class="modal-confirm-btn" onclick="saveInterfaceSettingsModal()" style="background-color: #ab47bc; color: white;">Lưu giao diện</button>
         </div>
     </div>
   </div>
@@ -4657,10 +4658,21 @@ function loadHolidayData(holidays) {
         }
     }
 
+    // Hàm mới: Xử lý nút Lưu ngay trong bảng Giao diện
+    function saveInterfaceSettingsModal() {
+        closeInterfaceSettingsModal(); // Đóng bảng
+        publishUpdate(); // Lệnh này tự động gom toàn bộ cài đặt và đẩy thẳng xuống ESP32
+    }
+
+    // Cập nhật hàm Reset: Khôi phục mặc định và tự động đẩy xuống ESP32 luôn
     function resetInterfaceSettings() {
-        if (confirm("Bạn có chắc muốn reset tất cả cài đặt giao diện về mặc định? Bạn CẦN BẤM 'LƯU VÀ GỬI CẬP NHẬT' sau đó để lưu lên máy chủ.")) {
-            globalInterfaceSettings = {}; // Xóa sạch bộ nhớ tạm
-            window.location.reload();     // Tải lại để lấy mặc định HTML
+        if (confirm("Bạn có chắc muốn reset tất cả cài đặt giao diện về mặc định?")) {
+            globalInterfaceSettings = {}; // Xóa sạch dữ liệu giao diện
+            publishUpdate(); // Gửi cấu hình trống xuống ESP32 để nó xóa file cũ
+            showNotification("Đang khôi phục mặc định...", "info");
+            
+            // Đợi 1.5 giây cho ESP32 lưu xong rồi mới tải lại trang web (F5)
+            setTimeout(() => { window.location.reload(); }, 1500); 
         }
     }
     function rgbToHex(rgb) {
