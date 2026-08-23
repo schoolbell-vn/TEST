@@ -1113,82 +1113,93 @@
     }
 
     /* === [MỚI] Giao diện cho Modal Cài đặt Giao diện === */
+    /* === Giao diện cho Modal Cài đặt Giao diện (MỚI & ĐỒNG BỘ) === */
     #interface-settings-modal .modal-content {
-        max-width: 500px;
+        max-width: 600px;
+        background: #2c3e50; /* Đồng bộ nền đen/xanh */
     }
     #interface-settings-modal h4 {
-        color: #ab47bc;
+        color: #f1c40f; /* Chữ vàng chuẩn */
+        text-shadow: 0 0 10px #f1c40f55;
+        font-weight: 900;
+        letter-spacing: 1.5px;
     }
     .interface-table-container {
         max-height: 250px;
         overflow-y: auto;
-        border: 1px solid #414345;
         border-radius: 8px;
+        background: #232526;
+        margin-bottom: 15px;
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
     }
+    .interface-table-container::-webkit-scrollbar { width: 8px; }
+    .interface-table-container::-webkit-scrollbar-track { background: #2c3e50; }
+    .interface-table-container::-webkit-scrollbar-thumb { background-color: #f1c40f; border-radius: 4px; }
+
     .interface-table-container table {
         width: 100%;
         border-collapse: collapse;
     }
-    .interface-table-container th, .interface-table-container td {
-        padding: 8px;
-        text-align: left;
-        border-bottom: 1px solid #414345;
-        font-size: 0.9em;
-    }
     .interface-table-container th {
-        background-color: #232526;
-        color: #ab47bc;
+        background-color: #f1c40f;
+        color: #232526;
+        padding: 12px 10px;
         position: sticky;
         top: 0;
+        font-weight: bold;
+        z-index: 10;
+        border-bottom: 2px solid #2c3e50;
+    }
+    .interface-table-container td {
+        padding: 10px;
+        border-bottom: 1px solid #414345;
+        font-size: 0.9em;
+        color: #ecf0f1;
     }
     .interface-table-container tbody tr {
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: all 0.2s;
     }
     .interface-table-container tbody tr:hover {
         background-color: #34495e;
     }
     .interface-table-container tbody tr.selected-row {
-        background-color: #ab47bc;
-        color: #fff;
+        background-color: #34495e;
+        border-left: 4px solid #f1c40f;
+        font-weight: bold;
+        color: #f1c40f;
     }
     .interface-controls {
-        margin-top: 20px;
-        padding: 15px;
         background-color: #232526;
+        padding: 15px;
         border-radius: 8px;
+        border: 1px solid #414345;
     }
     .control-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 15px;
+        gap: 12px;
     }
-    .control-grid .full-width {
-        grid-column: 1 / -1;
-    }
-    .control-group {
-        display: flex;
-        flex-direction: column;
-    }
+    .control-grid .full-width { grid-column: 1 / -1; }
     .control-group label {
-        margin-bottom: 5px;
-        font-size: 0.8em;
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.85em;
         color: #bdc3c7;
         font-weight: bold;
     }
-    .control-group input, .control-group select {
+    .interface-input {
         width: 100%;
-        padding: 8px;
+        padding: 10px;
         border-radius: 6px;
         border: 1px solid #7f8c8d;
         background-color: #2c3e50;
         color: #ecf0f1;
-        font-size: 0.9em;
+        font-size: 0.95em;
+        transition: border-color 0.2s;
     }
-    .control-group input[type="color"] {
-        padding: 2px;
-        height: 38px;
-    }
+    .interface-input:focus { outline: none; border-color: #f1c40f; }
+    input[type="color"].interface-input { padding: 2px; height: 40px; cursor: pointer; }
     .interface-action-buttons {
         display: flex;
         gap: 10px;
@@ -2427,7 +2438,7 @@
 
   <div class="modal-overlay" id="interface-settings-modal">
     <div class="modal-content">
-        <h4 id="interface-modal-title">Cài đặt Giao diện</h4>
+        <h4 id="interface-modal-title">Cài đặt Giao diện Đồng bộ</h4>
         <div class="interface-table-container">
             <table>
                 <thead>
@@ -2436,27 +2447,26 @@
                         <th>Nội dung hiện tại</th>
                     </tr>
                 </thead>
-                <tbody id="text-elements-table-body">
-                    </tbody>
+                <tbody id="text-elements-table-body"></tbody>
             </table>
         </div>
         <div class="interface-controls">
             <div class="control-grid">
                 <div class="control-group full-width">
                     <label for="text-editor-input" id="interface-label-content">Nội dung</label>
-                    <input type="text" id="text-editor-input" placeholder="Chọn một dòng trong bảng để sửa...">
+                    <input type="text" id="text-editor-input" class="interface-input" placeholder="Chọn một dòng trong bảng để sửa...">
                 </div>
                 <div class="control-group">
                     <label for="color-picker-input" id="interface-label-color">Màu chữ</label>
-                    <input type="color" id="color-picker-input">
+                    <input type="color" id="color-picker-input" class="interface-input">
                 </div>
                 <div class="control-group">
                     <label for="font-size-input" id="interface-label-fontsize">Cỡ chữ (px)</label>
-                    <input type="number" id="font-size-input" min="8" max="40">
+                    <input type="number" id="font-size-input" class="interface-input" min="8" max="40">
                 </div>
                 <div class="control-group full-width">
                     <label for="font-family-select" id="interface-label-fontfamily">Font chữ</label>
-                    <select id="font-family-select">
+                    <select id="font-family-select" class="interface-input">
                         <option value="'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif">Mặc định (Segoe UI)</option>
                         <option value="Arial, sans-serif">Arial</option>
                         <option value="Verdana, sans-serif">Verdana</option>
@@ -2467,14 +2477,18 @@
                 </div>
             </div>
             <div class="interface-action-buttons">
-                <button class="modern-btn logout-button" onclick="resetInterfaceSettings()" style="width: 100%;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 10px;"><path d="M13.5 2.5a1 1 0 1 0-2 0v2.4a6.5 6.5 0 1 0 9.9 7.4 1 1 0 1 0-1.8-1a4.5 4.5 0 1 1-6.6-5.9V8a1 1 0 1 0 2 0V2.5z"></path></svg>
-                    <span id="interface-btn-reset">Reset về Mặc định</span>
+                <button class="modern-btn save-button" onclick="syncInterfaceToEsp()" style="flex: 1; margin: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    <span id="interface-btn-sync">Lưu Đồng Bộ ESP32</span>
+                </button>
+                <button class="modern-btn logout-button" onclick="resetInterfaceSettings()" style="flex: 1; margin: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2.5a1 1 0 1 0-2 0v2.4a6.5 6.5 0 1 0 9.9 7.4 1 1 0 1 0-1.8-1a4.5 4.5 0 1 1-6.6-5.9V8a1 1 0 1 0 2 0V2.5z"></path></svg>
+                    <span id="interface-btn-reset">Reset Mặc định</span>
                  </button>
             </div>
         </div>
-        <div class="modal-buttons">
-            <button class="modal-cancel-btn" onclick="closeInterfaceSettingsModal()"><span id="interface-btn-close">Đóng</span></button>
+        <div class="modal-buttons" style="margin-top: 10px;">
+            <button class="modal-cancel-btn" onclick="closeInterfaceSettingsModal()"><span id="interface-btn-close">Đóng (Không lưu)</span></button>
         </div>
     </div>
   </div>
@@ -4124,7 +4138,10 @@ function loadHolidayData(holidays) {
                     }
                 })
             });
-             showActiveTab();
+             if (t.interface) {
+            loadInterfaceSettings(t.interface);
+        }
+        showActiveTab();
         } else {
             console.error("Dữ liệu lịch học nhận được không hợp lệ hoặc không đầy đủ:",e)
         }
@@ -4180,6 +4197,8 @@ function loadHolidayData(holidays) {
                 if (hasDuVaoCheckbox) n.has_duvao_bell = hasDuVaoCheckbox.checked;
             })
         });
+        e.interface = window.allData && window.allData.interface ? window.allData.interface : {};
+        
         return e;
     }
 
@@ -4567,8 +4586,10 @@ function loadHolidayData(holidays) {
     function populateInterfaceTable() {
         const tableBody = document.getElementById('text-elements-table-body');
         tableBody.innerHTML = '';
-        const savedSettings = localStorage.getItem('interfaceSettings');
-        const settings = savedSettings ? JSON.parse(savedSettings) : {};
+        
+        // Đọc dữ liệu từ biến toàn cục (do ESP32 gửi xuống) thay vì localStorage
+        const settings = window.allData && window.allData.interface ? window.allData.interface : {};
+        
         customizableTexts.forEach(item => {
             const element = document.getElementById(item.id);
             const currentText = settings[item.id]?.text || (element ? element.innerText : item.defaultText);
@@ -4585,24 +4606,23 @@ function loadHolidayData(holidays) {
         document.querySelectorAll('#text-elements-table-body tr').forEach(r => r.classList.remove('selected-row'));
         row.classList.add('selected-row');
 
-        const savedSettings = localStorage.getItem('interfaceSettings');
-        const settings = savedSettings ? JSON.parse(savedSettings) : {};
-        const specificSettings = settings[elementId];
+        const settings = window.allData && window.allData.interface ? window.allData.interface : {};
+        const specificSettings = settings[elementId] || {};
         const defaultConfig = customizableTexts.find(item => item.id === elementId);
 
-        const textValue = specificSettings?.text ?? defaultConfig?.defaultText ?? '';
+        const textValue = specificSettings.text ?? defaultConfig?.defaultText ?? '';
         document.getElementById('text-editor-input').value = textValue;
         
         const element = document.getElementById(elementId);
         const computedStyle = element ? window.getComputedStyle(element) : {};
 
-        const colorValue = specificSettings?.color || computedStyle.color || '#f5f6fa';
+        const colorValue = specificSettings.color || computedStyle.color || '#f5f6fa';
         document.getElementById('color-picker-input').value = rgbToHex(colorValue);
 
-        const fontSizeValue = specificSettings?.fontSize ? parseFloat(specificSettings.fontSize) : (computedStyle.fontSize ? parseFloat(computedStyle.fontSize) : 15);
+        const fontSizeValue = specificSettings.fontSize ? parseFloat(specificSettings.fontSize) : (computedStyle.fontSize ? parseFloat(computedStyle.fontSize) : 15);
         document.getElementById('font-size-input').value = fontSizeValue;
 
-        const fontFamilyValue = specificSettings?.fontFamily || computedStyle.fontFamily || "'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif";
+        const fontFamilyValue = specificSettings.fontFamily || computedStyle.fontFamily || "'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif";
         document.getElementById('font-family-select').value = fontFamilyValue;
     }
 
@@ -4612,27 +4632,24 @@ function loadHolidayData(holidays) {
             return;
         }
 
-        const savedSettings = localStorage.getItem('interfaceSettings');
-        let settings = savedSettings ? JSON.parse(savedSettings) : {};
-
-        if (!settings[selectedElementId]) {
-            settings[selectedElementId] = {};
-        }
+        // Tạo mảng an toàn để hứng dữ liệu
+        if (!window.allData) window.allData = {};
+        if (!window.allData.interface) window.allData.interface = {};
+        if (!window.allData.interface[selectedElementId]) window.allData.interface[selectedElementId] = {};
 
         switch (property) {
-            case 'text': settings[selectedElementId].text = value; break;
-            case 'color': settings[selectedElementId].color = value; break;
-            case 'fontSize': settings[selectedElementId].fontSize = value ? value + 'px' : ''; break;
-            case 'fontFamily': settings[selectedElementId].fontFamily = value; break;
+            case 'text': window.allData.interface[selectedElementId].text = value; break;
+            case 'color': window.allData.interface[selectedElementId].color = value; break;
+            case 'fontSize': window.allData.interface[selectedElementId].fontSize = value ? value + 'px' : ''; break;
+            case 'fontFamily': window.allData.interface[selectedElementId].fontFamily = value; break;
         }
 
-        localStorage.setItem('interfaceSettings', JSON.stringify(settings));
-
+        // Apply ngay trên màn hình hiện tại để xem trước
         const element = document.getElementById(selectedElementId);
         if (element) {
             if (property === 'text') element.innerText = value;
             if (property === 'color') element.style.color = value;
-            if (property === 'fontSize') element.style.fontSize = settings[selectedElementId].fontSize;
+            if (property === 'fontSize') element.style.fontSize = window.allData.interface[selectedElementId].fontSize;
             if (property === 'fontFamily') element.style.fontFamily = value;
         }
         
@@ -4641,11 +4658,8 @@ function loadHolidayData(holidays) {
             if (tableCell) tableCell.innerText = value;
         }
     }
-
-    function loadInterfaceSettings() {
-        const savedSettings = localStorage.getItem('interfaceSettings');
-        if (savedSettings) {
-            const settings = JSON.parse(savedSettings);
+    function loadInterfaceSettings(settings) {
+        if (settings) {
             for (const id in settings) {
                 const element = document.getElementById(id);
                 const itemSettings = settings[id];
@@ -4658,11 +4672,17 @@ function loadHolidayData(holidays) {
             }
         }
     }
-
+    function syncInterfaceToEsp() {
+        publishUpdate(); // Hàm này sẽ lấy toàn bộ Lịch + Giao diện gửi lên ESP32 để lưu cứng
+        closeInterfaceSettingsModal();
+    }
     function resetInterfaceSettings() {
-        if (confirm("Bạn có chắc muốn reset tất cả cài đặt giao diện về mặc định không?")) {
-            localStorage.removeItem('interfaceSettings');
-            window.location.reload();
+        if (confirm("Bạn có chắc muốn reset tất cả cài đặt giao diện về MẶC ĐỊNH không? (Reset xong cần bấm 'Lưu Đồng Bộ ESP32')")) {
+            if (window.allData && window.allData.interface) {
+                window.allData.interface = {}; // Xóa sạch dữ liệu trên RAM
+            }
+            populateInterfaceTable();
+            showNotification("Đã reset. Bấm 'Lưu Đồng Bộ ESP32' để áp dụng cho mọi máy.", "info");
         }
     }
 
@@ -4777,7 +4797,6 @@ function toggleHoliday(dateString) {
     // =======================================================
 
     window.onload = function() { 
-        loadInterfaceSettings();
         connectToMqtt();
         setInterval(updateClockAndCountdown, 1000);
 
