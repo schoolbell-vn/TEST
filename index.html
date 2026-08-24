@@ -5531,14 +5531,14 @@ function renderMusicScheduleTable() {
         btn.disabled = true;
 
         try {
-            // Cắt văn bản ra thành các đoạn nhỏ dưới 150 ký tự để Google không chặn
             const chunks = splitTextForTts(textInput, 150);
             let urlList = [];
+            const uniqueId = Date.now(); // [QUAN TRỌNG] Tạo ID duy nhất tránh lỗi Cache của Google
 
-            // Nối chuỗi URL và nhân bản lên theo số lần lặp
             for (let r = 0; r < repeatCount; r++) {
-                chunks.forEach(chunk => {
-                    const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk);
+                chunks.forEach((chunk, index) => {
+                    // [SỬA LỖI] Thêm tham số uid để làm mới đường link sau mỗi lần lặp
+                    const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk) + "&uid=" + uniqueId + "_" + r + "_" + index;
                     urlList.push(audioUrl);
                 });
             }
@@ -5549,15 +5549,14 @@ function renderMusicScheduleTable() {
                 const payload = { 
                     command: "play_tts_list",
                     targets: selectedZones,
-                    urls: urlList // Gửi hẳn 1 mảng các đường link
+                    urls: urlList 
                 };
+                // Gửi lên MQTT
                 client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
                 showNotification("Đã gửi lệnh phát thanh thành công!", "success");
             } else {
                 showNotification("Lỗi: Máy chủ đang mất kết nối MQTT!", "error");
             }
-
-            // ĐÃ BỎ LỆNH XÓA CHỮ -> CHỮ SẼ ĐƯỢC GIỮ LẠI TRÊN Ô TEXTAREA
         } catch (error) {
             console.error("TTS Error:", error);
             showNotification("Có lỗi xảy ra khi tạo lệnh!", "error");
