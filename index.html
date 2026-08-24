@@ -5533,15 +5533,13 @@ function renderMusicScheduleTable() {
         try {
             const chunks = splitTextForTts(textInput, 150);
             let urlList = [];
-            const uniqueId = Date.now(); // [QUAN TRỌNG] Tạo ID duy nhất tránh lỗi Cache của Google
+            const uniqueId = Date.now();
 
-            for (let r = 0; r < repeatCount; r++) {
-                chunks.forEach((chunk, index) => {
-                    // [SỬA LỖI] Thêm tham số uid để làm mới đường link sau mỗi lần lặp
-                    const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk) + "&uid=" + uniqueId + "_" + r + "_" + index;
-                    urlList.push(audioUrl);
-                });
-            }
+            // CHỈ TẠO 1 LẦN DANH SÁCH URL (Không nhân lên theo số lần lặp)
+            chunks.forEach((chunk, index) => {
+                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk) + "&uid=" + uniqueId + "_" + index;
+                urlList.push(audioUrl);
+            });
 
             showNotification(`Đang gửi lệnh... (Chia ${chunks.length} đoạn, Lặp ${repeatCount} lần)`, "info");
 
@@ -5549,9 +5547,9 @@ function renderMusicScheduleTable() {
                 const payload = { 
                     command: "play_tts_list",
                     targets: selectedZones,
-                    urls: urlList 
+                    urls: urlList,
+                    repeat: repeatCount // Gửi kèm tham số lặp để phần cứng tự xử lý
                 };
-                // Gửi lên MQTT
                 client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
                 showNotification("Đã gửi lệnh phát thanh thành công!", "success");
             } else {
