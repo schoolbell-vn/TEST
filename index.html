@@ -1633,33 +1633,7 @@
         box-shadow: none;
         transform: none;
     }
-    /* --- CSS CHO MICROPHONE VÀ ZONE --- */
-    .mic-container {
-        display: flex; flex-direction: column; align-items: center; padding: 20px;
-    }
-    .mic-button {
-        width: 140px; height: 140px;
-        border-radius: 50%;
-        background: linear-gradient(145deg, #e74c3c, #c0392b);
-        border: 6px solid #333;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 5px 15px rgba(255,255,255,0.2);
-        display: flex; justify-content: center; align-items: center;
-        cursor: pointer; transition: all 0.1s;
-        margin-bottom: 20px;
-        -webkit-tap-highlight-color: transparent;
-        user-select: none;
-    }
-    .mic-button:active, .mic-button.active {
-        transform: scale(0.95);
-        background: linear-gradient(145deg, #c0392b, #a93226);
-        box-shadow: 0 0 30px #e74c3c;
-        border-color: #f1c40f;
-    }
-    .mic-icon { width: 60px; height: 60px; fill: white; pointer-events: none; }
-    .mic-status { font-weight: bold; color: #bdc3c7; margin-bottom: 15px; font-size: 1.2em; text-transform: uppercase;}
     
-    /* === [ĐÃ CHỈNH SỬA] CSS CHO MICROPHONE VÀ ZONE === */
-   /* === CSS CHUẨN CHO KHUNG CHỌN THIẾT BỊ (ZONE) === */
 /* === FIX CỨNG GIAO DIỆN DANH SÁCH THIẾT BỊ === */
 .zone-selector {
     width: 100%;
@@ -1758,7 +1732,6 @@
         <button class="main-tab-button" onclick="openMainTab(event, 'tab-hen-gio')">⏱️ Hẹn Giờ</button>
         <button class="main-tab-button" onclick="openMainTab(event, 'tab-cai-dat')">⚙️ Cài Đặt</button>
         <button class="main-tab-button" onclick="openMainTab(event, 'tab-phat-nhac')">🎶 Phát Nhạc</button>
-        <button class="main-tab-button" onclick="openMainTab(event, 'tab-micro')">🎤 Micro</button>
         <button class="main-tab-button" onclick="openMainTab(event, 'tab-he-thong')">🛠️ Hệ Thống</button>
       </div>
 
@@ -2176,41 +2149,7 @@
               </details>
             </div>
         </div>
-    <div id="tab-micro" class="main-tab-content">
-            <div class="mic-container">
-                <div id="mic-status-text" class="mic-status">SẴN SÀNG</div>
-                
-                <div id="push-to-talk-btn" class="mic-button" 
-                     ontouchstart="startMic(event)" ontouchend="stopMic(event)" 
-                     onmousedown="startMic(event)" onmouseup="stopMic(event)"
-                     onmouseleave="stopMic(event)">
-                    <svg class="mic-icon" viewBox="0 0 24 24">
-                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-                    </svg>
-                </div>
-                <div style="width: 80%; max-width: 250px; margin: 15px 0; background: #2c3e50; padding: 10px; border-radius: 10px;">
-    <label style="color: #bdc3c7; font-size: 0.8em; display: block; text-align: center; margin-bottom: 5px;">Độ nhạy Micro (Gain)</label>
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <span style="color:#7f8c8d; font-size: 0.8em;">Nhỏ</span>
-        <input type="range" id="mic-gain-slider" min="0" max="64" value="32" style="flex-grow: 1; height: 5px;" onchange="updateMicGain(this.value)">
-        <span style="color:#7f8c8d; font-size: 0.8em;">To</span>
-    </div>
-</div>
-                <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 20px;">Nhấn và Giữ nút để nói</p>
-
-                <div class="zone-selector">
-                    <h4 style="margin: 0 0 10px 0; color: #f1c40f; text-align: center; border-bottom: 1px solid #444; padding-bottom: 5px;">CHỌN LOA PHÁT</h4>
-                    <div id="mic-zone-list">
-                        <div style="text-align: center; color: #777; padding: 10px;">Đang tìm thiết bị...</div>
-                    </div>
-                    <div style="text-align: center; margin-top: 15px;">
-                        <button class="modern-btn" style="background: #34495e; font-size: 0.8em; height: 35px; width: auto; padding: 0 20px;" onclick="selectAllZones()">Chọn Tất Cả</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
+          
         <div id="tab-he-thong" class="main-tab-content">
   <div class="button-section">
     
@@ -2862,10 +2801,7 @@
     // Biến lưu danh sách lịch (không dùng LocalStorage nữa)
     let sharedMusicSchedules = [];
     let hasInitialPlaylistLoaded = false;
-    // --- TOPIC MỚI CHO MIC & NHẠC ---
-    const MIC_CONTROL_TOPIC = "esp32/bell/mic/control";
-
-
+   
     // --- [BIẾN MỚI] QUẢN LÝ NHẠC VÀ TIẾN TRÌNH ---
         let selectedTrackToPlay = ""; // Lưu tên bài hát bạn vừa nhấn chọn
         let currentPlayingTrack = ""; // Lưu tên bài hát hệ thống đang thực sự phát
@@ -4955,68 +4891,7 @@ function showNotification(msg, type="info") {
     if (div.parentNode) div.parentNode.removeChild(div);
   }, 3000);
 }
-// ==========================================
-    // === CODE XỬ LÝ MICROPHONE & ZONE ===
-    // ==========================================
-    let isTalking = false;
 
-    function startMic(e) {
-        if(e && e.cancelable) e.preventDefault(); // Chống sự kiện chạm mặc định trên điện thoại
-        if (isTalking) return;
-        
-        // Lấy danh sách các loa được chọn
-        const selectedZones = [];
-        document.querySelectorAll('.zone-checkbox:checked').forEach(cb => {
-            selectedZones.push(cb.value);
-        });
-
-        // Luôn luôn thêm 'Master' vào (nếu muốn máy chủ cũng phát)
-        // selectedZones.push("ESP32-Master"); 
-
-        if (selectedZones.length === 0) {
-            showNotification("Vui lòng chọn ít nhất 1 loa!", "error");
-            return;
-        }
-
-        isTalking = true;
-        document.getElementById("push-to-talk-btn").classList.add("active");
-        document.getElementById("mic-status-text").innerText = "ĐANG PHÁT THANH...";
-        document.getElementById("mic-status-text").style.color = "#e74c3c";
-        
-        // Gửi lệnh MQTT Start
-        const payload = { command: "start", targets: selectedZones };
-        if(client && client.connected) {
-            client.publish(MIC_CONTROL_TOPIC, JSON.stringify(payload), {qos: 0});
-        }
-        
-        // Rung nhẹ điện thoại (nếu hỗ trợ)
-        if(navigator.vibrate) navigator.vibrate(50);
-    }
-
-    function stopMic(e) {
-        if(e && e.cancelable) e.preventDefault();
-        if (!isTalking) return;
-
-        isTalking = false;
-        document.getElementById("push-to-talk-btn").classList.remove("active");
-        document.getElementById("mic-status-text").innerText = "SẴN SÀNG";
-        document.getElementById("mic-status-text").style.color = "#bdc3c7";
-
-        // Gửi lệnh MQTT Stop
-        const payload = { command: "stop" };
-        if(client && client.connected) {
-            client.publish(MIC_CONTROL_TOPIC, JSON.stringify(payload), {qos: 0});
-        }
-    }
-
-    function selectAllZones() {
-        const checkboxes = document.querySelectorAll('.zone-checkbox');
-        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-        checkboxes.forEach(cb => cb.checked = !allChecked);
-    }
-
-    // Hàm cập nhật danh sách vệ tinh vào Tab Micro (Gọi hàm này khi nhận được MQTT MANAGE_STATUS)
-    // Bạn cần tìm chỗ xử lý `client.on("message", ...)` và gọi hàm này khi có data vệ tinh
     // ==========================================================
     // === [CODE MỚI] LOGIC ĐIỀU KHIỂN NHẠC VÀ MIC NÂNG CAO ===
     // ==========================================================
@@ -5052,25 +4927,8 @@ function showNotification(msg, type="info") {
         }
     }
 
-    // 2. Hàm gửi độ nhạy Mic (Gain)
-    function updateMicGain(val) {
-        // Gửi lệnh set gain
-        if(client && client.connected) {
-             // Topic điều khiển mic (cần khai báo trong Arduino)
-            client.publish("esp32/bell/mic/control", JSON.stringify({
-                command: "set_gain",
-                value: parseInt(val)
-            }), {qos: 0});
-        }
-    }
-
     // 3. Hàm cập nhật danh sách Vệ tinh (Đã nâng cấp để cập nhật cả Tab Nhạc)
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ CHO TOÀN BỘ GIAO DIỆN ===
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ NÂNG CẤP CHECKBOX ĐA CHỌN) ===
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ CHỈNH STYLE CHỮ BÉ LẠI) ===
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ SỬA LỖI ID VÀ CÚ PHÁP) ===
-    // === HÀM CẬP NHẬT DANH SÁCH THIẾT BỊ (ĐÃ CHỈNH SỬA GIAO DIỆN CHUẨN) ===
-function updateMicZoneList(managedDevices) {
+    function updateMicZoneList(managedDevices) {
     // Hàm hỗ trợ vẽ HTML checkbox
     const renderCheckboxList = (containerId, checkboxClass) => {
         const listDiv = document.getElementById(containerId);
@@ -5116,7 +4974,6 @@ function updateMicZoneList(managedDevices) {
     };
 
     // Cập nhật cho cả 3 Tab: Micro, Nhạc, Hẹn Giờ
-    renderCheckboxList("mic-zone-list", ""); 
     renderCheckboxList("music-target-list", "music-cb");
     renderCheckboxList("scenario-target-list", "scenario-cb");
 
