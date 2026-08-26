@@ -5553,13 +5553,18 @@ function renderMusicScheduleTable() {
             const data = await response.json();
 
             // Xử lý kết quả trả về
+            // 3. Xử lý kết quả trả về
             if (data && !data.error && data.message) {
-                // Viettel AI trả về link trong biến data.message khi dùng tts_return_option = 2
+                
+                let audioUrl = data.message;
+                // [QUAN TRỌNG] Đổi https thành http để ESP32 không bị sập RAM khi giải mã bảo mật SSL
+                audioUrl = audioUrl.replace("https://", "http://");
+
                 if (client && client.connected) {
                     const payload = {
                         command: "play_tts_list",
                         targets: selectedZones,
-                        urls: [data.message], // Đẩy link MP3 chất lượng cao xuống cho ESP32
+                        urls: [audioUrl], // Gửi đường link đã được ép xuống http
                         repeat: repeatCount
                     };
                     client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
