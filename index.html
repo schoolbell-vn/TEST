@@ -5519,8 +5519,13 @@ function renderMusicScheduleTable() {
         return chunks;
     }
 
-    function sendTtsRequest() {
-        const textInput = document.getElementById('tts-text-input').value.trim();
+    async function sendTtsRequest() {
+        // 1. Lấy text từ ô nhập liệu
+        let textInput = document.getElementById('tts-text-input').value.trim();
+        
+        // --- THÊM DÒNG NÀY ĐỂ LỌC DẤU CÂU ---
+        textInput = textInput.replace(/[.,;!?]/g, ' ').replace(/\s+/g, ' ').trim();
+
         const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
         const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
 
@@ -5531,29 +5536,26 @@ function renderMusicScheduleTable() {
         btn.disabled = true;
 
         try {
+            // Chia đoạn và tạo URL Google
             const chunks = splitTextForTts(textInput, 150);
             let urlList = [];
             const uniqueId = Date.now();
 
-            // CHỈ TẠO 1 LẦN DANH SÁCH URL (Không nhân lên theo số lần lặp)
             chunks.forEach((chunk, index) => {
                 const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk) + "&uid=" + uniqueId + "_" + index;
                 urlList.push(audioUrl);
             });
 
-            showNotification(`Đang gửi lệnh... (Chia ${chunks.length} đoạn, Lặp ${repeatCount} lần)`, "info");
-
+            // Gửi lệnh xuống ESP32
             if (client && client.connected) {
                 const payload = { 
                     command: "play_tts_list",
                     targets: selectedZones,
                     urls: urlList,
-                    repeat: repeatCount // Gửi kèm tham số lặp để phần cứng tự xử lý
+                    repeat: repeatCount 
                 };
                 client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
                 showNotification("Đã gửi lệnh phát thanh thành công!", "success");
-            } else {
-                showNotification("Lỗi: Máy chủ đang mất kết nối MQTT!", "error");
             }
         } catch (error) {
             console.error("TTS Error:", error);
