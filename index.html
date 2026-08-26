@@ -5537,12 +5537,12 @@ function renderMusicScheduleTable() {
 
         try {
             // Chia đoạn và tạo URL Google
-            const chunks = splitTextForTts(textInput, 150);
+            const chunks = splitTextForTts(textInput, 60);
             let urlList = [];
             const uniqueId = Date.now();
 
             chunks.forEach((chunk, index) => {
-                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk) + "&uid=" + uniqueId + "_" + index;
+                const audioUrl = "https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk) + "&uid=" + uniqueId + "_" + index;
                 urlList.push(audioUrl);
             });
 
