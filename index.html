@@ -5519,7 +5519,7 @@ function renderMusicScheduleTable() {
         return chunks;
     }
 
-    async function sendTtsRequest() {
+    function sendTtsRequest() {
         const textInput = document.getElementById('tts-text-input').value.trim();
         const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
         const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
@@ -5529,54 +5529,35 @@ function renderMusicScheduleTable() {
 
         const btn = document.getElementById('btn-send-tts');
         btn.disabled = true;
-        showNotification("Đang nhờ Viettel AI tạo giọng đọc...", "info");
 
         try {
-            // Đã điền sẵn mã Token Viettel AI 
-            const VIETTEL_TOKEN = "71af00ae56172ef7642a1ec0b643da1f";
+            const chunks = splitTextForTts(textInput, 150);
+            let urlList = [];
+            const uniqueId = Date.now();
 
-            // Gọi API của Viettel (dùng corsproxy để trình duyệt không bị chặn)
-            const response = await fetch("https://corsproxy.io/?https://viettelai.vn/tts/speech_synthesis", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Token": VIETTEL_TOKEN
-                },
-                body: JSON.stringify({
-                    "text": textInput,
-                    "voice": "hn-quynhanh", // Giọng nữ miền Bắc chuẩn. Có thể đổi: hn-tienquan (Nam), hcm-diemmy (Nữ Nam)
-                    "speed": 1.0,
-                    "tts_return_option": 2 // Yêu cầu trả về đường link file MP3
-                })
+            // CHỈ TẠO 1 LẦN DANH SÁCH URL (Không nhân lên theo số lần lặp)
+            chunks.forEach((chunk, index) => {
+                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk) + "&uid=" + uniqueId + "_" + index;
+                urlList.push(audioUrl);
             });
 
-            const data = await response.json();
+            showNotification(`Đang gửi lệnh... (Chia ${chunks.length} đoạn, Lặp ${repeatCount} lần)`, "info");
 
-            // Xử lý kết quả trả về
-            // 3. Xử lý kết quả trả về
-            if (data && !data.error && data.message) {
-                
-                let audioUrl = data.message;
-                // [QUAN TRỌNG] Đổi https thành http để ESP32 không bị sập RAM khi giải mã bảo mật SSL
-                audioUrl = audioUrl.replace("https://", "http://");
-
-                if (client && client.connected) {
-                    const payload = {
-                        command: "play_tts_list",
-                        targets: selectedZones,
-                        urls: [audioUrl], // Gửi đường link đã được ép xuống http
-                        repeat: repeatCount
-                    };
-                    client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-                    showNotification("Đã gửi lệnh phát thanh thành công!", "success");
-                }
+            if (client && client.connected) {
+                const payload = { 
+                    command: "play_tts_list",
+                    targets: selectedZones,
+                    urls: urlList,
+                    repeat: repeatCount // Gửi kèm tham số lặp để phần cứng tự xử lý
+                };
+                client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+                showNotification("Đã gửi lệnh phát thanh thành công!", "success");
             } else {
-                console.error("Viettel AI Error:", data);
-                showNotification("Lỗi từ Viettel: Token sai hoặc hết hạn mức.", "error");
+                showNotification("Lỗi: Máy chủ đang mất kết nối MQTT!", "error");
             }
         } catch (error) {
             console.error("TTS Error:", error);
-            showNotification("Lỗi kết nối mạng đến máy chủ Viettel AI!", "error");
+            showNotification("Có lỗi xảy ra khi tạo lệnh!", "error");
         } finally {
             btn.disabled = false;
         }
