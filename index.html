@@ -5525,9 +5525,6 @@ function renderMusicScheduleTable() {
     // --- BIẾN TOÀN CỤC CHO GIAO DIỆN GÁNH TEAM ---
     let webTtsQueue = [];
     let webTtsTargets = [];
-    
-    // DÁN LINK WEB APP TRONG ẢNH 1 CỦA THẦY VÀO ĐÂY:
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyfLHk8IFTMtb78qKT3iB0ygZmNRJVrf4p0dMgAkLymhYaRr_58mkYLFjce3zBNt_j5/exec"; 
 
     async function sendTtsRequest() {
         let textInput = document.getElementById('tts-text-input').value.trim();
@@ -5540,49 +5537,24 @@ function renderMusicScheduleTable() {
 
         const btn = document.getElementById('btn-send-tts');
         btn.disabled = true;
-        btn.innerHTML = 'Đang xử lý âm thanh AI (Vui lòng đợi 2-3s)...';
+        btn.innerHTML = 'Đang phát thông báo...'; // Đổi lại chữ hiển thị cho đúng
 
-        // Cắt câu ngắn (100 ký tự) cho Google
-        const chunks = splitTextForTts(textInput, 100);
+        // Cắt câu ngắn (60 ký tự) cho an toàn tuyệt đối với ESP32
+        const chunks = splitTextForTts(textInput, 60);
         webTtsQueue = [];
         webTtsTargets = selectedZones;
+        const uniqueId = Date.now();
 
-        try {
-           // [TỐI ƯU SONG SONG] Bắn tất cả các đoạn lên Google cùng 1 lúc
-            const fetchPromises = chunks.map(chunk => 
-                fetch(GAS_URL + "?text=" + encodeURIComponent(chunk), {
-                    method: "GET",
-                    redirect: "follow" // Cho phép trình duyệt đi theo chuyển hướng của Google
-                }).then(res => res.text())
-            );
-
-            // Chờ tất cả hoàn thành và tự động giữ đúng thứ tự từ trên xuống dưới
-            const results = await Promise.all(fetchPromises);
-            
-            let driveLinks = [];
-            for (let i = 0; i < results.length; i++) {
-                if (results[i].includes("drive.google.com")) {
-                    driveLinks.push(results[i]);
-                } else {
-                    console.error("Lỗi ở đoạn " + i + ":", results[i]);
-                }
-            }
-
-            if (driveLinks.length === 0) throw new Error("Không tạo được âm thanh từ Google Cloud!");
-
-            // Nhân bản theo số lần lặp
-            for (let r = 0; r < repeatCount; r++) {
-                webTtsQueue = webTtsQueue.concat(driveLinks);
-            }
-
-            showNotification(`Bắt đầu phát thanh (${webTtsQueue.length} đoạn)...`, "info");
-            playNextTtsChunk(); // Bắn phát súng đầu tiên!
-
-        } catch (error) {
-            showNotification("Lỗi xử lý âm thanh: " + error.message, "error");
-            btn.disabled = false;
-            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg> Phát Thông Báo Ngay';
+        // Trực tiếp nhồi link Google Translate vào hàng đợi (Bỏ qua GAS)
+        for (let r = 0; r < repeatCount; r++) {
+            chunks.forEach((chunk, index) => {
+                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk) + "&uid=" + uniqueId + "_" + index;
+                webTtsQueue.push(audioUrl);
+            });
         }
+
+        showNotification(`Bắt đầu phát thanh (${webTtsQueue.length} đoạn)...`, "info");
+        playNextTtsChunk(); // Bắn phát súng đầu tiên!
     }
 
     // Hàm rút từng link ra và gửi xuống ESP32
@@ -5590,6 +5562,7 @@ function renderMusicScheduleTable() {
         const btn = document.getElementById('btn-send-tts');
         if (webTtsQueue.length === 0) {
             btn.disabled = false;
+            // Khôi phục lại nút bấm
             btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg> Phát Thông Báo Ngay';
             showNotification("Đã phát thanh xong toàn bộ thông báo!", "success");
             return;
