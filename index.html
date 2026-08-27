@@ -5503,14 +5503,27 @@ function renderMusicScheduleTable() {
     }
 
     // Hàm chia nhỏ văn bản dài thành các đoạn ngắn (dưới maxLength ký tự)
-    function splitTextForTts(text, maxLength) {
-        let words = text.split(' ');
+    // Hàm chia nhỏ văn bản thông minh (Dựa vào độ dài mã hóa và dấu câu)
+    function splitTextForTts(text) {
+        let words = text.split(/\s+/);
         let chunks = [];
         let current = '';
+
         words.forEach(word => {
-            if ((current + ' ' + word).length <= maxLength) {
-                current += (current ? ' ' : '') + word;
+            let testString = current ? (current + ' ' + word) : word;
+            
+            // Tính toán độ dài URL thực tế sinh ra. Giới hạn 150 ký tự encode
+            // để đảm bảo tổng URL luôn nhỏ hơn 255 (tránh ESP32 bị sập)
+            if (encodeURIComponent(testString).length <= 150) {
+                current = testString;
+                
+                // Nếu từ có chứa dấu câu, chủ động ngắt đoạn luôn để tạo nhịp thở tự nhiên
+                if (/[.,;!?]/.test(word)) {
+                    chunks.push(current);
+                    current = '';
+                }
             } else {
+                // Nếu vượt quá 150 ký tự encode, buộc phải ngắt để bảo vệ mạch
                 if (current) chunks.push(current);
                 current = word;
             }
@@ -5523,8 +5536,8 @@ function renderMusicScheduleTable() {
         // 1. Lấy text từ ô nhập liệu
         let textInput = document.getElementById('tts-text-input').value.trim();
         
-        // --- THÊM DÒNG NÀY ĐỂ LỌC DẤU CÂU ---
-        textInput = textInput.replace(/[.,;!?]/g, ' ').replace(/\s+/g, ' ').trim();
+        // --- CHỈ LỌC KHOẢNG TRẮNG, GIỮ NGUYÊN DẤU CÂU ĐỂ TẠO NHỊP THỞ ---
+        textInput = textInput.replace(/\s+/g, ' ').trim();
 
         const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
         const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
@@ -5536,8 +5549,8 @@ function renderMusicScheduleTable() {
         btn.disabled = true;
 
         try {
-            // Chia đoạn và tạo URL Google
-            const chunks = splitTextForTts(textInput, 40);
+            // Sử dụng hàm chia đoạn thông minh mới (Không cần truyền số 40 nữa)
+            const chunks = splitTextForTts(textInput);
             let urlList = [];
             const uniqueId = Date.now();
 
