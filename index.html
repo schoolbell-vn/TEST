@@ -5502,46 +5502,19 @@ function renderMusicScheduleTable() {
         checkboxes.forEach(cb => cb.checked = !allChecked);
     }
 
-    // Hàm chia nhỏ văn bản dài thành các đoạn ngắn (dưới maxLength ký tự)
-    // Hàm chia nhỏ văn bản thông minh (Dựa vào độ dài mã hóa và dấu câu)
-    // Hàm chia nhỏ văn bản thông minh (Gom câu dài để tránh Spam Google TTS)
-    function splitTextForTts(text) {
-        let words = text.split(/\s+/);
+    // Hàm chia nhỏ văn bản gốc (cứ đủ số ký tự là cắt)
+    function splitTextForTts(text, maxLength) {
+        let words = text.split(' ');
         let chunks = [];
         let current = '';
-
-        for (let i = 0; i < words.length; i++) {
-            let word = words[i];
-            let testString = current ? (current + ' ' + word) : word;
-            
-            // Giới hạn 130 ký tự sau khi mã hóa để đảm bảo an toàn tuyệt đối cho ESP32
-            if (encodeURIComponent(testString).length <= 130) {
-                current = testString;
+        words.forEach(word => {
+            if ((current + ' ' + word).length <= maxLength) {
+                current += (current ? ' ' : '') + word;
             } else {
-                // Nếu câu bắt đầu quá dài, quay lại tìm dấu phẩy/chấm gần nhất để cắt
-                let currentWords = current.split(' ');
-                let lastPuncIndex = -1;
-                
-                for (let j = currentWords.length - 1; j >= 0; j--) {
-                    if (/[.,;!?]$/.test(currentWords[j])) {
-                        lastPuncIndex = j;
-                        break;
-                    }
-                }
-                
-                if (lastPuncIndex !== -1 && lastPuncIndex < currentWords.length - 1) {
-                    // Cắt ngay tại dấu câu để nhịp thở tự nhiên nhất
-                    let chunk1 = currentWords.slice(0, lastPuncIndex + 1).join(' ');
-                    let chunk2 = currentWords.slice(lastPuncIndex + 1).join(' ');
-                    chunks.push(chunk1);
-                    current = chunk2 + ' ' + word;
-                } else {
-                    // Nếu người dùng không dùng dấu câu nào, buộc phải cắt ngang ở khoảng trắng
-                    if (current) chunks.push(current);
-                    current = word;
-                }
+                if (current) chunks.push(current);
+                current = word;
             }
-        }
+        });
         if (current) chunks.push(current);
         return chunks;
     }
@@ -5550,8 +5523,8 @@ function renderMusicScheduleTable() {
         // 1. Lấy text từ ô nhập liệu
         let textInput = document.getElementById('tts-text-input').value.trim();
         
-        // --- CHỈ LỌC KHOẢNG TRẮNG, GIỮ NGUYÊN DẤU CÂU ĐỂ TẠO NHỊP THỞ ---
-        textInput = textInput.replace(/\s+/g, ' ').trim();
+        // Trả lại lệnh xóa sạch toàn bộ dấu câu (chấm, phẩy) như bản gốc
+        textInput = textInput.replace(/[.,;!?]/g, ' ').replace(/\s+/g, ' ').trim();
 
         const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
         const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
@@ -5563,8 +5536,8 @@ function renderMusicScheduleTable() {
         btn.disabled = true;
 
         try {
-            // Sử dụng hàm chia đoạn thông minh mới (Không cần truyền số 40 nữa)
-            const chunks = splitTextForTts(textInput);
+            // Trả về lệnh cắt cứng 40 ký tự (Bắt buộc để ESP32 không bị tràn RAM)
+            const chunks = splitTextForTts(textInput, 40);
             let urlList = [];
             const uniqueId = Date.now();
 
