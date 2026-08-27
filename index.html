@@ -2894,6 +2894,7 @@ function stopMusicTimer() {
                 OTA_SATELLITE_STATUS_TOPIC,
                 MUSIC_STATUS_TOPIC,
                 MUSIC_STORAGE_TOPIC // [MỚI] Đăng ký nhận topic trạng thái nhạc
+                "esp32/bell/tts/done" // <-- THÊM DÒNG NÀY
             ];
             client.subscribe(topicsToSubscribe, {qos:1}, (err)=>{
                 if(err) {
@@ -3012,6 +3013,10 @@ function stopMusicTimer() {
                 } catch (e) {
                     console.error("Lỗi đọc danh sách lịch từ MQTT:", e);
                 }
+            }
+            // NẾU ESP32 BÁO ĐÃ ĐỌC XONG ĐOẠN TRƯỚC -> WEB BƠM ĐOẠN TIẾP THEO
+            if (topic === "esp32/bell/tts/done") {
+                playNextTtsChunk();
             }
         });
         
@@ -5495,14 +5500,12 @@ function renderMusicScheduleTable() {
    // ==========================================
     // === CODE XỬ LÝ TEXT-TO-SPEECH (GOOGLE) ===
     // ==========================================
-    
-    function toggleAllTtsTargets() {
+   function toggleAllTtsTargets() {
         const checkboxes = document.querySelectorAll('.tts-cb');
         const allChecked = Array.from(checkboxes).every(cb => cb.checked);
         checkboxes.forEach(cb => cb.checked = !allChecked);
     }
 
-    // Hàm chia nhỏ văn bản dài thành các đoạn ngắn (dưới maxLength ký tự)
     function splitTextForTts(text, maxLength) {
         let words = text.split(' ');
         let chunks = [];
@@ -5519,13 +5522,16 @@ function renderMusicScheduleTable() {
         return chunks;
     }
 
-    async function sendTtsRequest() {
-        // 1. Lấy text từ ô nhập liệu
-        let textInput = document.getElementById('tts-text-input').value.trim();
-        
-        // --- THÊM DÒNG NÀY ĐỂ LỌC DẤU CÂU ---
-        textInput = textInput.replace(/[.,;!?]/g, ' ').replace(/\s+/g, ' ').trim();
+    // --- BIẾN TOÀN CỤC CHO GIAO DIỆN GÁNH TEAM ---
+    let webTtsQueue = [];
+    let webTtsTargets = [];
+    
+    // DÁN LINK WEB APP TRONG ẢNH 1 CỦA THẦY VÀO ĐÂY:
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxoiijmQEz.../exec"; 
 
+    async function sendTtsRequest() {
+        let textInput = document.getElementById('tts-text-input').value.trim();
+        textInput = textInput.replace(/[.,;!?]/g, ' ').replace(/\s+/g, ' ').trim();
         const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
         const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
 
@@ -5534,35 +5540,64 @@ function renderMusicScheduleTable() {
 
         const btn = document.getElementById('btn-send-tts');
         btn.disabled = true;
+        btn.innerHTML = 'Đang xử lý âm thanh AI (Vui lòng đợi 2-3s)...';
+
+        // Cắt câu ngắn (100 ký tự) cho Google
+        const chunks = splitTextForTts(textInput, 100);
+        webTtsQueue = [];
+        webTtsTargets = selectedZones;
 
         try {
-            // Chia đoạn và tạo URL Google
-            const chunks = splitTextForTts(textInput, 60);
-            let urlList = [];
-            const uniqueId = Date.now();
-
-            chunks.forEach((chunk, index) => {
-                const audioUrl = "https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk) + "&uid=" + uniqueId + "_" + index;
-                urlList.push(audioUrl);
-            });
-
-            // Gửi lệnh xuống ESP32
-            if (client && client.connected) {
-                const payload = { 
-                    command: "play_tts_list",
-                    targets: selectedZones,
-                    urls: urlList,
-                    repeat: repeatCount 
-                };
-                client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-                showNotification("Đã gửi lệnh phát thanh thành công!", "success");
+            // Lấy link MP3 Google Drive cho từng đoạn thông qua trạm GAS
+            let driveLinks = [];
+            for (let i = 0; i < chunks.length; i++) {
+                let response = await fetch(GAS_URL + "?text=" + encodeURIComponent(chunks[i]));
+                let driveLink = await response.text();
+                
+                if (driveLink.includes("drive.google.com")) {
+                    driveLinks.push(driveLink);
+                } else {
+                    console.error("Lỗi từ Trạm GAS:", driveLink);
+                }
             }
+
+            if (driveLinks.length === 0) throw new Error("Không tạo được âm thanh từ Google Cloud!");
+
+            // Nhân bản theo số lần lặp
+            for (let r = 0; r < repeatCount; r++) {
+                webTtsQueue = webTtsQueue.concat(driveLinks);
+            }
+
+            showNotification(`Bắt đầu phát thanh (${webTtsQueue.length} đoạn)...`, "info");
+            playNextTtsChunk(); // Bắn phát súng đầu tiên!
+
         } catch (error) {
-            console.error("TTS Error:", error);
-            showNotification("Có lỗi xảy ra khi tạo lệnh!", "error");
-        } finally {
+            showNotification("Lỗi xử lý âm thanh: " + error.message, "error");
             btn.disabled = false;
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg> Phát Thông Báo Ngay';
         }
+    }
+
+    // Hàm rút từng link ra và gửi xuống ESP32
+    function playNextTtsChunk() {
+        const btn = document.getElementById('btn-send-tts');
+        if (webTtsQueue.length === 0) {
+            btn.disabled = false;
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg> Phát Thông Báo Ngay';
+            showNotification("Đã phát thanh xong toàn bộ thông báo!", "success");
+            return;
+        }
+
+        const nextUrl = webTtsQueue.shift(); // Rút 1 link ra
+        webTtsTargets.forEach(targetName => {
+            if (targetName !== "MASTER") {
+                const topic = "esp32/bell/satellite/" + targetName + "/control";
+                const payload = { command: "play_url", value: nextUrl };
+                if (client && client.connected) {
+                    client.publish(topic, JSON.stringify(payload), { qos: 1 });
+                }
+            }
+        });
     }
 </script>
 </body>
