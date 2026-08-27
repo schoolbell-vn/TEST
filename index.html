@@ -2893,7 +2893,7 @@ function stopMusicTimer() {
                 OTA_STATUS_TOPIC,
                 OTA_SATELLITE_STATUS_TOPIC,
                 MUSIC_STATUS_TOPIC,
-                MUSIC_STORAGE_TOPIC // [MỚI] Đăng ký nhận topic trạng thái nhạc
+                MUSIC_STORAGE_TOPIC, // [MỚI] Đăng ký nhận topic trạng thái nhạc
                 "esp32/bell/tts/done" // <-- THÊM DÒNG NÀY
             ];
             client.subscribe(topicsToSubscribe, {qos:1}, (err)=>{
@@ -5548,16 +5548,21 @@ function renderMusicScheduleTable() {
         webTtsTargets = selectedZones;
 
         try {
-            // Lấy link MP3 Google Drive cho từng đoạn thông qua trạm GAS
+            // [TỐI ƯU SONG SONG] Bắn tất cả các đoạn lên Google cùng 1 lúc
+            const fetchPromises = chunks.map(chunk => 
+                fetch(GAS_URL + "?text=" + encodeURIComponent(chunk))
+                    .then(res => res.text())
+            );
+
+            // Chờ tất cả hoàn thành và tự động giữ đúng thứ tự từ trên xuống dưới
+            const results = await Promise.all(fetchPromises);
+            
             let driveLinks = [];
-            for (let i = 0; i < chunks.length; i++) {
-                let response = await fetch(GAS_URL + "?text=" + encodeURIComponent(chunks[i]));
-                let driveLink = await response.text();
-                
-                if (driveLink.includes("drive.google.com")) {
-                    driveLinks.push(driveLink);
+            for (let i = 0; i < results.length; i++) {
+                if (results[i].includes("drive.google.com")) {
+                    driveLinks.push(results[i]);
                 } else {
-                    console.error("Lỗi từ Trạm GAS:", driveLink);
+                    console.error("Lỗi ở đoạn " + i + ":", results[i]);
                 }
             }
 
