@@ -5537,7 +5537,7 @@ function renderMusicScheduleTable() {
 
         try {
             // Trả về lệnh cắt cứng 40 ký tự (Bắt buộc để ESP32 không bị tràn RAM)
-            const chunks = splitTextForTts(textInput, 150);
+            const chunks = splitTextForTts(textInput, 256);
             let urlList = [];
             const uniqueId = Date.now();
 
