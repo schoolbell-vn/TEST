@@ -5548,10 +5548,12 @@ function renderMusicScheduleTable() {
         webTtsTargets = selectedZones;
 
         try {
-            // [TỐI ƯU SONG SONG] Bắn tất cả các đoạn lên Google cùng 1 lúc
+           // [TỐI ƯU SONG SONG] Bắn tất cả các đoạn lên Google cùng 1 lúc
             const fetchPromises = chunks.map(chunk => 
-                fetch(GAS_URL + "?text=" + encodeURIComponent(chunk))
-                    .then(res => res.text())
+                fetch(GAS_URL + "?text=" + encodeURIComponent(chunk), {
+                    method: "GET",
+                    redirect: "follow" // Cho phép trình duyệt đi theo chuyển hướng của Google
+                }).then(res => res.text())
             );
 
             // Chờ tất cả hoàn thành và tự động giữ đúng thứ tự từ trên xuống dưới
