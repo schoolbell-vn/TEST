@@ -5518,59 +5518,35 @@ function renderMusicScheduleTable() {
         if (current) chunks.push(current);
         return chunks;
     }
-     // 71af00ae56172ef7642a1ec0b643da1f
+
     async function sendTtsRequest() {
-    // 1. Lấy nội dung cần đọc từ ô nhập liệu
-    let textInput = document.getElementById('tts-text-input').value.trim();
-    const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
-    const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
-
-    if (!textInput) return showNotification("Vui lòng nhập nội dung cần thông báo!", "error");
-    if (selectedZones.length === 0) return showNotification("Vui lòng chọn ít nhất 1 loa vệ tinh!", "error");
-
-    const btn = document.getElementById('btn-send-tts');
-    btn.disabled = true;
-    showNotification("Đang kết nối Viettel AI qua trạm trung chuyển...", "info");
-
-    try {
-        // QUAN TRỌNG: Dán Mã định danh dự án (Key) của thầy vào đây
-        const VIETTEL_TOKEN = "71af00ae56172ef7642a1ec0b643da1f";
+        // 1. Lấy text từ ô nhập liệu
+        let textInput = document.getElementById('tts-text-input').value.trim();
         
-        // Link trạm trung chuyển Cloudflare của riêng thầy
-        const proxyUrl = "https://frosty-breeze-a9ce.ngoctuyka1.workers.dev/";
+        // Trả lại lệnh xóa sạch toàn bộ dấu câu (chấm, phẩy) như bản gốc
+        textInput = textInput.replace(/[.,;!?]/g, ' ').replace(/\s+/g, ' ').trim();
 
-        // Gửi yêu cầu POST chứa text và token qua trạm trung chuyển
-        const response = await fetch(proxyUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "text": textInput,
-                "voice": "hn-quocbao", // Giọng nam Hà Nội (Thầy có thể đổi nếu muốn)
-                "speed": 1.0,
-                "tts_return_option": 2, // Option 2 để lấy đường link file MP3
-                "token": VIETTEL_TOKEN
-            })
-        });
+        const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
+        const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
 
-        if (!response.ok) {
-            console.error("Lỗi HTTP:", response.status);
-            showNotification("Từ chối truy cập! Hãy kiểm tra lại Token.", "error");
-            btn.disabled = false;
-            return;
-        }
+        if (!textInput) return showNotification("Vui lòng nhập nội dung cần thông báo!", "error");
+        if (selectedZones.length === 0) return showNotification("Vui lòng chọn ít nhất 1 loa vệ tinh!", "error");
 
-        const result = await response.json();
-        console.log("Phản hồi từ Viettel AI:", result);
-        
-        // Trích xuất đường link file MP3 từ kết quả trả về của Viettel
-        const audioUrl = result.data || result.file_url || (result.data && result.data.url);
+        const btn = document.getElementById('btn-send-tts');
+        btn.disabled = true;
 
-        if (audioUrl && typeof audioUrl === 'string') {
-            let urlList = [audioUrl];
+        try {
+            // Trả về lệnh cắt cứng 40 ký tự (Bắt buộc để ESP32 không bị tràn RAM)
+            const chunks = splitTextForTts(textInput, 150);
+            let urlList = [];
+            const uniqueId = Date.now();
 
-            // Gửi đường link tĩnh này xuống cho các loa Vệ tinh phát
+            chunks.forEach((chunk, index) => {
+                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk);
+                urlList.push(audioUrl);
+            });
+
+            // Gửi lệnh xuống ESP32
             if (client && client.connected) {
                 const payload = { 
                     command: "play_tts_list",
@@ -5579,20 +5555,15 @@ function renderMusicScheduleTable() {
                     repeat: repeatCount 
                 };
                 client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-                showNotification("Đã tạo giọng đọc và gửi lệnh phát xuống loa!", "success");
-            } else {
-                showNotification("Chưa kết nối máy chủ MQTT!", "error");
+                showNotification("Đã gửi lệnh phát thanh thành công!", "success");
             }
-        } else {
-            showNotification("Viettel xử lý thành công nhưng không tìm thấy link MP3.", "error");
+        } catch (error) {
+            console.error("TTS Error:", error);
+            showNotification("Có lỗi xảy ra khi tạo lệnh!", "error");
+        } finally {
+            btn.disabled = false;
         }
-    } catch (error) {
-        console.error("Lỗi:", error);
-        showNotification("Lỗi kết nối đến trạm trung chuyển!", "error");
-    } finally {
-        btn.disabled = false;
     }
-}
 </script>
 </body>
 </html>
