@@ -5537,12 +5537,18 @@ function renderMusicScheduleTable() {
 
         try {
             // Trả về lệnh cắt cứng 40 ký tự (Bắt buộc để ESP32 không bị tràn RAM)
-            const chunks = splitTextForTts(textInput, 300);
+            const chunks = splitTextForTts(textInput, 500);
+
+            console.log("=== TTS CHUNKS ===");
+            chunks.forEach((chunk, i) => {
+                console.log(`Chunk ${i + 1}: ${chunk.length} ký tự`);
+                console.log(chunk);
+            });
             let urlList = [];
             const uniqueId = Date.now();
 
             chunks.forEach((chunk, index) => {
-                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk);
+                const audioUrl = "http://translate.googleapis.com/translate_tts?ie=UTF-8&tl=vi&client=gtx&q=" + encodeURIComponent(chunk);
                 urlList.push(audioUrl);
             });
 
