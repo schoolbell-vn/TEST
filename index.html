@@ -5536,23 +5536,25 @@ function renderMusicScheduleTable() {
         // QUAN TRỌNG: Thầy dán Mã định danh dự án (Key) của thầy vào đây 
         // 71af00ae56172ef7642a1ec0b643da1f
         // QUAN TRỌNG: Dán mã Token dự án S.P.A.R.K của thầy vào đây
+       // QUAN TRỌNG: Dán mã Token dự án S.P.A.R.K của thầy vào đây
         const VIETTEL_TOKEN = "71af00ae56172ef7642a1ec0b643da1f";
 
         // Sử dụng trạm trung chuyển Cloudflare của riêng thầy
         const proxyUrl = "https://frosty-breeze-a9ce.ngoctuyka1.workers.dev/";
 
-        // Gửi thẳng yêu cầu vào proxyUrl, Worker sẽ tự động chuyển tiếp tới Viettel AI
         const response = await fetch(proxyUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'token': VIETTEL_TOKEN
+                'Content-Type': 'application/json'
+                // Không để token ở đây nữa
             },
             body: JSON.stringify({
                 "text": textInput,
                 "voice": "hn-quocbao", // Giọng nam Hà Nội
                 "speed": 1.0,
-                "tts_return_option": 2 // Bắt buộc là 2 để lấy link MP3
+                "tts_return_option": 2, // Bắt buộc là 2 để lấy link MP3
+                "token": VIETTEL_TOKEN, // Đưa token vào đây theo chuẩn mới
+                "without_filter": false
             })
         });
 
@@ -5565,8 +5567,8 @@ function renderMusicScheduleTable() {
         }
 
         const result = await response.json();
-        console.log("Dữ liệu Viettel trả về:", result); // In ra log F12 để kiểm tra
-
+        console.log("Phản hồi từ Viettel AI:", result);
+        
         // Trích xuất đường link file MP3
         const audioUrl = result.data || result.file_url || (result.data && result.data.url);
 
