@@ -5520,33 +5520,45 @@ function renderMusicScheduleTable() {
     }
 
     async function sendTtsRequest() {
-        // 1. Lấy text từ ô nhập liệu
-        let textInput = document.getElementById('tts-text-input').value.trim();
-        
-        // Trả lại lệnh xóa sạch toàn bộ dấu câu (chấm, phẩy) như bản gốc
-        textInput = textInput.replace(/[.,;!?]/g, ' ').replace(/\s+/g, ' ').trim();
+    // 1. Lấy text từ ô nhập liệu, không cần cắt nhỏ nữa
+    let textInput = document.getElementById('tts-text-input').value.trim();
+    const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
+    const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
 
-        const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
-        const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
+    if (!textInput) return showNotification("Vui lòng nhập nội dung cần thông báo!", "error");
+    if (selectedZones.length === 0) return showNotification("Vui lòng chọn ít nhất 1 loa vệ tinh!", "error");
 
-        if (!textInput) return showNotification("Vui lòng nhập nội dung cần thông báo!", "error");
-        if (selectedZones.length === 0) return showNotification("Vui lòng chọn ít nhất 1 loa vệ tinh!", "error");
+    const btn = document.getElementById('btn-send-tts');
+    btn.disabled = true;
+    showNotification("Đang nhờ Viettel AI tạo giọng đọc...", "info");
 
-        const btn = document.getElementById('btn-send-tts');
-        btn.disabled = true;
+    try {
+        const VIETTEL_TOKEN = "71af00ae56172ef7642a1ec0b643da1f";
 
-        try {
-            // Trả về lệnh cắt cứng 40 ký tự (Bắt buộc để ESP32 không bị tràn RAM)
-            const chunks = splitTextForTts(textInput, 256);
-            let urlList = [];
-            const uniqueId = Date.now();
+        // Gửi yêu cầu (POST) lên Viettel AI
+        const response = await fetch('https://viettelgroup.ai/voice/api/tts/v1/rest/synth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'token': VIETTEL_TOKEN
+            },
+            body: JSON.stringify({
+                "text": textInput,
+                "voice": "hn-quocbao", // Giọng nam Hà Nội. Có thể đổi: hn-thanhhuong (Nữ HN), hcm-minhquan (Nam HCM)...
+                "speed": 1.0,
+                "tts_return_option": 2 // Option 2 bắt buộc để Viettel trả về link file MP3 tĩnh
+            })
+        });
 
-            chunks.forEach((chunk, index) => {
-                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk);
-                urlList.push(audioUrl);
-            });
+        const result = await response.json();
 
-            // Gửi lệnh xuống ESP32
+        // Kiểm tra xem Viettel trả link về ở trường dữ liệu nào
+        const audioUrl = result.data || result.file_url || (result.data && result.data.url);
+
+        if (audioUrl && typeof audioUrl === 'string') {
+            // Đã có link MP3 tĩnh, gửi xuống cho ESP32 phát
+            let urlList = [audioUrl];
+
             if (client && client.connected) {
                 const payload = { 
                     command: "play_tts_list",
@@ -5555,15 +5567,19 @@ function renderMusicScheduleTable() {
                     repeat: repeatCount 
                 };
                 client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-                showNotification("Đã gửi lệnh phát thanh thành công!", "success");
+                showNotification("Đã gửi link Viettel AI xuống loa thành công!", "success");
             }
-        } catch (error) {
-            console.error("TTS Error:", error);
-            showNotification("Có lỗi xảy ra khi tạo lệnh!", "error");
-        } finally {
-            btn.disabled = false;
+        } else {
+            showNotification("Lỗi từ Viettel AI: Không tạo được link âm thanh.", "error");
+            console.log("Chi tiết lỗi Viettel:", result);
         }
+    } catch (error) {
+        console.error("Viettel AI TTS Error:", error);
+        showNotification("Lỗi kết nối đến server Viettel AI!", "error");
+    } finally {
+        btn.disabled = false;
     }
+}
 </script>
 </body>
 </html>
