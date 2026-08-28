@@ -5518,9 +5518,9 @@ function renderMusicScheduleTable() {
         if (current) chunks.push(current);
         return chunks;
     }
-
+     // 71af00ae56172ef7642a1ec0b643da1f
     async function sendTtsRequest() {
-    // 1. Lấy nội dung từ ô nhập liệu
+    // 1. Lấy nội dung cần đọc từ ô nhập liệu
     let textInput = document.getElementById('tts-text-input').value.trim();
     const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
     const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
@@ -5530,35 +5530,30 @@ function renderMusicScheduleTable() {
 
     const btn = document.getElementById('btn-send-tts');
     btn.disabled = true;
-    showNotification("Đang kết nối trạm trung chuyển Viettel AI...", "info");
+    showNotification("Đang kết nối Viettel AI qua trạm trung chuyển...", "info");
 
     try {
-        // QUAN TRỌNG: Thầy dán Mã định danh dự án (Key) của thầy vào đây 
-        // 71af00ae56172ef7642a1ec0b643da1f
-        // QUAN TRỌNG: Dán mã Token dự án S.P.A.R.K của thầy vào đây
-       // QUAN TRỌNG: Dán mã Token dự án S.P.A.R.K của thầy vào đây
+        // QUAN TRỌNG: Dán Mã định danh dự án (Key) của thầy vào đây
         const VIETTEL_TOKEN = "71af00ae56172ef7642a1ec0b643da1f";
-
-        // Sử dụng trạm trung chuyển Cloudflare của riêng thầy
+        
+        // Link trạm trung chuyển Cloudflare của riêng thầy
         const proxyUrl = "https://frosty-breeze-a9ce.ngoctuyka1.workers.dev/";
 
+        // Gửi yêu cầu POST chứa text và token qua trạm trung chuyển
         const response = await fetch(proxyUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-                // Không để token ở đây nữa
             },
             body: JSON.stringify({
                 "text": textInput,
-                "voice": "hn-quocbao", // Giọng nam Hà Nội
+                "voice": "hn-quocbao", // Giọng nam Hà Nội (Thầy có thể đổi nếu muốn)
                 "speed": 1.0,
-                "tts_return_option": 2, // Bắt buộc là 2 để lấy link MP3
-                "token": VIETTEL_TOKEN, // Đưa token vào đây theo chuẩn mới
-                "without_filter": false
+                "tts_return_option": 2, // Option 2 để lấy đường link file MP3
+                "token": VIETTEL_TOKEN
             })
         });
 
-        // Bắt lỗi nếu Token sai hoặc Viettel từ chối
         if (!response.ok) {
             console.error("Lỗi HTTP:", response.status);
             showNotification("Từ chối truy cập! Hãy kiểm tra lại Token.", "error");
@@ -5569,13 +5564,13 @@ function renderMusicScheduleTable() {
         const result = await response.json();
         console.log("Phản hồi từ Viettel AI:", result);
         
-        // Trích xuất đường link file MP3
+        // Trích xuất đường link file MP3 từ kết quả trả về của Viettel
         const audioUrl = result.data || result.file_url || (result.data && result.data.url);
 
         if (audioUrl && typeof audioUrl === 'string') {
             let urlList = [audioUrl];
 
-            // Gửi đường link tĩnh này xuống cho ESP32 phát
+            // Gửi đường link tĩnh này xuống cho các loa Vệ tinh phát
             if (client && client.connected) {
                 const payload = { 
                     command: "play_tts_list",
@@ -5584,14 +5579,16 @@ function renderMusicScheduleTable() {
                     repeat: repeatCount 
                 };
                 client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-                showNotification("Đã tạo giọng đọc và gửi lệnh phát!", "success");
+                showNotification("Đã tạo giọng đọc và gửi lệnh phát xuống loa!", "success");
+            } else {
+                showNotification("Chưa kết nối máy chủ MQTT!", "error");
             }
         } else {
             showNotification("Viettel xử lý thành công nhưng không tìm thấy link MP3.", "error");
         }
     } catch (error) {
-        console.error("Lỗi fetch:", error);
-        showNotification("Lỗi trình duyệt bị chặn hoặc mạng không ổn định!", "error");
+        console.error("Lỗi:", error);
+        showNotification("Lỗi kết nối đến trạm trung chuyển!", "error");
     } finally {
         btn.disabled = false;
     }
