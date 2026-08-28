@@ -5533,14 +5533,15 @@ function renderMusicScheduleTable() {
     showNotification("Đang kết nối trạm trung chuyển Viettel AI...", "info");
 
     try {
-        // QUAN TRỌNG: Thầy dán Mã định danh dự án (Key) của thầy vào đây
+        // QUAN TRỌNG: Thầy dán Mã định danh dự án (Key) của thầy vào đây 
+        // 71af00ae56172ef7642a1ec0b643da1f
+        // QUAN TRỌNG: Dán mã Token dự án S.P.A.R.K của thầy vào đây
         const VIETTEL_TOKEN = "71af00ae56172ef7642a1ec0b643da1f";
 
-        // Sử dụng trạm trung chuyển uy tín AllOrigins
-        const targetUrl = encodeURIComponent("https://viettelgroup.ai/voice/api/tts/v1/rest/synth");
-        const proxyUrl = "https://api.allorigins.win/raw?url=" + targetUrl;
+        // Sử dụng trạm trung chuyển Cloudflare của riêng thầy
+        const proxyUrl = "https://frosty-breeze-a9ce.ngoctuyka1.workers.dev/";
 
-        // Gửi yêu cầu qua Proxy
+        // Gửi thẳng yêu cầu vào proxyUrl, Worker sẽ tự động chuyển tiếp tới Viettel AI
         const response = await fetch(proxyUrl, {
             method: 'POST',
             headers: {
@@ -5549,7 +5550,7 @@ function renderMusicScheduleTable() {
             },
             body: JSON.stringify({
                 "text": textInput,
-                "voice": "hn-quocbao", // Có thể đổi giọng ở đây (VD: hn-thanhhuong)
+                "voice": "hn-quocbao", // Giọng nam Hà Nội
                 "speed": 1.0,
                 "tts_return_option": 2 // Bắt buộc là 2 để lấy link MP3
             })
