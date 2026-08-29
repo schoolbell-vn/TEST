@@ -2815,29 +2815,36 @@
     const brokerUrl="wss://8bdef73996bb4030affe9483eecde31b.s1.eu.hivemq.cloud:8884/mqtt";
     const options={username:"ngoctuyka",password:"Tu12345678@",clientId:"WebAppClient_"+parseInt(1e3*Math.random()),reconnectPeriod:2e3,protocolVersion: 4};
     
-    // TOPICS MQTT CŨ
-    const ONLINE_STATUS_TOPIC = "esp32/bell/status/online";
-    const DATA_STATUS_TOPIC = "esp32/bell/data/status";
-    const SET_DATA_TOPIC = "esp32/bell/data/set";
-    const GET_DATA_TOPIC = "esp32/bell/data/get";
-    const CONTROL_TOPIC = "esp32/bell/control";
-    const SYS_INFO_TOPIC = "esp32/bell/status/sysinfo";
-    const MANAGE_ADD_TOPIC = "esp32/bell/manage/add";
-    const MANAGE_REMOVE_TOPIC = "esp32/bell/manage/remove";
-    const MANAGE_STATUS_TOPIC = "esp32/bell/manage/status";
-    const COMMAND_ACK_TOPIC = "esp32/bell/command/ack";
-    const OTA_COMMAND_TOPIC = "esp32/bell/ota/command";
-    const OTA_DATA_TOPIC = "esp32/bell/ota/data";
-    const OTA_STATUS_TOPIC = "esp32/bell/ota/status";
-    const OTA_SATELLITE_COMMAND_TOPIC_PREFIX = "esp32/bell/ota/satellite/command/";
-    const OTA_SATELLITE_DATA_TOPIC_PREFIX = "esp32/bell/ota/satellite/data/";
-    const OTA_SATELLITE_STATUS_TOPIC = "esp32/bell/ota/satellite/status";
+    // [MỚI] Điền Mã Máy Chủ (MAC ID) của bộ thiết bị vào đây
+    // Ví dụ: "A1B2C3D4E5F6". Khi cài đặt cho khách, bạn chỉ cần sửa chuỗi này.
+    const MASTER_ID = "80B54EDE4668"; 
+    const BASE_TOPIC = "esp32/bell/" + MASTER_ID;
+
+    // CẬP NHẬT CÁC TOPIC MQTT THEO BASE_TOPIC MỚI
+    const ONLINE_STATUS_TOPIC = BASE_TOPIC + "/status/online";
+    const DATA_STATUS_TOPIC = BASE_TOPIC + "/data/status";
+    const SET_DATA_TOPIC = BASE_TOPIC + "/data/set";
+    const GET_DATA_TOPIC = BASE_TOPIC + "/data/get";
+    const CONTROL_TOPIC = BASE_TOPIC + "/control";
+    const SYS_INFO_TOPIC = BASE_TOPIC + "/status/sysinfo";
+    const MANAGE_ADD_TOPIC = BASE_TOPIC + "/manage/add";
+    const MANAGE_REMOVE_TOPIC = BASE_TOPIC + "/manage/remove";
+    const MANAGE_STATUS_TOPIC = BASE_TOPIC + "/manage/status";
+    const COMMAND_ACK_TOPIC = BASE_TOPIC + "/command/ack";
+    const OTA_COMMAND_TOPIC = BASE_TOPIC + "/ota/command";
+    const OTA_DATA_TOPIC = BASE_TOPIC + "/ota/data";
+    const OTA_STATUS_TOPIC = BASE_TOPIC + "/ota/status";
+    const OTA_SATELLITE_COMMAND_TOPIC_PREFIX = BASE_TOPIC + "/ota/satellite/command/";
+    const OTA_SATELLITE_DATA_TOPIC_PREFIX = BASE_TOPIC + "/ota/satellite/data/";
+    const OTA_SATELLITE_STATUS_TOPIC = BASE_TOPIC + "/ota/satellite/status";
     
-    // [MỚI] TOPICS MQTT CHO ĐIỀU KHIỂN NHẠC
-    const MUSIC_CONTROL_TOPIC = "esp32/bell/music/control";
-    const MUSIC_STATUS_TOPIC = "esp32/bell/music/status";
-    // [THÊM MỚI] Topic dùng để lưu trữ danh sách lịch (như một Database online)
-    const MUSIC_STORAGE_TOPIC = "esp32/bell/music/schedule_storage"; 
+    // TOPICS MQTT CHO ĐIỀU KHIỂN NHẠC
+    const MUSIC_CONTROL_TOPIC = BASE_TOPIC + "/music/control";
+    const MUSIC_STATUS_TOPIC = BASE_TOPIC + "/music/status";
+    const MUSIC_STORAGE_TOPIC = BASE_TOPIC + "/music/schedule_storage"; 
+    const SCENARIO_ADD_TOPIC = BASE_TOPIC + "/scenario/add";
+    const SCENARIO_SET_TOPIC = BASE_TOPIC + "/scenario/set";
+    const SCENARIO_DELETE_TOPIC = BASE_TOPIC + "/scenario/delete";
     
     // Biến lưu danh sách lịch (không dùng LocalStorage nữa)
     let sharedMusicSchedules = [];
@@ -2921,6 +2928,12 @@ function stopMusicTimer() {
             }
             
             if (topic === DATA_STATUS_TOPIC && payloadString) {
+                // [THÊM MỚI] Ép giao diện hiển thị "Đã kết nối" ngay khi nhận được dữ liệu
+                const schoolNameStatus = document.getElementById("school-name-status");
+                schoolNameStatus.className = "status-color-connected";
+                document.getElementById('clock-wrapper').style.display = 'block';
+                
+                // Tải dữ liệu vào bảng
                 _load(payloadString);
             }
 
