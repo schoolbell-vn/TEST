@@ -527,8 +527,21 @@
     }
     /* [THÊM MỚI] CSS cho Nút Xóa Kịch Bản */
     .delete-scenario-button-container {
-        padding: 15px 0 5px 0; /* Căn lề cho nút xóa */
-    }
+    padding: 25px 15px 15px 15px;
+}
+
+.delete-scenario-button-container .logout-button {
+    background: linear-gradient(90deg, #3a1c1c 0%, #2c0f0f 100%);
+    border-left: 4px solid #e74c3c;
+    border-right: 4px solid #e74c3c;
+    color: #ff6b6b;
+    text-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+}
+
+.delete-scenario-button-container .logout-button:hover {
+    background: linear-gradient(90deg, #4a1919 0%, #3a1c1c 100%);
+    box-shadow: 0 8px 24px rgba(231, 76, 60, 0.3);
+}
             
     /* === CÀI ĐẶT NÚT GẠT (TOGGLE SWITCH) DẠNG BOX === */
     .toggle-actions-group {
@@ -1700,6 +1713,30 @@
 #sync-count-text {
     color: #fff; font-weight: bold; font-size: 0.9em;
 }
+/* === CSS Phần 2: Tiêu đề Kịch Bản Hiện Tại === */
+    #title-saved-scenario {
+        text-align: center;
+        color: #f1c40f; 
+        text-transform: uppercase;
+        font-size: 0.95em;
+        font-weight: 800;
+        letter-spacing: 1px;
+        margin: 10px 15px 15px 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed #414345;
+    }
+
+    /* === CSS Phần 3: Khung trạng thái trống (Empty State) === */
+    #saved-scenario-placeholder {
+    background: rgba(35, 37, 38, 0.4);
+    border: 2px dashed #414345;
+    border-radius: 10px;
+    padding: 25px 15px;
+    color: #bdc3c7;
+    font-style: italic;
+    margin: 0 15px;
+    display: block;
+    }
 @keyframes highlightRow {
     0% { background-color: #f1c40f; }
     100% { background-color: transparent; }
@@ -1839,14 +1876,14 @@
         </div>
     </details>
 
-    <div id="saved-scenario-container" style="padding: 0; margin-top: 20px;">
-        <h5 id="title-saved-scenario" style="text-align: center; color: #3498db; text-transform: uppercase; margin: 10px 0 15px 0;">
+    <div id="saved-scenario-container" style="padding: 0; margin-top: 0px;">
+        <h5 id="title-saved-scenario">
             KỊCH BẢN HIỆN TẠI ĐANG LƯU TRÊN THIẾT BỊ
         </h5>
         <div id="saved-scenario-table-wrapper" style="max-height: 250px; overflow-y: auto; display: none;">
         </div>
-        <p id="saved-scenario-placeholder" class="list-placeholder" style="padding: 10px; display: block;">
-            Đang chờ dữ liệu từ thiết bị...
+        <p id="saved-scenario-placeholder" class="list-placeholder">
+            Không có kịch bản nào được lưu.
         </p>
         <div id="saved-scenario-priority" style="text-align: center; font-size: 0.9em; color: #bdc3c7; margin-top: 10px; font-style: italic;">
         </div>
@@ -2755,7 +2792,6 @@
             targets: [targetDevice] // <--- MỚI THÊM
         };
 
-        const SCENARIO_ADD_TOPIC = "esp32/bell/scenario/add"; 
         client.publish(SCENARIO_ADD_TOPIC, JSON.stringify(payload), { qos: 1 });
 
         showNotification(`Đã gửi kịch bản cho: ${targetDevice === 'ALL' ? 'Toàn hệ thống' : targetDevice}`, "success");
@@ -2777,9 +2813,6 @@
         // === [SỬA LỖI QUAN TRỌNG] ===
         // Gửi một chuỗi mảng rỗng "[]"
         const payload = "[]"; 
-        
-        // Gửi đến topic "SET" (để GHI ĐÈ/XÓA)
-        const SCENARIO_SET_TOPIC = "esp32/bell/scenario/set"; 
         client.publish(SCENARIO_SET_TOPIC, payload, { qos: 1 }); 
         // ==============================
         
@@ -2796,10 +2829,7 @@
             return showNotification("Chưa kết nối máy chủ!", 'error');
         }
         
-        // 1. Định nghĩa topic mới
-        const SCENARIO_DELETE_TOPIC = "esp32/bell/scenario/delete";
-        
-        // 2. Gửi đi VỊ TRÍ (index) của kịch bản cần xóa
+       // 2. Gửi đi VỊ TRÍ (index) của kịch bản cần xóa
         client.publish(SCENARIO_DELETE_TOPIC, String(index), { qos: 1 }); 
         
         showNotification(`Đã gửi lệnh xóa kịch bản #${index + 1}...`, 'info');
@@ -5104,7 +5134,7 @@ function showNotification(msg, type="info") {
             targets: targetList // Gửi mảng danh sách tên thiết bị: ["MASTER", "VeTinh-1", ...]
         };
 
-        const SCENARIO_ADD_TOPIC = "esp32/bell/scenario/add"; 
+       
         client.publish(SCENARIO_ADD_TOPIC, JSON.stringify(payload), { qos: 1 });
 
         showNotification(`Đã gửi kịch bản cho ${targetList.length} thiết bị!`, "success");
