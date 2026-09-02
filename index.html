@@ -5591,7 +5591,7 @@ function renderMusicScheduleTable() {
             const uniqueId = Date.now();
 
             chunks.forEach((chunk, index) => {
-                const audioUrl = "http://translate.googleapis.com/translate_tts?ie=UTF-8&tl=vi&client=gtx&q=" + encodeURIComponent(chunk);
+                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk);
                 urlList.push(audioUrl);
             });
 
