@@ -2197,16 +2197,33 @@
         <div style="background: #232526; border: 1px solid #414345; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
             <label style="color: #bdc3c7; font-weight: bold; display: block; margin-bottom: 10px;">Nội dung thông báo:</label>
             <textarea id="tts-text-input" rows="4" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #7f8c8d; background-color: #2c3e50; color: #ecf0f1; font-size: 1em; font-family: inherit; resize: none;" placeholder="Ví dụ: Đã đến giờ ra chơi, mời các em học sinh ra sân tập thể dục..."></textarea>
-            <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
-                <label style="color: #f1c40f; font-weight: bold;">Số lần lặp lại:</label>
-                <select id="tts-repeat-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #f1c40f; background: #2c3e50; color: #ecf0f1; font-weight: bold;">
-                    <option value="1">Đọc 1 lần</option>
-                    <option value="2">Lặp lại 2 lần</option>
-                    <option value="3">Lặp lại 3 lần</option>
-                    <option value="4">Lặp lại 4 lần</option>
-                    <option value="5">Lặp lại 5 lần</option>
-                </select>
+            <div style="margin-top: 15px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <!-- Phần chọn số lần lặp -->
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label style="color: #f1c40f; font-weight: bold; white-space: nowrap;">Số lần lặp:</label>
+                    <select id="tts-repeat-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #f1c40f; background: #2c3e50; color: #ecf0f1; font-weight: bold; width: 120px;">
+                        <option value="1">1 lần</option>
+                        <option value="2">2 lần</option>
+                        <option value="3">3 lần</option>
+                        <option value="4">4 lần</option>
+                        <option value="5">5 lần</option>
+                    </select>
+                </div>
+                
+                <!-- Phần chọn âm lượng -->
+                <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1;">
+                    <label style="color: #f1c40f; font-weight: bold; white-space: nowrap;">Âm lượng phát:</label>
+                    <input type="range" id="tts-volume-slider" min="0" max="100" value="80" style="flex-grow: 1; height: 8px; background: #414345; border-radius: 4px; outline: none; cursor: pointer;">
+                    <span id="tts-volume-val" style="color: #ecf0f1; font-weight: bold; width: 40px; text-align: right;">80%</span>
+                </div>
             </div>
+            
+            <!-- Thêm đoạn script nhỏ này ngay dưới để số % nhảy theo thanh trượt -->
+            <script>
+                document.getElementById('tts-volume-slider').addEventListener('input', function(e) {
+                    document.getElementById('tts-volume-val').innerText = e.target.value + '%';
+                });
+            </script>
         </div>
 
         <div class="zone-selector" style="margin-bottom: 20px;">
