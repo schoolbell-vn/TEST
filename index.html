@@ -2908,20 +2908,25 @@
 // Hàm tự động chạy thanh tiến trình (Giả lập để mượt mà)
 function startMusicTimer() {
     if (musicTimer) clearInterval(musicTimer);
-    
     musicTimer = setInterval(() => {
-        if (isMusicPlaying && audioTotalTime > 0) {
-            audioCurrentTime++; // Tăng thêm 1 giây
+        if (isMusicPlaying) { // Đã gỡ bỏ điều kiện "khóa" audioTotalTime > 0
+            audioCurrentTime++; 
             
-            // Nếu vượt quá tổng thời gian thì dừng
-            if (audioCurrentTime > audioTotalTime) audioCurrentTime = audioTotalTime;
+            // Nếu đã biết tổng thời gian thì không cho chạy lố
+            if (audioTotalTime > 0 && audioCurrentTime > audioTotalTime) {
+                audioCurrentTime = audioTotalTime;
+            }
 
-            // Cập nhật giao diện ngay lập tức
-            const percent = (audioCurrentTime / audioTotalTime) * 100;
-            document.getElementById('music-progress-bar').value = percent;
+            // Cập nhật số giây lên giao diện ngay lập tức
             document.getElementById('current-time').textContent = formatTime(audioCurrentTime);
+
+            // Cập nhật thanh trượt nếu đã có tổng thời gian
+            if (audioTotalTime > 0) {
+                const percent = (audioCurrentTime / audioTotalTime) * 100;
+                document.getElementById('music-progress-bar').value = percent;
+            }
         }
-    }, 1000); // Chạy mỗi 1 giây
+    }, 1000);
 }
 
 function stopMusicTimer() {
@@ -3401,11 +3406,11 @@ function deleteMusicSchedule(index) {
 }
 
     function formatTime(seconds) {
-        if (isNaN(seconds) || seconds < 0) return "00:00";
-        const min = Math.floor(seconds / 60);
-        const sec = Math.floor(seconds % 60);
-        return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-    }
+    if (isNaN(seconds) || seconds < 0) return "00:00";
+    const min = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60);
+    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
 
     // =======================================================
 
