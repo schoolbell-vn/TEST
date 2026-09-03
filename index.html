@@ -3260,7 +3260,7 @@ function stopMusicTimer() {
                     trackSelect.appendChild(option);
                 });
             }
-            updateTrackSelectors(status.playlist);
+            if(typeof updateTrackSelectors === 'function') updateTrackSelectors(status.playlist);
         }
 
         if (status.current_track) {
@@ -3271,37 +3271,43 @@ function stopMusicTimer() {
             }
         }
 
-        if (status.total_time_s > 0) {
-            audioTotalTime = status.total_time_s;
-            if (Math.abs(audioCurrentTime - (status.current_time_s || 0)) > 2) {
-                audioCurrentTime = status.current_time_s || 0;
-            }
-            document.getElementById('total-time').textContent = formatTime(audioTotalTime);
-            document.getElementById('current-time').textContent = formatTime(audioCurrentTime);
-            
-            const percent = (audioCurrentTime / audioTotalTime) * 100;
-            document.getElementById('music-progress-bar').value = percent;
-        }
+        // --- ĐÂY LÀ ĐOẠN SỬA LỖI CON CHẠY NHẠC ---
+if (status.total_time_s !== undefined && status.total_time_s > 0) {
+    audioTotalTime = status.total_time_s;
+    document.getElementById('total-time').textContent = formatTime(audioTotalTime);
+}
 
-        if (status.status === 'playing') {
-            isMusicPlaying = true;
-            startMusicTimer(); 
-            document.getElementById('play-icon').style.display = 'none';
-            document.getElementById('pause-icon').style.display = 'block';
-        } else {
-            isMusicPlaying = false;
-            stopMusicTimer(); 
-            if (selectedTrackToPlay === "" || selectedTrackToPlay === currentPlayingTrack) {
-                document.getElementById('play-icon').style.display = 'block';
-                document.getElementById('pause-icon').style.display = 'none';
-            }
+if (status.current_time_s !== undefined) {
+    // Đồng bộ nếu lệch quá 2 giây, hoặc thời gian web đang là 0 (bài mới)
+    if (audioCurrentTime === 0 || Math.abs(audioCurrentTime - status.current_time_s) > 2) {
+        audioCurrentTime = status.current_time_s;
+        document.getElementById('current-time').textContent = formatTime(audioCurrentTime);
+        if (audioTotalTime > 0) {
+            document.getElementById('music-progress-bar').value = (audioCurrentTime / audioTotalTime) * 100;
         }
+    }
+}
+
+if (status.status === 'playing') {
+    isMusicPlaying = true;
+    if (!musicTimer) startMusicTimer();
+    document.getElementById('play-icon').style.display = 'none';
+    document.getElementById('pause-icon').style.display = 'block';
+} else if (status.status === 'stopped' || status.status === 'paused') {
+    isMusicPlaying = false;
+    stopMusicTimer();
+    if (selectedTrackToPlay === "" || selectedTrackToPlay === currentPlayingTrack) {
+        document.getElementById('play-icon').style.display = 'block';
+        document.getElementById('pause-icon').style.display = 'none';
+    }
+}
+// ----------------------------------------
 
         if (status.volume !== undefined) {
             document.getElementById('volume-slider').value = Math.round(status.volume / 30 * 100);
         }
-        document.getElementById('shuffle-btn').classList.toggle('active', status.shuffle_mode || false);
-        document.getElementById('repeat-btn').classList.toggle('active', status.repeat_mode || false);
+        if(document.getElementById('shuffle-btn')) document.getElementById('shuffle-btn').classList.toggle('active', status.shuffle_mode || false);
+        if(document.getElementById('repeat-btn')) document.getElementById('repeat-btn').classList.toggle('active', status.repeat_mode || false);
     }
 
     function togglePlayMode(mode) {
@@ -5536,8 +5542,10 @@ function renderMusicScheduleTable() {
         textInput = textInput.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 
         const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
-        const ttsVolume = 80; 
+        const volSlider = document.getElementById('tts-volume-slider');
+        const ttsVolume = volSlider ? (parseInt(volSlider.value) || 80) : 80; 
         const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
+
 
         if (!textInput) return showNotification("Vui lòng nhập nội dung cần thông báo!", "error");
         if (selectedZones.length === 0) return showNotification("Vui lòng chọn ít nhất 1 loa vệ tinh!", "error");
