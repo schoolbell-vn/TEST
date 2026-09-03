@@ -3157,23 +3157,17 @@ function stopMusicTimer() {
     // Cập nhật nội dung lên giao diện
     countdownEl.innerHTML = message;
 }
-    // [THÊM MỚI] Hàm cập nhật danh sách bài hát cho các dropdown trong cài đặt
-    // [CẬP NHẬT] Hàm cập nhật danh sách bài hát (Fix lỗi mất file khi tải trang)
+    // [CẬP NHẬT TỪ BẢN LAN] Hàm cập nhật danh sách bài hát cho thẻ select
     function updateTrackSelectors(playlist) {
         const bellTypes = ['batdau', 'vaotiet', 'rachoi', 'duvao'];
         bellTypes.forEach(type => {
             const select = document.getElementById(`sohoi_${type}_track`);
             if (select) {
-                // 1. Lấy giá trị hiện tại đang hiển thị
                 let valueToRestore = select.value;
-                
-                // 2. [QUAN TRỌNG] Nếu ô chọn đang trống (do load trang), hãy tìm trong dữ liệu gốc (allData)
-                // Code này giúp "cứu" lại tên bài hát dù danh sách tải chậm hơn cài đặt
                 if (!valueToRestore && window.allData && window.allData.sohoi && window.allData.sohoi[type]) {
                     valueToRestore = window.allData.sohoi[type].track;
                 }
 
-                // 3. Làm mới danh sách option
                 select.innerHTML = '<option value="">-- Chọn file nhạc --</option>';
                 if (playlist && Array.isArray(playlist)) {
                     playlist.forEach(track => {
@@ -3184,160 +3178,115 @@ function stopMusicTimer() {
                     });
                 }
                 
-                // 4. Khôi phục giá trị đã chọn
                 if (valueToRestore) {
-                    // Kiểm tra xem bài hát đã lưu có nằm trong danh sách thực tế không
-                    // (Dùng includes hoặc so sánh thủ công để chính xác hơn)
                     const exists = Array.from(select.options).some(opt => opt.value === valueToRestore);
                     if (exists) {
                         select.value = valueToRestore;
-                    } else {
-                        // Tùy chọn: Nếu file đã lưu không còn trong thẻ nhớ, có thể thêm tạm vào để người dùng biết
-                        // const opt = document.createElement('option');
-                        // opt.value = valueToRestore;
-                        // opt.textContent = valueToRestore + " (Không tìm thấy)";
-                        // select.appendChild(opt);
-                        // select.value = valueToRestore;
                     }
                 }
             }
         });
     }
 
-    // [CẬP NHẬT] CÁC HÀM ĐIỀU KHIỂN VÀ CẬP NHẬT GIAO DIỆN NHẠC
-    // [HÀM CHUẨN ĐẦY ĐỦ] Cập nhật giao diện phát nhạc từ dữ liệu ESP32 gửi về
+    // [CẬP NHẬT TỪ BẢN LAN] Giao diện Music Player
     function updateMusicPlayerUI(status) {
-        // 1. Cập nhật tiêu đề để biết đang xem dữ liệu của máy nào
         const titleEl = document.getElementById('title-music-playlist');
         if (status.device) {
             titleEl.innerHTML = `DANH SÁCH PHÁT <span style="color: #f1c40f; font-size: 0.8em;">(Nguồn: ${status.device})</span>`;
         }
 
-        // 2. Cập nhật Danh sách bài hát (Playlist) & Dropdown chọn bài
         const playlistContainer = document.getElementById('music-playlist-container');
-        const trackSelect = document.getElementById('schedule-music-track-select'); // Dropdown hẹn giờ
+        const trackSelect = document.getElementById('schedule-music-track-select'); 
 
-        // Chỉ vẽ lại playlist nếu có dữ liệu playlist gửi kèm
         if (status.playlist && Array.isArray(status.playlist)) {
-            playlistContainer.innerHTML = ''; // Xóa danh sách cũ
-            
-            // Cập nhật Dropdown chọn bài cho phần Hẹn giờ
+            playlistContainer.innerHTML = ''; 
             trackSelect.innerHTML = '<option value="">-- Chọn bài hát --</option>';
 
             if (status.playlist.length === 0) {
                 playlistContainer.innerHTML = '<p class="list-placeholder">Không tìm thấy file nhạc.</p>';
             } else {
                 status.playlist.forEach(track => {
-                    // A. Thêm vào danh sách hiển thị
                     const item = document.createElement('div');
                     item.className = 'playlist-item';
                     item.textContent = track;
 
-                    // Logic tô màu (Highlight)
                     if (track === status.current_track) {
-                        // Bài đang thực sự phát -> Màu Tím (class .playing)
                         item.classList.add('playing');
                         currentPlayingTrack = track; 
                     } else if (track === selectedTrackToPlay) {
-                        // Bài người dùng vừa bấm chọn (chưa phát) -> Màu Xanh Dương
                         item.style.backgroundColor = "#3498db";
                         item.style.color = "#fff";
                         item.style.fontWeight = "bold";
                     }
 
-                    // Sự kiện Click chọn bài
                     item.onclick = function() {
-                        // Reset màu các bài khác
                         document.querySelectorAll('.playlist-item').forEach(el => {
                             el.classList.remove('playing');
                             el.style.backgroundColor = "";
                             el.style.color = "";
                         });
-
-                        // Lưu bài vừa chọn
                         selectedTrackToPlay = track;
-
-                        // Tô màu bài vừa chọn
                         this.style.backgroundColor = "#3498db";
                         this.style.color = "#fff";
                         this.style.fontWeight = "bold";
-
-                        // Cập nhật text hiển thị "Đã chọn..."
                         document.getElementById('now-playing-title').textContent = "Đã chọn: " + track;
                         document.getElementById('now-playing-title').style.color = "#3498db";
-
-                        // Đổi nút về hình Tam Giác (Play) để chờ bấm
                         document.getElementById('play-icon').style.display = 'block';
                         document.getElementById('pause-icon').style.display = 'none';
                     };
 
                     playlistContainer.appendChild(item);
 
-                    // B. Thêm vào Dropdown Hẹn giờ
                     const option = document.createElement('option');
                     option.value = track;
                     option.textContent = track;
                     trackSelect.appendChild(option);
                 });
             }
-            // Gọi hàm cập nhật các dropdown khác trong phần Cài đặt chuông
             updateTrackSelectors(status.playlist);
         }
 
-        // 3. Cập nhật trạng thái bài hát đang phát (Play/Pause/Time)
         if (status.current_track) {
             currentPlayingTrack = status.current_track;
-            // Nếu người dùng chưa chọn bài nào bằng tay, hiển thị bài hệ thống đang phát
             if (selectedTrackToPlay === "") {
                 document.getElementById('now-playing-title').textContent = currentPlayingTrack;
                 document.getElementById('now-playing-title').style.color = "#f1c40f";
             }
         }
 
-        // Cập nhật thời gian và thanh tiến trình
         if (status.total_time_s > 0) {
             audioTotalTime = status.total_time_s;
-            
-            // Đồng bộ thời gian (chỉ update nếu lệch quá 2 giây để tránh giật thanh trượt)
             if (Math.abs(audioCurrentTime - (status.current_time_s || 0)) > 2) {
                 audioCurrentTime = status.current_time_s || 0;
             }
-
             document.getElementById('total-time').textContent = formatTime(audioTotalTime);
             document.getElementById('current-time').textContent = formatTime(audioCurrentTime);
             
-            // Tính % thanh trượt
             const percent = (audioCurrentTime / audioTotalTime) * 100;
             document.getElementById('music-progress-bar').value = percent;
         }
 
-        // Xử lý nút Play/Pause và Timer
         if (status.status === 'playing') {
             isMusicPlaying = true;
-            startMusicTimer(); // Chạy bộ đếm giây trên web
+            startMusicTimer(); 
             document.getElementById('play-icon').style.display = 'none';
             document.getElementById('pause-icon').style.display = 'block';
         } else {
             isMusicPlaying = false;
-            stopMusicTimer(); // Dừng bộ đếm
-            // Chỉ hiện nút Play nếu không phải đang chọn bài mới
+            stopMusicTimer(); 
             if (selectedTrackToPlay === "" || selectedTrackToPlay === currentPlayingTrack) {
                 document.getElementById('play-icon').style.display = 'block';
                 document.getElementById('pause-icon').style.display = 'none';
             }
         }
 
-        // 4. Cập nhật Volume và Chế độ (Lặp/Ngẫu nhiên)
         if (status.volume !== undefined) {
-            // Quy đổi từ thang 0-30 (ESP32) sang 0-100 (Web)
             document.getElementById('volume-slider').value = Math.round(status.volume / 30 * 100);
         }
         document.getElementById('shuffle-btn').classList.toggle('active', status.shuffle_mode || false);
         document.getElementById('repeat-btn').classList.toggle('active', status.repeat_mode || false);
-           
     }
 
-   
     function togglePlayMode(mode) {
         handleMusicControl(`toggle_${mode}`);
     }
@@ -5152,89 +5101,71 @@ function showNotification(msg, type="info") {
         checkboxes.forEach(cb => cb.checked = !allChecked);
     }
 
-    // [CẬP NHẬT] Hàm điều khiển nhạc (Lấy danh sách từ Checkbox)
-    // [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
-// [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
-// [HÀM CHUẨN DUY NHẤT] Điều khiển nhạc + Cập nhật giao diện + Gửi đa điểm
-function handleMusicControl(command, value = null) {
-    if (!client || !client.connected) return showNotification("❌ Chưa kết nối máy chủ!", 'error');
+// [CẬP NHẬT TỪ BẢN LAN] Xử lý logic gửi lệnh Nhạc (Chuyển thành MQTT)
+    function handleMusicControl(command, value = null) {
+        if (!client || !client.connected) return showNotification("❌ Chưa kết nối máy chủ!", 'error');
 
-    // Lấy danh sách loa đang được chọn
-    const checkboxes = document.querySelectorAll('.music-cb:checked');
-    const targetList = Array.from(checkboxes).map(cb => cb.value);
+        const checkboxes = document.querySelectorAll('.music-cb:checked');
+        const targetList = Array.from(checkboxes).map(cb => cb.value);
 
-    // Bắt buộc phải chọn loa mới gửi được lệnh
-    if (targetList.length === 0) {
-        // Highlight khung chọn loa để người dùng thấy
-        const zoneBox = document.querySelector('#tab-phat-nhac .sohoi-container > div');
-        if(zoneBox) {
-            zoneBox.style.boxShadow = "0 0 10px #e74c3c";
-            setTimeout(() => zoneBox.style.boxShadow = "none", 1000);
+        if (command !== 'refresh_playlist' && targetList.length === 0) {
+            const zoneBox = document.querySelector('#tab-phat-nhac .sohoi-container > div');
+            if(zoneBox) {
+                zoneBox.style.boxShadow = "0 0 10px #e74c3c";
+                setTimeout(() => zoneBox.style.boxShadow = "none", 1000);
+            }
+            return showNotification("⚠️ Vui lòng chọn Loa cần điều khiển ở danh sách trên!", "error");
         }
-        return showNotification("⚠️ Vui lòng chọn Loa cần điều khiển ở danh sách trên!", "error");
-    }
 
-    // --- LOGIC PLAY/PAUSE (Cập nhật giao diện ngay lập tức) ---
-    if (command === 'play_pause') {
-        if (selectedTrackToPlay !== "" && selectedTrackToPlay !== currentPlayingTrack) {
-            // Trường hợp 1: Đang chọn bài mới -> Phát bài mới ngay
-            command = 'play_track';
-            value = selectedTrackToPlay;
-            currentPlayingTrack = selectedTrackToPlay;
-            audioCurrentTime = 0;
-            isMusicPlaying = true;
-            startMusicTimer();
-            document.getElementById('play-icon').style.display = 'none';
-            document.getElementById('pause-icon').style.display = 'block';
-            document.getElementById('now-playing-title').style.color = "#f1c40f";
-            selectedTrackToPlay = ""; 
-        } else {
-            // Trường hợp 2: Đang nghe bài cũ -> Toggle Play/Pause
-            const playIcon = document.getElementById('play-icon');
-            const pauseIcon = document.getElementById('pause-icon');
-            if (playIcon.style.display !== 'none') { 
-                // Đang Pause -> Chuyển sang Play
-                playIcon.style.display = 'none';
-                pauseIcon.style.display = 'block';
+        if (command === 'play_pause') {
+            if (selectedTrackToPlay !== "" && selectedTrackToPlay !== currentPlayingTrack) {
+                command = 'play_track';
+                value = selectedTrackToPlay;
+                currentPlayingTrack = selectedTrackToPlay;
+                audioCurrentTime = 0;
                 isMusicPlaying = true;
                 startMusicTimer();
-            } else { 
-                // Đang Play -> Chuyển sang Pause
-                playIcon.style.display = 'block';
-                pauseIcon.style.display = 'none';
-                isMusicPlaying = false;
-                stopMusicTimer();
+                document.getElementById('play-icon').style.display = 'none';
+                document.getElementById('pause-icon').style.display = 'block';
+                document.getElementById('now-playing-title').style.color = "#f1c40f";
+                selectedTrackToPlay = ""; 
+            } else {
+                const playIcon = document.getElementById('play-icon');
+                const pauseIcon = document.getElementById('pause-icon');
+                if (playIcon.style.display !== 'none') { 
+                    playIcon.style.display = 'none';
+                    pauseIcon.style.display = 'block';
+                    isMusicPlaying = true;
+                    startMusicTimer();
+                } else { 
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                    isMusicPlaying = false;
+                    stopMusicTimer();
+                }
             }
         }
-    }
-    // -------------------------------------
 
-    // Tạo gói tin lệnh
-    const payload = { 
-        command: command,
-        targets: targetList // Gửi danh sách thiết bị nhận lệnh
-    };
-    
-    // Gán giá trị đi kèm (nếu có)
-    if (value !== null) {
-         if (command === 'set_volume') {
-            // Quy đổi volume từ thang 100 (Web) về thang 30 (ESP32)
-            payload.value = Math.round(parseInt(value) / 100 * 30);
-        } else {
-            payload.value = value; // Với các lệnh khác như schedule_add
+        const payload = { 
+            command: command,
+            targets: targetList
+        };
+        
+        if (value !== null) {
+             if (command === 'set_volume') {
+                payload.value = Math.round(parseInt(value) / 100 * 30);
+            } else {
+                payload.value = value;
+            }
+        }
+        
+        // Dùng MQTT client.publish thay cho webSocket
+        client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
+        
+        if(command === 'refresh_playlist') {
+             showNotification(`🔄 Đang tải danh sách bài hát...`, "info");
         }
     }
-    
-    console.log("Sending Music Command:", payload);
-    
-    // Gửi lệnh lên Server MQTT
-    client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-    
-    // Hiện thông báo nếu là lệnh tải danh sách
-    if(command === 'refresh_playlist') {
-         showNotification(`🔄 Đang tải danh sách bài hát...`, "info");
-    }
-}
     
     function changeMusicTarget() {
         // Hàm này có thể không cần dùng nữa nếu bạn không muốn auto-load playlist
@@ -5545,31 +5476,50 @@ function renderMusicScheduleTable() {
         checkboxes.forEach(cb => cb.checked = !allChecked);
     }
 
-    // Hàm chia nhỏ văn bản gốc (cứ đủ số ký tự là cắt)
+    // [CẬP NHẬT TỪ BẢN LAN] Thuật toán cắt câu thông minh: Ưu tiên cắt ở dấu câu 
     function splitTextForTts(text, maxLength) {
-        let words = text.split(' ');
         let chunks = [];
+        let parts = text.match(/[^.,!?]+[.,!?]+/g);
+        
+        if (!parts) parts = [text]; 
+
         let current = '';
-        words.forEach(word => {
-            if ((current + ' ' + word).length <= maxLength) {
-                current += (current ? ' ' : '') + word;
+        parts.forEach(part => {
+            let p = part.trim();
+            if ((current + ' ' + p).length <= maxLength) {
+                current += (current ? ' ' : '') + p;
             } else {
                 if (current) chunks.push(current);
-                current = word;
+                if (p.length > maxLength) {
+                    let words = p.split(' ');
+                    let temp = '';
+                    words.forEach(w => {
+                        if ((temp + ' ' + w).length <= maxLength) {
+                            temp += (temp ? ' ' : '') + w;
+                        } else { 
+                            chunks.push(temp); 
+                            temp = w; 
+                        }
+                    });
+                    current = temp;
+                } else {
+                    current = p; 
+                }
             }
         });
         if (current) chunks.push(current);
         return chunks;
     }
 
+    // [CẬP NHẬT TỪ BẢN LAN] Gửi đa lệnh MQTT (Đã test chuẩn)
     async function sendTtsRequest() {
-        // 1. Lấy text từ ô nhập liệu
         let textInput = document.getElementById('tts-text-input').value.trim();
         
-        // Trả lại lệnh xóa sạch toàn bộ dấu câu (chấm, phẩy) như bản gốc
-        textInput = textInput.replace(/[.,;!?]/g, ' ').replace(/\s+/g, ' ').trim();
+        // KHÔNG xóa dấu câu (.,!?) để Google tự tạo nhịp ngắt nghỉ tự nhiên.
+        textInput = textInput.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 
         const repeatCount = parseInt(document.getElementById('tts-repeat-select').value) || 1;
+        const ttsVolume = 80; 
         const selectedZones = Array.from(document.querySelectorAll('.tts-cb:checked')).map(cb => cb.value);
 
         if (!textInput) return showNotification("Vui lòng nhập nội dung cần thông báo!", "error");
@@ -5579,24 +5529,33 @@ function renderMusicScheduleTable() {
         btn.disabled = true;
 
         try {
-            // Trả về lệnh cắt cứng 40 ký tự (Bắt buộc để ESP32 không bị tràn RAM)
-            const chunks = splitTextForTts(textInput, 500);
-
-            console.log("=== TTS CHUNKS ===");
-            chunks.forEach((chunk, i) => {
-                console.log(`Chunk ${i + 1}: ${chunk.length} ký tự`);
-                console.log(chunk);
-            });
+            // Giới hạn chuẩn 200 ký tự.
+            const chunks = splitTextForTts(textInput, 200);
             let urlList = [];
-            const uniqueId = Date.now();
-
-            chunks.forEach((chunk, index) => {
-                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(chunk);
+            
+            chunks.forEach((chunk) => {
+                let textToPlay = chunk.trim();
+                
+                // CHỐNG VUỐT ĐUÔI: Ép thêm dấu chấm vào cuối mỗi đoạn.
+                if (!textToPlay.endsWith('.') && !textToPlay.endsWith(',') && !textToPlay.endsWith('!') && !textToPlay.endsWith('?')) {
+                    textToPlay += ".";
+                }
+                
+                const audioUrl = "http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(textToPlay);
                 urlList.push(audioUrl);
             });
 
-            // Gửi lệnh xuống ESP32
             if (client && client.connected) {
+                const volPayload = {
+                    command: "set_volume",
+                    targets: selectedZones,
+                    value: Math.round(ttsVolume / 100 * 30)
+                };
+                client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(volPayload), { qos: 1 });
+
+                // Nghỉ một chút để ESP32 kịp chỉnh âm lượng
+                await new Promise(resolve => setTimeout(resolve, 200));
+
                 const payload = { 
                     command: "play_tts_list",
                     targets: selectedZones,
@@ -5605,10 +5564,12 @@ function renderMusicScheduleTable() {
                 };
                 client.publish(MUSIC_CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
                 showNotification("Đã gửi lệnh phát thanh thành công!", "success");
+            } else {
+                showNotification("Mất kết nối MQTT với Máy chủ!", "error");
             }
         } catch (error) {
             console.error("TTS Error:", error);
-            showNotification("Có lỗi xảy ra khi tạo lệnh!", "error");
+            showNotification("Lỗi tạo lệnh TTS!", "error");
         } finally {
             btn.disabled = false;
         }
