@@ -2344,6 +2344,7 @@
 
         <div id="adv-tab-system" class="adv-modal-tab-content">
             <div id="system-info-actions-list" class="actions-list"></div>
+            <!-- NÚT XEM LOG Ở ĐÂY -->
             <button class="action-btn" style="background-color: #3498db; width: 100%; height: 40px; margin-top: 15px;" onclick="requestSystemLog()">XEM NHẬT KÝ LỖI (LOG)</button>
         </div>
 
@@ -2555,18 +2556,18 @@
         </div>
     </div>
   </div>
+  <!-- KHUNG XEM NHẬT KÝ (LOG) -->
   <div class="modal-overlay" id="log-modal-overlay">
-    <div class="modal-content" style="max-width: 600px; width: 95%;">
-        <h4 style="color: #3498db; margin-bottom: 10px;">NHẬT KÝ HỆ THỐNG</h4>
-        <textarea id="log-content-area" readonly style="width: 100%; height: 300px; background: #1e1e1e; color: #ecf0f1; border: 1px solid #414345; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 0.85em; resize: none; margin-bottom: 15px;"></textarea>
-        <div class="modal-buttons">
-            <button class="modal-cancel-btn" onclick="closeLogModal()">Đóng</button>
-            <button class="modal-confirm-btn" style="background-color: #e74c3c; color: white;" onclick="clearSystemLog()">Xóa Log</button>
-        </div>
-    </div>
-</div>
+      <div class="modal-content" style="max-width: 600px; width: 95%;">
+          <h4 style="color: #3498db; margin-bottom: 10px;">NHẬT KÝ HỆ THỐNG</h4>
+          <textarea id="log-content-area" readonly style="width: 100%; height: 300px; background: #1e1e1e; color: #ecf0f1; border: 1px solid #414345; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 0.85em; resize: none; margin-bottom: 15px;"></textarea>
+          <div class="modal-buttons">
+              <button class="modal-cancel-btn" onclick="closeLogModal()">Đóng</button>
+              <button class="modal-confirm-btn" style="background-color: #e74c3c; color: white;" onclick="clearSystemLog()">Xóa Log</button>
+          </div>
+      </div>
+  </div>
   <script>
-    const LOG_STATUS_TOPIC = BASE_TOPIC + "/status/log";
    // [MỚI] HÀM ĐIỀU KHIỂN CÁC TAB CHÍNH
     function openMainTab(evt, tabName) {
         // Lấy tất cả các phần tử có class="main-tab-content" và ẩn chúng đi
@@ -2948,7 +2949,7 @@
     const SCENARIO_ADD_TOPIC = BASE_TOPIC + "/scenario/add";
     const SCENARIO_SET_TOPIC = BASE_TOPIC + "/scenario/set";
     const SCENARIO_DELETE_TOPIC = BASE_TOPIC + "/scenario/delete";
-    
+    const LOG_STATUS_TOPIC = BASE_TOPIC + "/status/log";
     // Biến lưu danh sách lịch (không dùng LocalStorage nữa)
     let sharedMusicSchedules = [];
     let hasInitialPlaylistLoaded = false;
@@ -3142,8 +3143,7 @@ function stopMusicTimer() {
                     if (data.type === "system_log") {
                         const textArea = document.getElementById('log-content-area');
                         textArea.value = data.content;
-                        // Tự động cuộn xuống dòng mới nhất
-                        textArea.scrollTop = textArea.scrollHeight; 
+                        textArea.scrollTop = textArea.scrollHeight; // Tự cuộn xuống đáy
                     }
                 } catch (e) {
                     console.error("Lỗi parse JSON log:", e);
@@ -5880,18 +5880,15 @@ function requestSystemLog() {
         if (client && client.connected) {
             document.getElementById('log-content-area').value = "Đang tải dữ liệu từ Máy chủ...";
             document.getElementById('log-modal-overlay').classList.add('visible');
-            
             const payload = { command: "GET_LOG" };
             client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
         } else {
             showNotification("Chưa kết nối máy chủ!", 'error');
         }
     }
-
     function closeLogModal() {
         document.getElementById('log-modal-overlay').classList.remove('visible');
     }
-
     function clearSystemLog() {
         if (confirm("Ông có chắc chắn muốn xóa toàn bộ nhật ký lỗi không?")) {
             if (client && client.connected) {
