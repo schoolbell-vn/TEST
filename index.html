@@ -3008,7 +3008,7 @@ function stopMusicTimer() {
                 OTA_STATUS_TOPIC,
                 OTA_SATELLITE_STATUS_TOPIC,
                 MUSIC_STATUS_TOPIC,
-                MUSIC_STORAGE_TOPIC
+                MUSIC_STORAGE_TOPIC,
                 LOG_STATUS_TOPIC
             ];
             client.subscribe(topicsToSubscribe, {qos:1}, (err)=>{
