@@ -2110,6 +2110,14 @@
                       <div id="music-playlist-container">
                           <p class="list-placeholder">Đang chờ danh sách nhạc từ thiết bị...</p>
                       </div>
+                      <!-- BẮT ĐẦU ĐOẠN DÁN THÊM -->
+                      <div id="download-music-section" style="margin-top: 15px; padding: 10px; background: #232526; border-radius: 8px; border: 1px solid #f1c40f;">
+                          <h5 style="color: #f1c40f; text-align: center; margin-top: 0; margin-bottom: 10px;">TẢI NHẠC TỪ LINK VÀO VỆ TINH</h5>
+                          <input type="text" id="music-url-input" placeholder="Dán link file .mp3 trực tiếp vào đây..." style="width: 100%; padding: 8px; margin-bottom: 8px; border-radius: 5px; border: 1px solid #7f8c8d; background: #2c3e50; color: white;">
+                          <input type="text" id="music-filename-input" placeholder="Đặt tên bài (VD: quocka, chao_mung)" style="width: 100%; padding: 8px; margin-bottom: 8px; border-radius: 5px; border: 1px solid #7f8c8d; background: #2c3e50; color: white;">
+                          <button class="modern-btn" onclick="downloadMusicFromUrl()" style="background: #27ae60; color: white; height: 35px; font-size: 0.8em; margin-top: 5px;">☁️ Gửi lệnh tải về</button>
+                      </div>
+                      <!-- KẾT THÚC ĐOẠN DÁN THÊM -->
                       <div id="now-playing-info">
                           <span id="now-playing-title">Chưa có bài hát nào được chọn</span>
                       </div>
@@ -3301,7 +3309,15 @@ function stopMusicTimer() {
                 status.playlist.forEach(track => {
                     const item = document.createElement('div');
                     item.className = 'playlist-item';
-                    item.textContent = track;
+                    item.style.display = 'flex';
+                    item.style.justifyContent = 'space-between';
+                    item.innerHTML = `
+                        <span style="flex-grow:1; overflow:hidden; text-overflow:ellipsis;">${track}</span>
+                        <div>
+                            <span style="color:#f39c12; padding: 0 10px; font-weight:bold; cursor:pointer;" onclick="event.stopPropagation(); renameMusicTrack('${track}')">✏️</span>
+                            <span style="color:#e74c3c; padding: 0 10px; font-weight:bold; cursor:pointer;" onclick="event.stopPropagation(); deleteMusicTrack('${track}')">🗑️</span>
+                        </div>
+                    `;
 
                     if (track === status.current_track) {
                         item.classList.add('playing');
@@ -5231,7 +5247,7 @@ function showNotification(msg, type="info") {
     }
 
 // [CẬP NHẬT TỪ BẢN LAN] Xử lý logic gửi lệnh Nhạc (Chuyển thành MQTT)
-    function handleMusicControl(command, value = null) {
+    function handleMusicControl(command, value = null, url = null, newName = null) {
         if (!client || !client.connected) return showNotification("❌ Chưa kết nối máy chủ!", 'error');
 
         const checkboxes = document.querySelectorAll('.music-cb:checked');
@@ -5286,6 +5302,12 @@ function showNotification(msg, type="info") {
             } else {
                 payload.value = value;
             }
+        }
+        if (url !== null) {
+            payload.url = url;
+        }
+        if (newName !== null) {
+            payload.new_name = newName;
         }
         
         // Dùng MQTT client.publish thay cho webSocket
@@ -5897,6 +5919,45 @@ function requestSystemLog() {
                 document.getElementById('log-content-area').value = "Đã xóa log. Đang chờ log mới...";
             }
         }
+    }
+    // HÀM XÓA NHẠC
+    function deleteMusicTrack(trackName) {
+        if(!confirm(`Thầy có chắc chắn muốn xóa bài hát: ${trackName}?`)) return;
+        handleMusicControl('delete_track', trackName);
+        showNotification("Đã gửi lệnh xóa nhạc...", "info");
+    }
+
+    // HÀM GỬI LINK TẢI NHẠC
+    function downloadMusicFromUrl() {
+        const url = document.getElementById('music-url-input').value.trim();
+        let filename = document.getElementById('music-filename-input').value.trim();
+
+        if (!url) return showNotification("Vui lòng dán link file .mp3!", "error");
+        if (!filename) return showNotification("Vui lòng đặt tên cho bài hát!", "error");
+
+        // Gửi qua MQTT (kèm danh sách vệ tinh đã tích chọn)
+        handleMusicControl('download_track', filename, url);
+        
+        showNotification("Đã gửi link cho các Vệ tinh được chọn tải về!", "success");
+
+        // Xóa trắng ô nhập
+        document.getElementById('music-url-input').value = '';
+        document.getElementById('music-filename-input').value = '';
+    }
+    // HÀM ĐỔI TÊN NHẠC
+    function renameMusicTrack(oldName) {
+        // Hiện bảng nhập tên mới (gợi ý sẵn tên cũ bỏ đuôi .mp3)
+        let newName = prompt(`Nhập tên mới cho bài hát: ${oldName}\n(Lưu ý: Không dùng tiếng Việt có dấu, không dấu cách)`, oldName.replace(".mp3", ""));
+        
+        // Nếu ấn Hủy hoặc để trống thì bỏ qua
+        if (newName === null || newName.trim() === "") return;
+        
+        // Chuẩn hóa tên: xóa khoảng trắng thừa
+        newName = newName.trim();
+        
+        // Gửi lệnh qua MQTT (command, value, url, newName)
+        handleMusicControl('rename_track', oldName, null, newName);
+        showNotification("Đã gửi lệnh đổi tên nhạc...", "info");
     }
 </script>
 </body>
