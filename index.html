@@ -5720,7 +5720,7 @@ async function sendTtsRequest() {
                 if (!textToPlay.endsWith('.') && !textToPlay.endsWith(',') && !textToPlay.endsWith('!') && !textToPlay.endsWith('?')) {
                     textToPlay += ".";
                 }
-                urlList.push("http://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(textToPlay));
+                urlList.push("https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=" + encodeURIComponent(textToPlay));
             });
         } 
         else if (provider === 'zalo') {
