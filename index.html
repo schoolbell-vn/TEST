@@ -3704,10 +3704,12 @@ function saveAutoRestartConfig() {
 
         if (targetAction === 'wifi') {
             payload.command = "RESET_WIFI";
-            notificationText = `Đã gửi lệnh Reset WiFi đến ${targetDevice}...`;
+            // SỬA ĐỔI: Đổi câu thông báo cho hợp lý
+            notificationText = `Đang gửi lệnh Reset WiFi đến ${targetDevice}...`; 
         } else if (targetAction === 'restart') {
             payload.command = "RESTART_ESP";
-            notificationText = `Đã gửi lệnh khởi động lại đến ${targetDevice}...`;
+            // SỬA ĐỔI: Đổi câu thông báo cho hợp lý
+            notificationText = `Đang gửi lệnh khởi động lại đến ${targetDevice}...`;
         } else {
             console.error("Hành động không xác định:", targetAction);
             closePasswordModal();
@@ -3716,7 +3718,8 @@ function saveAutoRestartConfig() {
 
         if (client && client.connected) {
             client.publish(CONTROL_TOPIC, JSON.stringify(payload), { qos: 1 });
-            showNotification(notificationText);
+            // SỬA ĐỔI: Đổi sang hiển thị dạng 'info' (màu xanh dương) để báo đang chờ
+            showNotification(notificationText, 'info'); 
         } else {
             showNotification("Chưa kết nối đến máy chủ!", 'error');
         }
