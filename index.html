@@ -2222,7 +2222,10 @@
             <!-- Ô NHẬP ZALO KEY (Ẩn/Hiện) -->
             <div id="api-key-container" style="grid-column: 1 / -1; display: none;">
                 <label style="color: #e74c3c; font-weight: bold; display: block; margin-bottom: 5px;">API Key (Zalo AI):</label>
-                <input type="password" id="tts-api-key" placeholder="Nhập API Key Zalo AI..." style="width: 100%; padding: 8px; border-radius: 6px; background: #2c3e50; color: #fff; border: 1px solid #e74c3c; outline: none;">
+                <div style="display: flex; gap: 10px;">
+                    <input type="password" id="tts-api-key" placeholder="Nhập API Key Zalo AI..." style="flex-grow: 1; padding: 8px; border-radius: 6px; background: #2c3e50; color: #fff; border: 1px solid #e74c3c; outline: none;">
+                    <button type="button" onclick="saveApiKeyToESP()" style="background: #e74c3c; color: white; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap;">Lưu Key</button>
+                </div>
             </div>
 
             <!-- Ô NHẬP GEMINI KEY -->
@@ -4245,7 +4248,7 @@ function loadHolidayData(holidays) {
                 n.enabled=document.getElementById(`enable_${dayId}`).checked;
                 n.gio=document.getElementById(`gio_${dayId}`).value;
                 n.tiethoc=document.getElementById(`tiethoc_${dayId}`).value || "45";
-                n.rachoi=document.getElementById(`rachoi_${dayId}`).value || "5"; // [NÂNG CẤP]
+                n.rachoi=document.getElementById(`rachoi_${dayId}`).value || "5"; 
                 n.duvaotiet=parseInt(document.getElementById(`duvaotiet_${dayId}`).value)||0;
                 n.sotiet=parseInt(document.getElementById(`sotiet_${dayId}`).value)||0;
                 
@@ -4255,7 +4258,6 @@ function loadHolidayData(holidays) {
                 const chunhiemInput = document.getElementById(`chunhiem_${dayId}`);
                 if(chunhiemInput) n.chunhiem=parseInt(chunhiemInput.value)||0;
                 
-                // [NÂNG CẤP & SỬA LỖI] Thu thập dữ liệu từ trường mới và xử lý đúng giá trị 0
                 const prepareSpecialInput = document.getElementById(`prepare_after_special_${dayId}`);
                 if(prepareSpecialInput) {
                     const val = parseInt(prepareSpecialInput.value);
@@ -4269,6 +4271,14 @@ function loadHolidayData(holidays) {
                 if (hasDuVaoCheckbox) n.has_duvao_bell = hasDuVaoCheckbox.checked;
             })
         });
+
+        // [ĐÃ SỬA] Đảm bảo cập nhật API Key mới nhất từ ô nhập trước khi lưu tổng
+        const zaloKeyEl = document.getElementById('tts-api-key');
+        if (zaloKeyEl) globalInterfaceSettings['zalo_api_key'] = zaloKeyEl.value.trim();
+        
+        const geminiKeyEl = document.getElementById('gemini-api-key');
+        if (geminiKeyEl) globalInterfaceSettings['gemini_api_key'] = geminiKeyEl.value.trim();
+
         e.interface = globalInterfaceSettings;
         return e;
     }
@@ -5667,6 +5677,7 @@ function renderMusicScheduleTable() {
 
     // [CẬP NHẬT TỪ BẢN LAN] Gửi đa lệnh MQTT (Đã test chuẩn)
     // Hàm cập nhật giao diện khi chọn Nhà cung cấp AI
+// Hàm cập nhật giao diện khi chọn Nhà cung cấp AI
 function updateVoiceOptions() {
     const provider = document.getElementById('tts-provider').value;
     const voiceSelect = document.getElementById('tts-voice');
@@ -5685,8 +5696,8 @@ function updateVoiceOptions() {
             <option value="3">Nam miền Nam</option>
             <option value="4">Nam miền Bắc</option>
         `;
-        // Tự động điền lại API Key đã lưu từ lần trước
-        const savedKey = localStorage.getItem('zalo_api_key');
+        // [ĐÃ SỬA] Ưu tiên điền lại API Key đã lưu từ ESP32
+        const savedKey = globalInterfaceSettings['zalo_api_key'] || localStorage.getItem('zalo_api_key');
         if (savedKey) document.getElementById('tts-api-key').value = savedKey;
     }
 }
